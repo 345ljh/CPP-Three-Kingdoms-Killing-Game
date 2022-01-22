@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1642823637 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+	"ege.h"
+	"items.h"
+
+1642830123 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+
+1642825390 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
+	"items.h"
+
