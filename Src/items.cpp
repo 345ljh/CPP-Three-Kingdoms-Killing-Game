@@ -3,90 +3,90 @@
 class player
 {
 public:
-    PlayerInit(general_t general, int health, int maxhealth, int maxcard)
+    //çŽ©å®¶åˆå§‹åŒ–
+    void PlayerInit(general_t general, int health, int maxhealth, int maxcard, int limitused)
     {
         maxhealth = general.maxhealth;
         health = maxhealth;
         maxcard = maxhealth;
-        n
+        limitused = general.limit;
     }
 private:
 
-    int number;  //Î»´Î
-    general_t general;  //Îä½«ÐÅÏ¢
+    int number;  //ä½æ¬¡
+    general_t general;  //æ­¦å°†ä¿¡æ¯
 
-    int health;  //µ±Ç°ÌåÁ¦
-    int maxhealth; //ÌåÁ¦ÉÏÏÞ
-    int maxcard;  //µ±Ç°ÊÖÅÆÉÏÏÞ
-    int nowslash = 0;  //µ±Ç°»ØºÏÒÑÊ¹ÓÃÉ±´ÎÊý
-    int maxslash = 0;  //Ã¿»ØºÏÊ¹ÓÃÉ±µÄ×î´ó´ÎÊý
-    int spirits = 0;  //»ØºÏÄÚÊ¹ÓÃ¾ÆµÄ×´Ì¬:0=Î´Ê¹ÓÃ,1=ÒÑÊ¹ÓÃÇÒ´æÔÚÉËº¦+1Ð§¹û,2=ÒÑÊ¹ÓÃ
+    int health;  //å½“å‰ä½“åŠ›
+    int maxhealth; //ä½“åŠ›ä¸Šé™
+    int maxcard;  //å½“å‰æ‰‹ç‰Œä¸Šé™
+    int nowslash = 0;  //å½“å‰å›žåˆå·²ä½¿ç”¨æ€æ¬¡æ•°
+    int maxslash = 0;  //æ¯å›žåˆä½¿ç”¨æ€çš„æœ€å¤§æ¬¡æ•°
+    int spirits = 0;  //å›žåˆå†…ä½¿ç”¨é…’çš„çŠ¶æ€:0=æœªä½¿ç”¨,1=å·²ä½¿ç”¨ä¸”å­˜åœ¨ä¼¤å®³+1æ•ˆæžœ,2=å·²ä½¿ç”¨
 
-    int card[100]; //µ±Ç°ÓµÓÐÊÖÅÆ,´¢´æid=0´ú±íÎª¿Õ
-    int equips[4];  //×°±¸Çø,·Ö±ðÎªÎäÆ÷,·À¾ß,+1,-1
-    int judges[3]; //ÅÐ¶¨Çø,ÅÐ¶¨½×¶ÎÓÉºóÏòÇ°½áËã
-    int range; //µ±Ç°¹¥»÷¾àÀë
+    int card[100]; //å½“å‰æ‹¥æœ‰æ‰‹ç‰Œ,å‚¨å­˜id=0ä»£è¡¨ä¸ºç©º
+    int equips[4];  //è£…å¤‡åŒº,åˆ†åˆ«ä¸ºæ­¦å™¨,é˜²å…·,+1,-1
+    int judges[3]; //åˆ¤å®šåŒº,åˆ¤å®šé˜¶æ®µç”±åŽå‘å‰ç»“ç®—
+    int range; //å½“å‰æ”»å‡»è·ç¦»
 
-    int limitused;  //´æÔÚÎ´Ê¹ÓÃµÄÏÞ¶¨¼¼=1,·ñÔòÎª0
-    int awaken;  //´æÔÚ¾õÐÑ¼¼ÇÒÒÑ·¢¶¯=1,·ñÔòÎª0
+    int limitused;  //å­˜åœ¨æœªä½¿ç”¨çš„é™å®šæŠ€=1,å¦åˆ™ä¸º0
+    int awaken;  //å­˜åœ¨è§‰é†’æŠ€ä¸”å·²å‘åŠ¨=1,å¦åˆ™ä¸º0
 };
 
 card_t pile[160] =
 {
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, LIGHTNING, "ÉÁµç", 0}, {1, SPADE, GUDING, "¹Å¶§µ¶", 0},
-    {2, SPADE, DUEL, "´ÆÐÛË«¹É½£", 0}, {2, SPADE, DUEL, "°ËØÔÕó", 0}, {2, SPADE, DUEL, "ÌÙ¼×", 0}, {2, SPADE, DUEL, "º®±ù½£", 0},
-    {3, SPADE, DUEL, "¹ýºÓ²ðÇÅ", 0}, {3, SPADE, DUEL, "Ë³ÊÖÇ£Ñò", 0}, {3, SPADE, DUEL, "¾Æ", 0},
-    {4, SPADE, DUEL, "¹ýºÓ²ðÇÅ", 0}, {4, SPADE, DUEL, "Ë³ÊÖÇ£Ñò", 0}, {4, SPADE, DUEL, "À×É±", 0},
-    {5, SPADE, DUEL, "ÇàÁúÙÈÔÂµ¶", 0}, {5, SPADE, DUEL, "¾øÓ°", 0}, {5, SPADE, DUEL, "À×É±", 0},
-    {6, SPADE, DUEL, "ÀÖ²»Ë¼Êñ", 0}, {6, SPADE, DUEL, "ÇàâG½£", 0}, {6, SPADE, DUEL, "À×É±", 0},
-    {7, SPADE, DUEL, "É±", 0}, {7, SPADE, DUEL, "ÄÏÂùÈëÇÖ", 0}, {7, SPADE, DUEL, "À×É±", 0},
-    {8, SPADE, DUEL, "É±", 0}, {8, SPADE, DUEL, "É±", 0}, {8, SPADE, DUEL, "À×É±", 0},
-    {9, SPADE, DUEL, "É±", 0}, {9, SPADE, DUEL, "É±", 0}, {9, SPADE, DUEL, "¾Æ", 0},
-    {10, SPADE, DUEL, "É±", 0}, {10, SPADE, DUEL, "É±", 0}, {10, SPADE, DUEL, "¾ö¶·", 0},
-    {11, SPADE, DUEL, "Ë³ÊÖÇ£Ñò", 0}, {11, SPADE, DUEL, "ÎÞÐ¸¿É»÷", 0}, {11, SPADE, DUEL, "ÌúË÷Á¬»·", 0},
-    {12, SPADE, DUEL, "¹ýºÓ²ðÇÅ", 0}, {12, SPADE, DUEL, "ÕÉ°ËÉßÃ¬", 0}, {12, SPADE, DUEL, "ÌúË÷Á¬»·", 0},
-    {13, SPADE, DUEL, "ÄÏÂùÈëÇÖ", 0}, {13, SPADE, DUEL, "´óÍð", 0}, {13, SPADE, DUEL, "ÎÞÐ¸¿É»÷", 0},
+    {1, SPADE, JUEDOU, "å†³æ–—", 0}, {1, SPADE, SHANDIAN, "é—ªç”µ", 0}, {1, SPADE, GUDING, "å¤é”­åˆ€", 0},
+    {2, SPADE, CIXIONG, "é›Œé›„åŒè‚¡å‰‘", 0}, {2, SPADE, BAGUA, "å…«å¦é˜µ", 0}, {2, SPADE, TENGJIA, "è—¤ç”²", 0}, {2, SPADE, HANBING, "å¯’å†°å‰‘", 0},
+    {3, SPADE, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {3, SPADE, SHUNQIAN, "é¡ºæ‰‹ç‰µç¾Š", 0}, {3, SPADE, JIU, "é…’", 0},
+    {4, SPADE, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {4, SPADE, SHUNQIAN, "é¡ºæ‰‹ç‰µç¾Š", 0}, {4, SPADE, LEISHA, "é›·æ€", 0},
+    {5, SPADE, QINGLONG, "é’é¾™åƒæœˆåˆ€", 0}, {5, SPADE, JUEYING, "ç»å½±", 0}, {5, SPADE, LEISHA, "é›·æ€", 0},
+    {6, SPADE, LE, "ä¹ä¸æ€èœ€", 0}, {6, SPADE, QINGGANG, "é’é‡­å‰‘", 0}, {6, SPADE, LEISHA, "é›·æ€", 0},
+    {7, SPADE, SHA, "æ€", 0}, {7, SPADE, NANMAN, "å—è›®å…¥ä¾µ", 0}, {7, SPADE, LEISHA, "é›·æ€", 0},
+    {8, SPADE, SHA, "æ€", 0}, {8, SPADE, SHA, "æ€", 0}, {8, SPADE, LEISHA, "é›·æ€", 0},
+    {9, SPADE, SHA, "æ€", 0}, {9, SPADE, SHA, "æ€", 0}, {9, SPADE, JIU, "é…’", 0},
+    {10, SPADE, SHA, "æ€", 0}, {10, SPADE, SHA, "æ€", 0}, {10, SPADE, JUEDOU, "å†³æ–—", 0},
+    {11, SPADE, SHUNQIAN, "é¡ºæ‰‹ç‰µç¾Š", 0}, {11, SPADE, WUXIE, "æ— æ‡ˆå¯å‡»", 0}, {11, SPADE, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
+    {12, SPADE, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {12, SPADE, ZHANGBA, "ä¸ˆå…«è›‡çŸ›", 0}, {12, SPADE, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
+    {13, SPADE, NANMAN, "å—è›®å…¥ä¾µ", 0}, {13, SPADE, DAWAN, "å¤§å®›", 0}, {13, SPADE, WUXIE, "æ— æ‡ˆå¯å‡»", 0},
 
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
+    {1, HEART, TAOYUAN, "æ¡ƒå›­ç»“ä¹‰", 0}, {1, HEART, WANJIAN, "ä¸‡ç®­é½å‘", 0}, {1, HEART, WUXIE, "æ— æ‡ˆå¯å‡»", 0},
+    {2, HEART, SHAN, "é—ª", 0}, {2, HEART, SHAN, "é—ª", 0}, {2, HEART,HUOGONG, "ç«æ”»", 0},
+    {3, HEART, TAO, "æ¡ƒ", 0}, {3, HEART, WUGU, "äº”è°·ä¸°ç™»", 0}, {3, HEART, HUOGONG, "ç«æ”»", 0},
+    {4, HEART, TAO, "æ¡ƒ", 0}, {4, HEART, WUGU, "äº”è°·ä¸°ç™»", 0}, {4, HEART, HUOSHA, "ç«æ€", 0},
+    {5, HEART, QILIN, "éº’éºŸå¼“", 0}, {5, HEART, CHITU, "èµ¤å…”", 0}, {5, HEART, TAO, "æ¡ƒ", 0},
+    {6, HEART, TAO, "æ¡ƒ", 0}, {6, HEART, LE, "ä¹ä¸æ€èœ€", 0}, {6, HEART, TAO, "æ¡ƒ", 0},
+    {7, HEART, TAO, "æ¡ƒ", 0}, {7, HEART, WUZHONG, "æ— ä¸­ç”Ÿæœ‰", 0}, {7, HEART, HUOSHA, "ç«æ€", 0},
+    {8, HEART, TAO, "æ¡ƒ", 0}, {8, HEART, WUZHONG, "æ— ä¸­ç”Ÿæœ‰", 0}, {8, HEART, SHAN, "é—ª", 0},
+    {9, HEART, TAO, "æ¡ƒ", 0}, {9, HEART, WUZHONG, "æ— ä¸­ç”Ÿæœ‰", 0}, {9, HEART, SHAN, "é—ª", 0},
+    {10, HEART, SHA, "æ€", 0}, {10, HEART, SHA, "æ€", 0}, {10, HEART, HUOSHA, "ç«æ€", 0},
+    {11, HEART, SHA, "æ€", 0}, {11, HEART, WUZHONG, "æ— ä¸­ç”Ÿæœ‰", 0}, {11, HEART, SHAN, "é—ª", 0},
+    {12, HEART, TAO, "æ¡ƒ", 0}, {12, HEART, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {12, HEART, SHAN, "é—ª", 0}, {12, HEART, SHANDIAN, "é—ªç”µ", 0},
+    {13, HEART, SHAN, "é—ª", 0}, {13, HEART, FEIDIAN, "çˆªé»„é£žç”µ", 0}, {13, HEART, WUXIE, "æ— æ‡ˆå¯å‡»", 0},
 
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
+    {1, CLUB, JUEDOU, "å†³æ–—", 0}, {1, CLUB, ZHUGE, "è¯¸è‘›è¿žå¼©", 0}, {1, CLUB, BAIYIN, "ç™½é“¶ç‹®å­", 0},
+    {2, CLUB, SHA, "æ€", 0}, {2, CLUB, BAGUA, "å…«å¦é˜µ", 0}, {2, CLUB, TENGJIA, "è—¤ç”²", 0}, {2, CLUB, RENWANG, "ä»çŽ‹ç›¾", 0},
+    {3, CLUB, SHA, "æ€", 0}, {3, CLUB, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {3, CLUB, JIU, "é…’", 0},
+    {4, CLUB, SHA, "æ€", 0}, {4, CLUB, GUOCHAI, "è¿‡æ²³æ‹†æ¡¥", 0}, {4, CLUB, BING, "å…µç²®å¯¸æ–­", 0},
+    {5, CLUB, SHA, "æ€", 0}, {5, CLUB, DILU, "çš„å¢", 0}, {5, CLUB, LEISHA, "é›·æ€", 0},
+    {6, CLUB, SHA, "æ€", 0}, {6, CLUB, LE, "ä¹ä¸æ€èœ€", 0}, {6, CLUB, LEISHA, "é›·æ€", 0},
+    {7, CLUB, SHA, "æ€", 0}, {7, CLUB, NANMAN, "å—è›®å…¥ä¾µ", 0}, {7, CLUB, LEISHA, "é›·æ€", 0},
+    {8, CLUB, SHA, "æ€", 0}, {8, CLUB, SHA, "æ€", 0}, {8, CLUB, LEISHA, "é›·æ€", 0},
+    {9, CLUB, SHA, "æ€", 0}, {9, CLUB, SHA, "æ€", 0}, {9, CLUB, JIU, "é…’", 0},
+    {10, CLUB, SHA, "æ€", 0}, {10, CLUB, SHA, "æ€", 0}, {10, CLUB, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
+    {11, CLUB, SHA, "æ€", 0}, {11, CLUB, SHA, "æ€", 0}, {11, CLUB, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
+    {12, CLUB, JIEDAO, "å€Ÿåˆ€æ€äºº", 0}, {12, CLUB, WUXIE, "æ— æ‡ˆå¯å‡»", 0}, {12, CLUB, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
+    {13, CLUB, JIEDAO, "å€Ÿåˆ€æ€äºº", 0}, {13, CLUB, WUXIE, "æ— æ‡ˆå¯å‡»", 0}, {13, CLUB, TIESUO, "é“ç´¢è¿žçŽ¯", 0},
 
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-    {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0}, {1, SPADE, DUEL, "¾ö¶·", 0},
-
+    {1, DIAMOND, ZHUGE, "è¯¸è‘›è¿žå¼©", 0}, {1, DIAMOND, JUEDOU, "å†³æ–—", 0}, {1, DIAMOND, ZHUQUE, "æœ±é›€ç¾½æ‰‡", 0},
+    {2, DIAMOND, SHAN, "é—ª", 0}, {2, DIAMOND, SHAN, "é—ª", 0}, {2, DIAMOND, TAO, "æ¡ƒ", 0},
+    {3, DIAMOND, SHAN, "é—ª", 0}, {3, DIAMOND, SHUNQIAN, "é¡ºæ‰‹ç‰µç¾Š", 0}, {3, DIAMOND, TAO, "æ¡ƒ", 0},
+    {4, DIAMOND, SHAN, "é—ª", 0}, {4, DIAMOND, SHUNQIAN, "é¡ºæ‰‹ç‰µç¾Š", 0}, {4, DIAMOND, HUOSHA, "ç«æ€", 0},
+    {5, DIAMOND, SHAN, "é—ª", 0}, {5, DIAMOND, GUANSHI, "è´¯çŸ³æ–§", 0}, {5, DIAMOND, HUOSHA, "ç«æ€", 0},
+    {6, DIAMOND, SHAN, "é—ª", 0}, {6, DIAMOND, SHAN, "é—ª", 0}, {6, DIAMOND, SHA, "æ€", 0},
+    {7, DIAMOND, SHAN, "é—ª", 0}, {7, DIAMOND, SHAN, "é—ª", 0}, {7, DIAMOND, SHA, "æ€", 0},
+    {8, DIAMOND, SHAN, "é—ª", 0}, {8, DIAMOND, SHAN, "é—ª", 0}, {8, DIAMOND, SHA, "æ€", 0},
+    {9, DIAMOND, SHAN, "é—ª", 0}, {9, DIAMOND, SHA, "æ€", 0}, {9, DIAMOND, JIU, "é…’", 0},
+    {10, DIAMOND, SHAN, "é—ª", 0}, {10, DIAMOND, SHAN, "é—ª", 0}, {10, DIAMOND, SHA, "æ€", 0},
+    {11, DIAMOND, SHAN, "é—ª", 0}, {11, DIAMOND, SHAN, "é—ª", 0}, {11, DIAMOND, SHAN, "é—ª", 0},
+    {12, DIAMOND, TAO, "æ¡ƒ", 0}, {12, DIAMOND, FANGTIAN, "æ–¹å¤©ç”»æˆŸ", 0}, {12, DIAMOND, HUOGONG, "ç«æ”»", 0}, {12, DIAMOND, WUXIE, "æ— æ‡ˆå¯å‡»", 0},
+    {13, DIAMOND, SHA, "æ€", 0}, {13, DIAMOND, ZIXIN, "ç´«éª", 0}, {13, DIAMOND, HUALIU, "éª…éª", 0},
 };

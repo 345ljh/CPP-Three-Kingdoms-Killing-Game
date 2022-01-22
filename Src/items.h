@@ -1,16 +1,14 @@
 #ifndef ITEMS_H_INCLUDED
 #define ITEMS_H_INCLUDED
-/********************************************
-*            consts&variables               *
-********************************************/
 
-/********************************************
-*                  enums                    *
-********************************************/
+
+/**************************************************************************************
+*                                       enums                                         *
+**************************************************************************************/
 
 typedef enum
 {
-    SLASH = 0x01, DODGE, PEACH, SPIRITS, FIRESLASH, THUNDERSLASH,
+    SHA = 0x01, SHAN, TAO, JIU, HUOSHA, LEISHA,
     //基本牌:杀,闪,桃,酒,火杀,雷杀
     ZHUGE = 0x10,
     QINGGANG = 0x20, CIXIONG, GUDING, HANBING,
@@ -18,18 +16,19 @@ typedef enum
     FANGTIAN = 0x40, ZHUQUE,
     QILIN = 0x50,
     //武器,十六进制下第2位表示范围
-    RENWANG = 0x60, BAGUA, TENGJIA,
+    RENWANG = 0x60, BAGUA, TENGJIA, BAIYIN,
     //防具
     CHITU = 0x70, DAWAN, ZIXIN,
     //-1马
     JUEYING = 0x80, FEIDIAN, DILU, HUALIU,
     //+1马
-    DUEL = 0x90, SABOTAGE, THEFT, ARROWRAIN, SAVAGE, FRATERNITY, OUTOFNONE, HARVEST,
-    DEFENSE, FIREATTACK, CHAIN, BORROWKNIFE,
+    JUEDOU = 0x90, GUOCHAI, SHUNQIAN, WANJIAN, NANMAN, TAOYUAN, WUZHONG, WUGU,
+    WUXIE, HUOGONG, TIESUO, JIEDAO,
     //基本锦囊:决斗,过拆,顺牵,万箭,南蛮,桃园,无中,五谷,无懈,火攻,铁锁,借刀
-    DROWN = 0xA0, SUPPLYSHORT, LIGHTNING,
+    LE = 0xA0, BING, SHANDIAN,
     //延时锦囊:乐,兵,闪电
 }type_e; //牌类型
+///本枚举均为牌名的拼音
 
 typedef enum
 {
@@ -42,9 +41,9 @@ typedef enum
 } nation_e; //势力
 
 
-/********************************************
-*                 structs                   *
-********************************************/
+/**************************************************************************************
+*                                     structs                                         *
+**************************************************************************************/
 
 typedef struct
 {
@@ -53,8 +52,7 @@ typedef struct
     char skill[21];  //技能名,多个技能用空格分开
     int maxhealth;  //体力上限
     nation_e nation;//势力
-    int limit;  //限定技是否存在
-    int awake;  //觉醒技是否存在
+    int limit;  //限定技是否拥有
 } general_t;//武将信息
 
 typedef struct
@@ -66,4 +64,11 @@ typedef struct
     int owner;  //当前所有者,0表示牌堆,-1表示弃牌堆
 
 } card_t;
+
+/**************************************************************************************
+*                                  consts&variables                                   *
+**************************************************************************************/
+extern card_t pile[160];
+
+
 #endif // ITEMS_H_INCLUDED

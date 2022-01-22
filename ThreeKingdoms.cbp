@@ -43,7 +43,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="main.cpp" />
+		<Unit filename="Src/draw.cpp" />
+		<Unit filename="Src/draw.h" />
+		<Unit filename="Src/items.cpp" />
+		<Unit filename="Src/items.h" />
+		<Unit filename="Src/main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

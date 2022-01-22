@@ -1,10 +1,17 @@
 # depslib dependency file v1.0
-1642823637 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
-	"ege.h"
+1642846636 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+	"graphics.h"
+	"items.h"
+	"draw.h"
+
+1642843797 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+
+1642843728 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
 	"items.h"
 
-1642830123 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1642846446 c:\users\ljh\desktop\unfinished\threekingdoms\src\draw.h
 
-1642825390 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
-	"items.h"
+1642846589 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\draw.cpp
+	"draw.h"
+	"graphics.h"
 
