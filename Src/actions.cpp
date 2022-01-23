@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+///本文件中game均作为全局变量出现
+
 //牌堆初始化
 void PileInit(void)
 {
@@ -16,11 +18,11 @@ void PileInit(void)
     {
         pointer = rand() % 160;
         while(temp[pointer]) ++pointer %= 160;
-        card[i] = pointer;
+        game.card[i] = pointer;
         temp[pointer] = 1;
     }
 
-    nowpile = 160;
+    game.nowpile = 160;
 }
 
 //洗牌
@@ -43,12 +45,12 @@ void Shuffle(void)
     {
         pointer = rand() % 160;
         while(temp[pointer]) ++pointer %= pilecards;
-        card[i] = pointer;
+        game.card[i] = pointer;
         temp[pointer] = 1;
 
     }
 
-    nowpile = pilecards;
+    game.nowpile = pilecards;
     free(temp);
 }
 
@@ -58,15 +60,65 @@ void Takecard(player_t player, int amount)
     for(int i = 1; i <= amount; i++)
     {
         if(card_inf[0].owner == -1) Shuffle();
-        card_inf[card[0]].owner = player.id;
-        player.card[player.cardamount] = card[0];
+        card_inf[game.card[0]].owner = player.id;
+        player.card[player.cardamount] = game.card[0];
         player.cardamount++;
-        nowpile--;
+        game.nowpile--;
 
-        for(int j = 0; j <= nowpile - 1; j++)
+        for(int j = 0; j <= game.nowpile - 1; j++)
         {
-            if(j != 159)card[j] = card[j + 1];
-            else card[159] = -1;
+            game.card[j] = game.card[j + 1];
         }
+        game.card[game.nowpile] = -1;
+
+        /* skills here */
     }
+}
+
+//弃牌,其中executor为弃牌者的id,player为被弃牌者
+void Throwcard(int executor, player_t player, int amount)
+{
+    for(int i = 1; i <= amount; i++)
+    {
+        int select = 0;
+        //TODO: a function that the executor choose a card's id of player to throw
+        card_inf[player.card[select]].owner = -1;
+        player.cardamount--;
+
+        for(int j = select; j <= player.cardamount - 1; j++)
+        {
+            player.card[j] = player.card[j + 1];
+        }
+        player.card[player.cardamount] = -1;
+
+        /* skills here */
+    }
+}
+
+//伤害
+///executor=0表示伤害无来源(如闪电),=-1表示失去体力
+void Damage(int executor, player_t player, int amount)
+{
+    player.health -= amount;
+    if(player.health <= 0)
+    {
+        Neardeath(player)
+    }
+    /* skills here */
+}
+
+//濒死结算
+void Neardeath(player_t player)
+{
+    /* skills here */
+    for(int i = 0; i <= PLAYERS; i++)
+    {
+        do
+        {
+            /*  ask player that id = (player.id + i) % PLAYERS for a peach */
+            if(player.health > 0) return;
+        }while(/* used a peach */)
+    }
+
+    if(player.health < 0) /* death */
 }

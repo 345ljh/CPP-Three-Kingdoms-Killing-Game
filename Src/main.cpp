@@ -6,6 +6,8 @@
 
 using namespace std;
 
+game_t game;
+
 int main()
 {
     ProgramStart();

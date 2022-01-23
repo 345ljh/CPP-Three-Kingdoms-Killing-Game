@@ -1,7 +1,5 @@
 #include "items.h"
 
-int nowpile;
-
 card_t card_inf[160] =
 {
     {1, SPADE, JUEDOU, "决斗", 0}, {1, SPADE, SHANDIAN, "闪电", 0}, {1, SPADE, GUDING, "古锭刀", 0},

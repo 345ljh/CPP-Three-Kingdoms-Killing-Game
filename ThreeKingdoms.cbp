@@ -43,6 +43,8 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="Src/actions.cpp" />
+		<Unit filename="Src/actions.h" />
 		<Unit filename="Src/draw.cpp" />
 		<Unit filename="Src/draw.h" />
 		<Unit filename="Src/items.cpp" />
