@@ -1,38 +1,8 @@
 #include "items.h"
 
-class player
-{
-public:
-    //玩家初始化
-    void PlayerInit(general_t general, int health, int maxhealth, int maxcard, int limitused)
-    {
-        maxhealth = general.maxhealth;
-        health = maxhealth;
-        maxcard = maxhealth;
-        limitused = general.limit;
-    }
-private:
+int nowpile;
 
-    int number;  //位次
-    general_t general;  //武将信息
-
-    int health;  //当前体力
-    int maxhealth; //体力上限
-    int maxcard;  //当前手牌上限
-    int nowslash = 0;  //当前回合已使用杀次数
-    int maxslash = 0;  //每回合使用杀的最大次数
-    int spirits = 0;  //回合内使用酒的状态:0=未使用,1=已使用且存在伤害+1效果,2=已使用
-
-    int card[100]; //当前拥有手牌,储存id=0代表为空
-    int equips[4];  //装备区,分别为武器,防具,+1,-1
-    int judges[3]; //判定区,判定阶段由后向前结算
-    int range; //当前攻击距离
-
-    int limitused;  //存在未使用的限定技=1,否则为0
-    int awaken;  //存在觉醒技且已发动=1,否则为0
-};
-
-card_t pile[160] =
+card_t card_inf[160] =
 {
     {1, SPADE, JUEDOU, "决斗", 0}, {1, SPADE, SHANDIAN, "闪电", 0}, {1, SPADE, GUDING, "古锭刀", 0},
     {2, SPADE, CIXIONG, "雌雄双股剑", 0}, {2, SPADE, BAGUA, "八卦阵", 0}, {2, SPADE, TENGJIA, "藤甲", 0}, {2, SPADE, HANBING, "寒冰剑", 0},
@@ -90,3 +60,5 @@ card_t pile[160] =
     {12, DIAMOND, TAO, "桃", 0}, {12, DIAMOND, FANGTIAN, "方天画戟", 0}, {12, DIAMOND, HUOGONG, "火攻", 0}, {12, DIAMOND, WUXIE, "无懈可击", 0},
     {13, DIAMOND, SHA, "杀", 0}, {13, DIAMOND, ZIXIN, "紫骍", 0}, {13, DIAMOND, HUALIU, "骅骝", 0},
 };
+
+int card[160];

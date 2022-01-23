@@ -65,10 +65,36 @@ typedef struct
 
 } card_t;
 
+typedef struct
+{
+    int id;  //位次
+    general_t general;  //武将信息
+
+    int health;  //当前体力
+    int cardamount;  //当前手牌数
+    int maxhealth; //体力上限
+    int maxcard;  //当前手牌上限
+    int nowslash;  //当前回合已使用杀次数
+    int maxslash;  //每回合使用杀的最大次数
+    int spirits;  //回合内使用酒的状态:0=未使用,1=已使用且存在伤害+1效果,2=已使用
+
+    int card[100]; //当前拥有手牌,储存id=0代表为空
+    int equips[4];  //装备区,分别为武器,防具,+1,-1
+    int judges[3]; //判定区,判定阶段由后向前结算
+    int range; //当前攻击距离
+
+    int chained; //是否横置
+    int turned;//是否翻面
+
+    int limitused;  //存在未使用的限定技=1,否则为0
+    int awaken;  //存在觉醒技且已发动=1,否则为0
+}player_t;
 /**************************************************************************************
 *                                  consts&variables                                   *
 **************************************************************************************/
-extern card_t pile[160];
-
+extern card_t card_inf[160];
+extern int card[160];
+//card储存0~159，分别对应card_inf中的排列
+extern int nowpile; //当前牌堆剩余量
 
 #endif // ITEMS_H_INCLUDED

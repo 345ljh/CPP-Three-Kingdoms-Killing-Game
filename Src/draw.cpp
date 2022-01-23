@@ -1,11 +1,15 @@
 #include "draw.h"
 #include "graphics.h"
 
+#include <time.h>
+
 mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
 
 void ProgramStart(void)
 {
+    srand(time(NULL));
+
     initgraph(1200, 600);
 
     PIMAGE background = newimage();
@@ -31,7 +35,7 @@ void ProgramStart(void)
         msg = getmouse();
 
         mousepos(&mouse_x, &mouse_y);
-        if(msg.is_down() && mouse_x >= 500 && mouse_x <= 700 && mouse_y > 350 && mouse_y <= 400)
+        if(msg.is_down() && mouse_x >= 500 && mouse_x <= 700 && mouse_y >= 350 && mouse_y <= 400)
         {
             return;
         }
