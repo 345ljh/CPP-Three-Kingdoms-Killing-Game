@@ -42,9 +42,13 @@ typedef enum
 typedef enum
 {
     WEI, SHU, WU, QUN, SHEN
-} nation_e; //势力
+}nation_e; //势力
 
-
+typedef enum
+{
+    HUMAN, AI, DEADHUMAN, DEADAI
+}controller_e; //控制者
+///0位表示由人或电脑操控,1位表示是否存活
 /**************************************************************************************
 *                                     structs                                         *
 **************************************************************************************/
@@ -73,6 +77,7 @@ typedef struct
 {
     int id;  //位次
     general_t general;  //武将信息
+    controller_e controller;  //玩家或AI,以及存活情况
 
     int health;  //当前体力
     int cardamount;  //当前手牌数
@@ -96,16 +101,15 @@ typedef struct
 
 typedef struct
 {
+    player_t player[PLAYERS];  //4个玩家结构体
     int card[160];  //牌堆,其中储存0~159,分别对应card_inf中的排列
     ///一般情况下摸牌时将card[0]写入用户结构体，之后将所有牌前移1下标，并在末尾写入-1表示无牌
     int nowpile;  //当前牌堆剩余量
     int turn;  //当前轮数
-    int player;  //当前行动者
+    int active;  //当前行动者
     int period;  //当前阶段: 1=准备, 2=判定, 3=摸牌, 4=出牌, 5=弃牌, 6=结束
 }game_t;
 /**************************************************************************************
 *                                  consts&variables                                   *
 **************************************************************************************/
-extern card_t card_inf[160];
-
 #endif // ITEMS_H_INCLUDED

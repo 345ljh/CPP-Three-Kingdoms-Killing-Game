@@ -1,13 +1,13 @@
 # depslib dependency file v1.0
-1642914577 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+1642988371 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
 	"graphics.h"
 	"items.h"
-	"draw.h"
+	"gui.h"
 	"actions.h"
 
-1642916744 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1642989418 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
 
-1642914577 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
+1642988624 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
 	"items.h"
 
 1642846446 c:\users\ljh\desktop\unfinished\threekingdoms\src\draw.h
@@ -17,12 +17,19 @@
 	"graphics.h"
 	<time.h>
 
-1642916744 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
+1642989781 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
 	"items.h"
 
-1642900791 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
+1642988599 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
 	"actions.h"
 	<string.h>
 	<stdlib.h>
 	<malloc.h>
+
+1642988371 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
+	"gui.h"
+	"graphics.h"
+	<time.h>
+
+1642846446 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
 

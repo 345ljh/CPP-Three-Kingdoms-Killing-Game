@@ -1,6 +1,6 @@
 #include "graphics.h"
 #include "items.h"
-#include "draw.h"
+#include "gui.h"
 #include "actions.h"
 
 

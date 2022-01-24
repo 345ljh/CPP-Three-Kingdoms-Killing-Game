@@ -1,4 +1,4 @@
-#include "draw.h"
+#include "gui.h"
 #include "graphics.h"
 
 #include <time.h>

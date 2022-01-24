@@ -45,8 +45,8 @@
 		</Compiler>
 		<Unit filename="Src/actions.cpp" />
 		<Unit filename="Src/actions.h" />
-		<Unit filename="Src/draw.cpp" />
-		<Unit filename="Src/draw.h" />
+		<Unit filename="Src/gui.cpp" />
+		<Unit filename="Src/gui.h" />
 		<Unit filename="Src/items.cpp" />
 		<Unit filename="Src/items.h" />
 		<Unit filename="Src/main.cpp" />
