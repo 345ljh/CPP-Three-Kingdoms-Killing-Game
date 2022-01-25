@@ -11,7 +11,9 @@ game_t game;
 int main()
 {
     ProgramStart();
+
     PileInit();
-    //getch();
+    GameGuiInit();
+    getch();
     return 0;
 }

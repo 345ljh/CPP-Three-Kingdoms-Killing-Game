@@ -5,6 +5,7 @@
 
 mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
+gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage()};
 
 void ProgramStart(void)
 {
@@ -13,7 +14,7 @@ void ProgramStart(void)
     initgraph(1200, 600);
 
     PIMAGE background = newimage();
-    getimage(background, ".\\Textures\\background.png");
+    getimage(background, ".\\Textures\\origin.png");
     putimage(0, 0, background);
     delimage(background);
 
@@ -40,4 +41,19 @@ void ProgramStart(void)
             return;
         }
     }
+}
+
+void GameGuiInit(void)
+{
+    setbkcolor(BLACK);
+    cleardevice();
+
+    getimage(gui.background, ".\\Textures\\background.png");
+    PIMAGE temp = newimage();
+    getimage(temp, 0, 0, 1200, 600);
+
+    setfillcolor(EGERGB(190, 190, 126), temp);
+    bar(0, 450, 1200, 600, temp);
+    putimage_alphatransparent(gui.background, temp, 0, 0, BLACK, 100);
+    putimage(0, 0, gui.background);
 }

@@ -12,8 +12,8 @@
 
 typedef enum
 {
-    SHA = 0x01, SHAN, TAO, JIU, HUOSHA, LEISHA,
-    //基本牌:杀,闪,桃,酒,火杀,雷杀
+    SHA = 0x00, HUOSHA, LEISHA, SHAN, TAO, JIU,
+    //基本牌:杀,火杀,雷杀,闪,桃,酒
     ZHUGE = 0x10,
     QINGGANG = 0x20, CIXIONG, GUDING, HANBING,
     GUANSHI = 0x30, QINGLONG, ZHANGBA,
@@ -49,6 +49,11 @@ typedef enum
     HUMAN, AI, DEADHUMAN, DEADAI
 }controller_e; //控制者
 ///0位表示由人或电脑操控,1位表示是否存活
+
+typedef enum
+{
+    COMMON , FIRE, THUNDER
+}damage_e; //伤害属性
 /**************************************************************************************
 *                                     structs                                         *
 **************************************************************************************/

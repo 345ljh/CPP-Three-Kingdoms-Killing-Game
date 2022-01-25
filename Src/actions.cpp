@@ -101,8 +101,10 @@ void Showcard(player_t executor, player_t player, int amount)
 {
     if(amount != -1)
     {
+        /*
         int* selected = NULL;
         selected = (int*)calloc(amount, sizeof(int));
+        */
         for(int i = 1; i <= amount; i++)
         {
             /* select cards */
@@ -114,9 +116,52 @@ void Showcard(player_t executor, player_t player, int amount)
     }
 }
 
+//获得其他角色牌
+///默认type=0表示executor获得player的牌,type=1表示executor交给player牌
+//TODO: amount=-1 stands for getting or giving all cards
+void Getcard(player_t executor, player_t player, int amount, int type = 0)
+{
+    if(type)
+    {
+        /*
+        int* selected = NULL;
+        selected = (int*)calloc(amount, sizeof(int));
+        */
+        for(int i = 1; i <= amount; i++)
+        {
+            /*
+            card_inf[executor.card[selected[j]]] = player.id;
+            player.card[player.cardamount] = executor.card[selected[j]];
+            executor.card[selected[j]] = -1;
+            */
+            executor.cardamount--;
+            player.cardamount++;
+        }
+        /* skills here */
+    }
+    else
+    {
+        /*
+        int* selected = NULL;
+        selected = (int*)calloc(amount, sizeof(int));
+        */
+        for(int i = 1; i <= amount; i++)
+        {
+            /*
+            card_inf[player.card[selected[j]]] = executor.id;
+            executor.card[executor.cardamount] = player.card[selected[j]];
+            player.card[selected[j]] = -1;
+            */
+            player.cardamount--;
+            executor.cardamount++;
+        }
+        /* skills here */
+    }
+}
+
 //造成伤害
 ///executor=0表示伤害无来源(如闪电),=-1表示失去体力
-void Damage(player_t executor, player_t player, int amount)
+void Damage(player_t executor, player_t player, int amount, damage_e type)
 {
     player.health -= amount;
     if(player.health <= 0)
@@ -124,6 +169,7 @@ void Damage(player_t executor, player_t player, int amount)
         Neardeath(player);
     }
     /* skills here */
+    /* chain here */
 }
 
 //濒死结算
@@ -169,4 +215,50 @@ void VictoryJudge(void)
         if( (int)game.player[1].controller & (int)game.player[2].controller & 1)  /* victory */;
         else /* failed */;
     }
+}
+
+//使用牌
+void Usecard(player_t executor)
+{
+    int card = 0;
+    /* choose card */
+    switch( (type_e)card)
+    {
+        case SHA:
+        case HUOSHA:
+        case LEISHA:
+            {
+                /* choose target */
+                /* calculate distance */
+                /* ask for SHAN */
+                /* if no, Damage(executor, game.player[target], damage, (damage_e)((int)card_inf[executor.card[card]].type & 3) */
+                break;
+            }
+        case TAO:
+            {
+                if(executor.health < executor.maxhealth)
+                {
+                    executor.health++;
+                }
+                else /* failed to use */;
+                break;
+            }
+        case JIU:
+            {
+                if(!executor.spirits) executor.spirits = 1;
+                else /* failed to use */;
+                break;
+            }
+        case JUEDOU:
+            {
+                /* choose target */
+                /* while ask for SHA */
+                /* Damage(executor/target, another one, 1, COMMON) */
+                break;
+            }
+        default:
+            //TODO
+            break;
+    }
+
 }
