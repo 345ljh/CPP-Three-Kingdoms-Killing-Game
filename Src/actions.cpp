@@ -191,7 +191,7 @@ void Neardeath(player_t player)
 //死亡结算
 void Death(player_t player)
 {
-    player.controller = (controller_e)( (int)player.controller | 0x10);
+    player.controller = DEAD;
     /* VictoryJudge(); */
 
     for(int i = 0; i <= player.cardamount - 1; i++)
@@ -205,14 +205,14 @@ void Death(player_t player)
 //胜利条件判定
 void VictoryJudge(void)
 {
-    if( (int)game.player[0].controller & (int)game.player[3].controller >> 1)  //1号与4号均死亡
+    if(game.player[0].controller == DEAD && game.player[3].controller == DEAD)  //1号与4号均死亡
     {
-        if( (int)game.player[0].controller & (int)game.player[3].controller & 1)  /* victory */;  //1号与4号均为电脑
+        if(game.humanid != 0 && game.humanid != 3)  /* victory */;  //1号与4号均为电脑
         else /* failed */;
     }
-    else if( (int)game.player[1].controller & (int)game.player[2].controller >> 1)
+    else if( game.player[1].controller == DEAD && game.player[2].controller == DEAD)
     {
-        if( (int)game.player[1].controller & (int)game.player[2].controller & 1)  /* victory */;
+        if(game.humanid != 1 && game.humanid != 2)  /* victory */;
         else /* failed */;
     }
 }

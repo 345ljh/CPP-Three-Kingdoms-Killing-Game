@@ -46,9 +46,9 @@ typedef enum
 
 typedef enum
 {
-    HUMAN, AI, DEADHUMAN, DEADAI
+    HUMAN, AI, DEAD
 }controller_e; //控制者
-///0位表示由人或电脑操控,1位表示是否存活
+
 
 typedef enum
 {
@@ -106,7 +106,8 @@ typedef struct
 
 typedef struct
 {
-    player_t player[PLAYERS];  //4个玩家结构体
+    player_t player[PLAYERS];  //4名角色结构体
+    int humanid;  //玩家id
     int card[160];  //牌堆,其中储存0~159,分别对应card_inf中的排列
     ///一般情况下摸牌时将card[0]写入用户结构体，之后将所有牌前移1下标，并在末尾写入-1表示无牌
     int nowpile;  //当前牌堆剩余量
