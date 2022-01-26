@@ -1,11 +1,17 @@
 #include "gui.h"
-#include "graphics.h"
-
-#include <time.h>
 
 mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
-gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage()};
+gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
+
+//文字拼接,返回值为拼接后的字符串
+char* Link(char* str1, char* str2)
+{
+    static char p[101];
+    strcpy(p, str1);
+    strcat(p, str2);
+    return p;
+}
 
 //画空心长方形
 void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img = NULL)
@@ -49,10 +55,9 @@ void PasteImage(char* path, int x, int y, PIMAGE img = NULL, int mode = 0, color
     delimage(temp);
 }
 
+//开始界面
 void ProgramStart(void)
 {
-    srand(time(NULL));
-
     initgraph(1200, 600);
 
     PasteImage((char*)".\\Textures\\origin.png", 0, 0);
@@ -82,26 +87,29 @@ void ProgramStart(void)
     }
 }
 
+//开始游戏时界面绘制
 void GameGuiInit(void)
 {
     setbkcolor(BLACK);
     cleardevice();
     //图层初始化
     getimage(gui.background, 0, 0, 1200, 600);
-    PasteImage((char*)".\\Textures\\background.png", 0, 0, gui.background);
     getimage(gui.frame, 0, 0, 1200, 600);
+    getimage(gui.general, 0, 0, 1200, 600);
+    getimage(gui.playercard, 0, 0, 1200, 600);
+    getimage(gui.selector, 0, 0, 1200, 600);
+    getimage(gui.tips, 0, 0, 1200, 600);
 
-    setfillcolor(EGERGB(190, 190, 126), gui.frame);
-    bar(0, 450, 1200, 600, gui.frame);
+    PasteImage((char*)".\\Textures\\background.png", 0, 0, gui.background);
+
+    setfillcolor(EGERGB(71, 98, 32), gui.frame);
+    bar(0, 450, 1070, 600, gui.frame);
 
     //绘制边界
-    setcolor(FRAMELINE, gui.frame);
+    setcolor(YELLOW, gui.frame);
     line(150, 450, 150, 600, gui.frame);
     for(int i = 1; i <= 3; i++)  line(0, 450 + 37.5 * i, 150, 450 + 37.5 * i, gui.frame);
     for(int i = 1; i <= 8; i++)  line(150 + 100 * i, 450, 150 + 100 * i, 600, gui.frame);
-
-    //信息显示图标
-    PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.frame, TRANSPARENT, BLACK);
 
     //绘制按钮
     ///使用填充来切换按钮可用与否
@@ -127,8 +135,55 @@ void GameGuiInit(void)
     setcolor(WHITE, gui.frame);
     setfont(20, 0, "隶书", gui.frame);
     outtextxy(1000, 70, "牌堆剩余:", gui.frame);
+    Rect(1070, 430, 1200, 600, YELLOW, gui.frame);
 
+    //绘制其他角色
+    Rect(30, 150, 160, 320, YELLOW, gui.frame);
+    Rect(1040, 150, 1170, 320, YELLOW, gui.frame);
+    Rect(520, 20, 650, 190, YELLOW, gui.frame);
+
+    //信息显示图标
+    PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.frame, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 30, 340, gui.frame, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 1040, 340, gui.frame, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 650, 130, gui.frame, TRANSPARENT, BLACK);
+
+    //确定位置
+    game.humanid = rand() % PLAYERS;
+    char str[] = "一\0二\0三\0四\0";
+    setfillcolor(EGERGB(238, 89, 0), gui.frame);
+    setcolor(RED, gui.frame);
+    fillellipse(1050, 585, 15, 15, gui.frame);
+    setcolor(EGERGB(253, 228, 140), gui.frame);
+    setfont(20, 0, "隶书", gui.frame);
+    outtextxy(1040, 575, str + game.humanid * 3, gui.frame);
+    setcolor(YELLOW, gui.frame);
+    setfont(20, 0, "隶书", gui.frame);
+    outtextxy(1080, 320, Link(str + ((game.humanid + 1) % 4) * 3, (char*)"号位"), gui.frame);
+    outtextxy(560, 190, Link(str + ((game.humanid + 2) % 4) * 3, (char*)"号位"), gui.frame);
+    outtextxy(70, 320, Link(str + ((game.humanid + 3) % 4) * 3, (char*)"号位"), gui.frame);
     //输出图像
     putimage(0, 0, gui.background);
     putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
+}
+
+//选将
+void GeneralSelect(void)
+{
+    int forselect[4];
+    int pointer;
+
+    //确定玩家可选的4将
+    for(int i = 0; i <= 3; i++)
+    {
+        pointer = rand() % GENERALS;
+        while(!general_inf[pointer].selected) ++pointer %= GENERALS;
+        general_inf[pointer].selected = 2;
+        forselect[i] = pointer;
+    }
+
+    setcolor(EGERGB(102, 0, 15), gui.selector);
+    bar(300, 200, 900, 450, gui.selector);
+    Rect(300, 200, 900, 450, YELLOW, gui.selector);
+    putimage_alphatransparent(NULL, gui.selector, 0, 0, BLACK, 150);
 }

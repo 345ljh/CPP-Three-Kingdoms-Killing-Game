@@ -3,6 +3,10 @@
 
 #include "items.h"
 
+#include <string.h>
+#include <stdlib.h>
+#include <malloc.h>
+
 extern card_t card_inf[160];
 extern game_t game;
 
@@ -13,6 +17,7 @@ void Throwcard(player_t executor, player_t player, int amount);
 void Showcard(player_t executor, player_t player, int amount);
 void Getcard(player_t executor, player_t player, int amount, int type);
 void Damage(player_t executor, player_t player, int amount, damage_e type);
+void Recover(player_t player, int amount);
 void Neardeath(player_t player);
 void Death(player_t player);
 void VictoryJudge(void);

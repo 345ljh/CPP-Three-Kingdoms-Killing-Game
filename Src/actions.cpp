@@ -1,9 +1,5 @@
 #include "actions.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <malloc.h>
-
 ///本文件中game均作为全局变量出现
 
 //牌堆初始化
@@ -30,9 +26,6 @@ void Shuffle(void)
 {
     int pilecards = 0;
     int pointer;
-    int* temp = NULL;
-    temp = (int*)calloc(pilecards, sizeof(int));
-    memset(temp, 0, sizeof(int) * pilecards);
 
     //统计弃牌堆内牌的数量
     for(int i = 0; i <= 150; i++)
@@ -40,18 +33,15 @@ void Shuffle(void)
         if(card_inf[i].owner == -1) pilecards++;
     }
 
-    //此部分与Pileinit类似
     for(int i = 0; i <= pilecards - 1; i++)
     {
         pointer = rand() % 160;
-        while(temp[pointer]) ++pointer %= pilecards;
+        while(card_inf[pointer].owner != -1) ++pointer %= 160;
         game.card[i] = pointer;
-        temp[pointer] = 1;
-
+        card_inf[pointer].owner = -2;
     }
 
     game.nowpile = pilecards;
-    free(temp);
 }
 
 //从牌堆顶摸牌
@@ -163,6 +153,7 @@ void Getcard(player_t executor, player_t player, int amount, int type = 0)
 ///executor=0表示伤害无来源(如闪电),=-1表示失去体力
 void Damage(player_t executor, player_t player, int amount, damage_e type)
 {
+    /* skills here */
     player.health -= amount;
     if(player.health <= 0)
     {
@@ -172,11 +163,19 @@ void Damage(player_t executor, player_t player, int amount, damage_e type)
     /* chain here */
 }
 
+//恢复
+void Recover(player_t player, int amount)
+{
+    if(player.maxhealth - player.health < amount) amount = player.maxhealth - player.health;
+    player.health += amount;
+    /* skills here */
+}
+
 //濒死结算
 void Neardeath(player_t player)
 {
     /* skills here */
-    for(int i = 0; i <= PLAYERS; i++)
+    for(int i = 0; i <= PLAYERS - 1; i++)
     {
         do
         {

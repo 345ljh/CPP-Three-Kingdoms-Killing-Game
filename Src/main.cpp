@@ -3,17 +3,18 @@
 #include "gui.h"
 #include "actions.h"
 
-
-using namespace std;
+#include <time.h>
 
 game_t game;
 
 int main()
 {
+    srand(time(NULL));
     ProgramStart();
 
     PileInit();
     GameGuiInit();
+    //GeneralSelect();
     getch();
     return 0;
 }

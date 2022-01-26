@@ -1,14 +1,9 @@
 #ifndef ITEMS_H_INCLUDED
 #define ITEMS_H_INCLUDED
 
-/**************************************************************************************
-*                                     defines                                         *
-**************************************************************************************/
 #define PLAYERS 4  //玩家数量
+#define GENERALS 4 //当前已加入武将数量
 
-/**************************************************************************************
-*                                       enums                                         *
-**************************************************************************************/
 
 typedef enum
 {
@@ -52,20 +47,24 @@ typedef enum
 
 typedef enum
 {
-    COMMON , FIRE, THUNDER
+    COMMON, FIRE, THUNDER
 }damage_e; //伤害属性
-/**************************************************************************************
-*                                     structs                                         *
-**************************************************************************************/
+
+typedef enum
+{
+    MALE, FEMALE
+}gender_e; //性别
 
 typedef struct
 {
-    char name[11];  //武将名
+    char name[21];  //武将名
     int id;  //对应id
+    gender_e gender;  //性别
     char skill[21];  //技能名,多个技能用空格分开
     int maxhealth;  //体力上限
     nation_e nation;//势力
-    int limit;  //限定技是否拥有
+    int limit;  //限定技是否拥有,0=无,1=有
+    int selected;  //是否已被选中(用于选将防止重复),0=未选,1=已选,2=待玩家选择
 } general_t;//武将信息
 
 typedef struct
@@ -74,8 +73,7 @@ typedef struct
     suit_e suit; //花色
     type_e type; //类型
     char name[17];  //牌名
-    int owner;  //当前所有者,0表示牌堆,-1表示弃牌堆
-
+    int owner;  //当前所有者,-2=牌堆,-1=弃牌堆
 } card_t;
 
 typedef struct
@@ -100,8 +98,8 @@ typedef struct
     int chained; //是否横置
     int turned;//是否翻面
 
-    int limitused;  //存在未使用的限定技=1,否则为0
-    int awaken;  //存在觉醒技且已发动=1,否则为0
+    int limitused;  //1=存在未使用的限定技=1,否则为0
+    int awaken;  //1=存在觉醒技且已发动,否则为0
 }player_t;
 
 typedef struct
@@ -113,9 +111,7 @@ typedef struct
     int nowpile;  //当前牌堆剩余量
     int turn;  //当前轮数
     int active;  //当前行动者
-    int period;  //当前阶段: 1=准备, 2=判定, 3=摸牌, 4=出牌, 5=弃牌, 6=结束
+    int period;  //当前阶段: 0=准备, 1=判定, 2=摸牌, 3=出牌, 4=弃牌, 5=结束
 }game_t;
-/**************************************************************************************
-*                                  consts&variables                                   *
-**************************************************************************************/
+
 #endif // ITEMS_H_INCLUDED
