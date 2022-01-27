@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-extern card_t card_inf[160];
-extern game_t game;
-
 void PileInit(void);
 void Shuffle(void);
 void Takecard(player_t player, int amount);

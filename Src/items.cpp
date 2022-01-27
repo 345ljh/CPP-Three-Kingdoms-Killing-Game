@@ -69,3 +69,5 @@ general_t general_inf[GENERALS] =
 };
 
 int card[160];
+game_t game;
+player_t player[PLAYERS];

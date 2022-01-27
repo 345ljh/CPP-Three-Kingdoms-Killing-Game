@@ -4,13 +4,30 @@ mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
 gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
 
+//将数值转换为字符串,字符串即返回值
+///同一语句内不能多次调用,如 i = strcat(Myitoa(12), Myitoa(34) );会导致结果错误
+char* Myitoa(int num)
+{
+    static char p[11];
+    memset(p, 0, sizeof(p));
+    itoa(num, p, 10);
+    return p;
+}
+
 //文字拼接,返回值为拼接后的字符串
+///同一语句内多次调用Link须使用嵌套而非并列,如 Link(Link(Link(str1, str2), str3), str4)
+///不能写作 Link( Link(str1, str2), Link(str3, str4) )
 char* Link(char* str1, char* str2)
 {
     static char p[101];
+    memset(p, 0, sizeof(p));
     strcpy(p, str1);
     strcat(p, str2);
-    return p;
+
+    static char pcopy[101];
+    memset(pcopy, 0, sizeof(p));
+    strcpy(pcopy, p);
+    return pcopy;
 }
 
 //画空心长方形
@@ -165,6 +182,8 @@ void GameGuiInit(void)
     //输出图像
     putimage(0, 0, gui.background);
     putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
+
+    return;
 }
 
 //选将
@@ -177,13 +196,81 @@ void GeneralSelect(void)
     for(int i = 0; i <= 3; i++)
     {
         pointer = rand() % GENERALS;
-        while(!general_inf[pointer].selected) ++pointer %= GENERALS;
+        while(general_inf[pointer].selected) ++pointer %= GENERALS;
         general_inf[pointer].selected = 2;
         forselect[i] = pointer;
     }
 
+    //选将框
     setcolor(EGERGB(102, 0, 15), gui.selector);
+    setfillcolor(EGERGB(83, 30, 0), gui.selector);
     bar(300, 200, 900, 450, gui.selector);
     Rect(300, 200, 900, 450, YELLOW, gui.selector);
-    putimage_alphatransparent(NULL, gui.selector, 0, 0, BLACK, 150);
+
+    setbkmode(TRANSPARENT, gui.selector);
+    setcolor(EGERGB(249, 189, 34), gui.selector);
+    setfont(40, 0, "隶书", gui.selector);
+    outtextxy(520, 200, (char*)"选择武将", gui.selector);
+
+    for(int i = 0; i <= 3; i++)
+    {
+        PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(forselect[i]) , (char*)".png")), 310 + 150 * i, 240, gui.selector);
+    }
+
+    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+    //响应玩家选将
+    for(; is_run(); delay_fps(60))
+    {
+        msg = getmouse();
+        mousepos(&mouse_x, &mouse_y);
+
+        if(msg.is_down() && mouse_x >= 310 && mouse_x <= 440 && mouse_y >= 240 && mouse_y <= 410)
+        {
+            player[game.humanid].general = forselect[0];
+            memset(forselect, 0, sizeof(forselect));
+            forselect[0] = 1;
+            break;
+        }
+        else if(msg.is_down() && mouse_x >= 460 && mouse_x <= 590 && mouse_y >= 240 && mouse_y <= 410)
+        {
+            player[game.humanid].general = forselect[1];
+            memset(forselect, 0, sizeof(forselect));
+            forselect[1] = 1;
+            break;
+        }
+        else if(msg.is_down() && mouse_x >= 610 && mouse_x <= 740 && mouse_y >= 240 && mouse_y <= 410)
+        {
+            player[game.humanid].general = forselect[2];
+            memset(forselect, 0, sizeof(forselect));
+            forselect[2] = 1;
+            break;
+        }
+        else if(msg.is_down() && mouse_x >= 760 && mouse_x <= 890 && mouse_y >= 240 && mouse_y <= 410)
+        {
+            player[game.humanid].general = forselect[3];
+            memset(forselect, 0, sizeof(forselect));
+            forselect[3] = 1;
+            break;
+        }
+    }
+    bar(300, 200, 900, 450, gui.selector);
+    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+    //电脑选将
+    for(int i = 1; i <= 3; i++)
+    {
+        pointer = rand() % GENERALS;
+        while(general_inf[pointer].selected) ++pointer %= GENERALS;
+        general_inf[pointer].selected = 1;
+        player[(game.humanid + i) % PLAYERS].general = pointer;
+    }
+
+    //绘制武将
+    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[game.humanid].general) , (char*)".png")), 0, 0, gui.general);
+    putimage_transparent(NULL, gui.general, 0, 0, BLACK);
+    getch();
+    setfillcolor(BLACK, gui.selector);
+    bar(0, 0, 1200, 600, gui.selector);
+    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 }

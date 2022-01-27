@@ -198,18 +198,18 @@ void Death(player_t player)
         card_inf[player.card[i]].owner = -1;
     }
 
-    Takecard(game.player[4 - player.id], 1);
+    Throwcard(player, player, player.cardamount);
 }
 
 //胜利条件判定
 void VictoryJudge(void)
 {
-    if(game.player[0].controller == DEAD && game.player[3].controller == DEAD)  //1号与4号均死亡
+    if(player[0].controller == DEAD && player[3].controller == DEAD)  //1号与4号均死亡
     {
         if(game.humanid != 0 && game.humanid != 3)  /* victory */;  //1号与4号均为电脑
         else /* failed */;
     }
-    else if( game.player[1].controller == DEAD && game.player[2].controller == DEAD)
+    else if( player[1].controller == DEAD && player[2].controller == DEAD)
     {
         if(game.humanid != 1 && game.humanid != 2)  /* victory */;
         else /* failed */;
@@ -230,7 +230,7 @@ void Usecard(player_t executor)
                 /* choose target */
                 /* calculate distance */
                 /* ask for SHAN */
-                /* if no, Damage(executor, game.player[target], damage, (damage_e)((int)card_inf[executor.card[card]].type & 3) */
+                /* if no, Damage(executor, player[target], damage, (damage_e)((int)card_inf[executor.card[card]].type & 3) */
                 break;
             }
         case TAO:

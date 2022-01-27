@@ -79,7 +79,7 @@ typedef struct
 typedef struct
 {
     int id;  //位次
-    general_t general;  //武将信息
+    int general;  //武将id
     controller_e controller;  //玩家或AI,以及存活情况
 
     int health;  //当前体力
@@ -104,7 +104,6 @@ typedef struct
 
 typedef struct
 {
-    player_t player[PLAYERS];  //4名角色结构体
     int humanid;  //玩家id
     int card[160];  //牌堆,其中储存0~159,分别对应card_inf中的排列
     ///一般情况下摸牌时将card[0]写入用户结构体，之后将所有牌前移1下标，并在末尾写入-1表示无牌
@@ -113,5 +112,10 @@ typedef struct
     int active;  //当前行动者
     int period;  //当前阶段: 0=准备, 1=判定, 2=摸牌, 3=出牌, 4=弃牌, 5=结束
 }game_t;
+
+extern game_t game;
+extern general_t general_inf[GENERALS];
+extern card_t card_inf[160];
+extern player_t player[PLAYERS];
 
 #endif // ITEMS_H_INCLUDED

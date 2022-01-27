@@ -5,8 +5,6 @@
 
 #include <time.h>
 
-game_t game;
-
 int main()
 {
     srand(time(NULL));
@@ -14,7 +12,8 @@ int main()
 
     PileInit();
     GameGuiInit();
-    //GeneralSelect();
+    //getch();
+    GeneralSelect();
     getch();
     return 0;
 }

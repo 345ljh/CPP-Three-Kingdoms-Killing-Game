@@ -3,11 +3,9 @@
 
 #include "graphics.h"
 #include "items.h"
-#include <string.h>
 
-extern game_t game;
-extern general_t general_inf[GENERALS];
-extern card_t card_inf[160];
+#include <string.h>
+#include <stdlib.h>
 
 typedef struct
 {

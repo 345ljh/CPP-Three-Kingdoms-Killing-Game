@@ -1,14 +1,14 @@
 # depslib dependency file v1.0
-1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+1643259024 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
 	"graphics.h"
 	"items.h"
 	"gui.h"
 	"actions.h"
 	<time.h>
 
-1643201814 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1643259192 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
 
-1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
+1643259108 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
 	"items.h"
 
 1642846446 c:\users\ljh\desktop\unfinished\threekingdoms\src\draw.h
@@ -18,20 +18,50 @@
 	"graphics.h"
 	<time.h>
 
-1643201814 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
+1643259192 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
 	"items.h"
 	<string.h>
 	<stdlib.h>
 	<malloc.h>
 
-1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
+1643259343 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
 	"actions.h"
 
-1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
+1643259108 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
 	"gui.h"
 
-1643201814 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
+1643259192 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
 	"graphics.h"
 	"items.h"
 	<string.h>
+	<stdlib.h>
+
+1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\actions.cpp
+	"actions.h"
+
+1643201814 c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\actions.h
+	"items.h"
+	<string.h>
+	<stdlib.h>
+	<malloc.h>
+
+1643201814 c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\items.h
+
+1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\gui.cpp
+	"gui.h"
+
+1643201814 c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\gui.h
+	"graphics.h"
+	"items.h"
+	<string.h>
+
+1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\items.cpp
+	"items.h"
+
+1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - 副本\src\main.cpp
+	"graphics.h"
+	"items.h"
+	"gui.h"
+	"actions.h"
+	<time.h>
 
