@@ -1,116 +1,116 @@
 #ifndef ITEMS_H_INCLUDED
 #define ITEMS_H_INCLUDED
 
-#define PLAYERS 4  //Íæ¼ÒÊıÁ¿
-#define GENERALS 4 //µ±Ç°ÒÑ¼ÓÈëÎä½«ÊıÁ¿
+#define PLAYERS 4  //ç©å®¶æ•°é‡
+#define GENERALS 4 //å½“å‰å·²åŠ å…¥æ­¦å°†æ•°é‡
 
 
 typedef enum
 {
     SHA = 0x00, HUOSHA, LEISHA, SHAN, TAO, JIU,
-    //»ù±¾ÅÆ:É±,»ğÉ±,À×É±,ÉÁ,ÌÒ,¾Æ
+    //åŸºæœ¬ç‰Œ:æ€,ç«æ€,é›·æ€,é—ª,æ¡ƒ,é…’
     ZHUGE = 0x10,
     QINGGANG = 0x20, CIXIONG, GUDING, HANBING,
     GUANSHI = 0x30, QINGLONG, ZHANGBA,
     FANGTIAN = 0x40, ZHUQUE,
     QILIN = 0x50,
-    //ÎäÆ÷,Ê®Áù½øÖÆÏÂµÚ2Î»±íÊ¾·¶Î§
+    //æ­¦å™¨,åå…­è¿›åˆ¶ä¸‹ç¬¬2ä½è¡¨ç¤ºèŒƒå›´
     RENWANG = 0x60, BAGUA, TENGJIA, BAIYIN,
-    //·À¾ß
+    //é˜²å…·
     CHITU = 0x70, DAWAN, ZIXIN,
-    //-1Âí
+    //-1é©¬
     JUEYING = 0x80, FEIDIAN, DILU, HUALIU,
-    //+1Âí
+    //+1é©¬
     JUEDOU = 0x90, GUOCHAI, SHUNQIAN, WANJIAN, NANMAN, TAOYUAN, WUZHONG, WUGU,
     WUXIE, HUOGONG, TIESUO, JIEDAO,
-    //»ù±¾½õÄÒ:¾ö¶·,¹ı²ğ,Ë³Ç£,Íò¼ı,ÄÏÂù,ÌÒÔ°,ÎŞÖĞ,Îå¹È,ÎŞĞ¸,»ğ¹¥,ÌúËø,½èµ¶
+    //åŸºæœ¬é”¦å›Š:å†³æ–—,è¿‡æ‹†,é¡ºç‰µ,ä¸‡ç®­,å—è›®,æ¡ƒå›­,æ— ä¸­,äº”è°·,æ— æ‡ˆ,ç«æ”»,é“é”,å€Ÿåˆ€
     LE = 0xA0, BING, SHANDIAN,
-    //ÑÓÊ±½õÄÒ:ÀÖ,±ø,ÉÁµç
-}type_e; //ÅÆÀàĞÍ
-///±¾Ã¶¾Ù¾ùÎªÅÆÃûµÄÆ´Òô
+    //å»¶æ—¶é”¦å›Š:ä¹,å…µ,é—ªç”µ
+}type_e; //ç‰Œç±»å‹
+///æœ¬æšä¸¾å‡ä¸ºç‰Œåçš„æ‹¼éŸ³
 
 typedef enum
 {
     SPADE = 0x00, CLUB, HEART = 0x10, DIAMOND, NONE = 0x20
-}suit_e; //»¨É«
+}suit_e; //èŠ±è‰²
 
 typedef enum
 {
     WEI, SHU, WU, QUN, SHEN
-}nation_e; //ÊÆÁ¦
+}nation_e; //åŠ¿åŠ›
 
 typedef enum
 {
     HUMAN, AI, DEAD
-}controller_e; //¿ØÖÆÕß
+}controller_e; //æ§åˆ¶è€…
 
 
 typedef enum
 {
     COMMON, FIRE, THUNDER
-}damage_e; //ÉËº¦ÊôĞÔ
+}damage_e; //ä¼¤å®³å±æ€§
 
 typedef enum
 {
     MALE, FEMALE
-}gender_e; //ĞÔ±ğ
+}gender_e; //æ€§åˆ«
 
 typedef struct
 {
-    char name[21];  //Îä½«Ãû
-    int id;  //¶ÔÓ¦id
-    gender_e gender;  //ĞÔ±ğ
-    char skill[21];  //¼¼ÄÜÃû,¶à¸ö¼¼ÄÜÓÃ¿Õ¸ñ·Ö¿ª
-    int maxhealth;  //ÌåÁ¦ÉÏÏŞ
-    nation_e nation;//ÊÆÁ¦
-    int limit;  //ÏŞ¶¨¼¼ÊÇ·ñÓµÓĞ,0=ÎŞ,1=ÓĞ
-    int selected;  //ÊÇ·ñÒÑ±»Ñ¡ÖĞ(ÓÃÓÚÑ¡½«·ÀÖ¹ÖØ¸´),0=Î´Ñ¡,1=ÒÑÑ¡,2=´ıÍæ¼ÒÑ¡Ôñ
-} general_t;//Îä½«ĞÅÏ¢
+    char name[31];  //æ­¦å°†å
+    int id;  //å¯¹åº”id
+    gender_e gender;  //æ€§åˆ«
+    char skill[21];  //æŠ€èƒ½å,å¤šä¸ªæŠ€èƒ½ç”¨ç©ºæ ¼åˆ†å¼€
+    int maxhealth;  //ä½“åŠ›ä¸Šé™
+    nation_e nation;//åŠ¿åŠ›
+    int limit;  //é™å®šæŠ€æ˜¯å¦æ‹¥æœ‰,0=æ— ,1=æœ‰
+    int selected;  //æ˜¯å¦å·²è¢«é€‰ä¸­(ç”¨äºé€‰å°†é˜²æ­¢é‡å¤),0=æœªé€‰,1=å·²é€‰,2=å¾…ç©å®¶é€‰æ‹©
+} general_t;//æ­¦å°†ä¿¡æ¯
 
 typedef struct
 {
-    int num;  //µãÊı
-    suit_e suit; //»¨É«
-    type_e type; //ÀàĞÍ
-    char name[17];  //ÅÆÃû
-    int owner;  //µ±Ç°ËùÓĞÕß,-2=ÅÆ¶Ñ,-1=ÆúÅÆ¶Ñ
+    int num;  //ç‚¹æ•°
+    suit_e suit; //èŠ±è‰²
+    type_e type; //ç±»å‹
+    char name[17];  //ç‰Œå
+    int owner;  //å½“å‰æ‰€æœ‰è€…,-2=ç‰Œå †,-1=å¼ƒç‰Œå †
 } card_t;
 
 typedef struct
 {
-    int id;  //Î»´Î
-    int general;  //Îä½«id
-    controller_e controller;  //Íæ¼Ò»òAI,ÒÔ¼°´æ»îÇé¿ö
+    int id;  //ä½æ¬¡
+    int general;  //æ­¦å°†id
+    controller_e controller;  //ç©å®¶æˆ–AI,ä»¥åŠå­˜æ´»æƒ…å†µ
 
-    int health;  //µ±Ç°ÌåÁ¦
-    int cardamount;  //µ±Ç°ÊÖÅÆÊı
-    int maxhealth; //ÌåÁ¦ÉÏÏŞ
-    int maxcard;  //µ±Ç°ÊÖÅÆÉÏÏŞ
-    int nowslash;  //µ±Ç°»ØºÏÒÑÊ¹ÓÃÉ±´ÎÊı
-    int maxslash;  //Ã¿»ØºÏÊ¹ÓÃÉ±µÄ×î´ó´ÎÊı
-    int spirits;  //»ØºÏÄÚÊ¹ÓÃ¾ÆµÄ×´Ì¬:0=Î´Ê¹ÓÃ,1=ÒÑÊ¹ÓÃÇÒ´æÔÚÉËº¦+1Ğ§¹û,2=ÒÑÊ¹ÓÃ
+    int health;  //å½“å‰ä½“åŠ›
+    int cardamount;  //å½“å‰æ‰‹ç‰Œæ•°
+    int maxhealth; //ä½“åŠ›ä¸Šé™
+    int maxcard;  //å½“å‰æ‰‹ç‰Œä¸Šé™
+    int nowslash;  //å½“å‰å›åˆå·²ä½¿ç”¨æ€æ¬¡æ•°
+    int maxslash;  //æ¯å›åˆä½¿ç”¨æ€çš„æœ€å¤§æ¬¡æ•°
+    int spirits;  //å›åˆå†…ä½¿ç”¨é…’çš„çŠ¶æ€:0=æœªä½¿ç”¨,1=å·²ä½¿ç”¨ä¸”å­˜åœ¨ä¼¤å®³+1æ•ˆæœ,2=å·²ä½¿ç”¨
 
-    int card[100]; //µ±Ç°ÓµÓĞÊÖÅÆ,´¢´æid=0´ú±íÎª¿Õ
-    int equips[4];  //×°±¸Çø,·Ö±ğÎªÎäÆ÷,·À¾ß,+1,-1
-    int judges[3]; //ÅĞ¶¨Çø,ÅĞ¶¨½×¶ÎÓÉºóÏòÇ°½áËã
-    int range; //µ±Ç°¹¥»÷¾àÀë
+    int card[100]; //å½“å‰æ‹¥æœ‰æ‰‹ç‰Œ,å‚¨å­˜id=0ä»£è¡¨ä¸ºç©º
+    int equips[4];  //è£…å¤‡åŒº,åˆ†åˆ«ä¸ºæ­¦å™¨,é˜²å…·,+1,-1
+    int judges[3]; //åˆ¤å®šåŒº,åˆ¤å®šé˜¶æ®µç”±åå‘å‰ç»“ç®—
+    int range; //å½“å‰æ”»å‡»è·ç¦»
 
-    int chained; //ÊÇ·ñºáÖÃ
-    int turned;//ÊÇ·ñ·­Ãæ
+    int chained; //æ˜¯å¦æ¨ªç½®
+    int turned;//æ˜¯å¦ç¿»é¢
 
-    int limitused;  //1=´æÔÚÎ´Ê¹ÓÃµÄÏŞ¶¨¼¼=1,·ñÔòÎª0
-    int awaken;  //1=´æÔÚ¾õĞÑ¼¼ÇÒÒÑ·¢¶¯,·ñÔòÎª0
+    int limitused;  //1=å­˜åœ¨æœªä½¿ç”¨çš„é™å®šæŠ€=1,å¦åˆ™ä¸º0
+    int awaken;  //1=å­˜åœ¨è§‰é†’æŠ€ä¸”å·²å‘åŠ¨,å¦åˆ™ä¸º0
 }player_t;
 
 typedef struct
 {
-    int humanid;  //Íæ¼Òid
-    int card[160];  //ÅÆ¶Ñ,ÆäÖĞ´¢´æ0~159,·Ö±ğ¶ÔÓ¦card_infÖĞµÄÅÅÁĞ
-    ///Ò»°ãÇé¿öÏÂÃşÅÆÊ±½«card[0]Ğ´ÈëÓÃ»§½á¹¹Ìå£¬Ö®ºó½«ËùÓĞÅÆÇ°ÒÆ1ÏÂ±ê£¬²¢ÔÚÄ©Î²Ğ´Èë-1±íÊ¾ÎŞÅÆ
-    int nowpile;  //µ±Ç°ÅÆ¶ÑÊ£ÓàÁ¿
-    int turn;  //µ±Ç°ÂÖÊı
-    int active;  //µ±Ç°ĞĞ¶¯Õß
-    int period;  //µ±Ç°½×¶Î: 0=×¼±¸, 1=ÅĞ¶¨, 2=ÃşÅÆ, 3=³öÅÆ, 4=ÆúÅÆ, 5=½áÊø
+    int humanid;  //ç©å®¶id
+    int card[160];  //ç‰Œå †,å…¶ä¸­å‚¨å­˜0~159,åˆ†åˆ«å¯¹åº”card_infä¸­çš„æ’åˆ—
+    ///ä¸€èˆ¬æƒ…å†µä¸‹æ‘¸ç‰Œæ—¶å°†card[0]å†™å…¥ç”¨æˆ·ç»“æ„ä½“ï¼Œä¹‹åå°†æ‰€æœ‰ç‰Œå‰ç§»1ä¸‹æ ‡ï¼Œå¹¶åœ¨æœ«å°¾å†™å…¥-1è¡¨ç¤ºæ— ç‰Œ
+    int nowpile;  //å½“å‰ç‰Œå †å‰©ä½™é‡
+    int turn;  //å½“å‰è½®æ•°
+    int active;  //å½“å‰è¡ŒåŠ¨è€…
+    int period;  //å½“å‰é˜¶æ®µ: 0=å‡†å¤‡, 1=åˆ¤å®š, 2=æ‘¸ç‰Œ, 3=å‡ºç‰Œ, 4=å¼ƒç‰Œ, 5=ç»“æŸ
 }game_t;
 
 extern game_t game;

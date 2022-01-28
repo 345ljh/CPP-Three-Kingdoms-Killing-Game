@@ -12,7 +12,6 @@ int main()
 
     PileInit();
     GameGuiInit();
-    //getch();
     GeneralSelect();
     getch();
     return 0;

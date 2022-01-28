@@ -166,7 +166,14 @@ void GameGuiInit(void)
     PasteImage((char*)".\\Textures\\condition.png", 650, 130, gui.frame, TRANSPARENT, BLACK);
 
     //确定位置
+    for(int i = 0; i <= PLAYERS - 1; i++)
+    {
+        player[i].controller = AI;
+    }
+
     game.humanid = rand() % PLAYERS;
+    player[game.humanid].controller = HUMAN;
+
     char str[] = "一\0二\0三\0四\0";
     setfillcolor(EGERGB(238, 89, 0), gui.frame);
     setcolor(RED, gui.frame);
@@ -212,9 +219,40 @@ void GeneralSelect(void)
     setfont(40, 0, "隶书", gui.selector);
     outtextxy(520, 200, (char*)"选择武将", gui.selector);
 
+    //武将名与图片
     for(int i = 0; i <= 3; i++)
     {
-        PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(forselect[i]) , (char*)".png")), 310 + 150 * i, 240, gui.selector);
+        PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(forselect[i]), (char*)".png")), 310 + 150 * i, 240, gui.selector);
+        setfont(20, 0, "隶书", gui.selector);
+        switch(general_inf[forselect[i]].nation)
+        {
+        case WEI:
+        {
+            setcolor(EGERGB(62, 117, 181), gui.selector);
+            break;
+        }
+        case SHU:
+        {
+            setcolor(EGERGB(226, 104, 22), gui.selector);
+            break;
+        }
+        case WU:
+        {
+            setcolor(EGERGB(124, 170, 55), gui.selector);
+            break;
+        }
+        case QUN:
+        {
+            setcolor(EGERGB(141, 139, 95), gui.selector);
+            break;
+        }
+        case SHEN:
+        {
+            setcolor(EGERGB(240, 248, 148), gui.selector);
+            break;
+        }
+    }
+        outtextxy(310 + 150 * i, 410, general_inf[forselect[i]].name, gui.selector);
     }
 
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
@@ -228,33 +266,34 @@ void GeneralSelect(void)
         if(msg.is_down() && mouse_x >= 310 && mouse_x <= 440 && mouse_y >= 240 && mouse_y <= 410)
         {
             player[game.humanid].general = forselect[0];
-            memset(forselect, 0, sizeof(forselect));
-            forselect[0] = 1;
+            memset(general_inf, 0, sizeof(general_inf));
+            general_inf[forselect[0]].selected = 1;
             break;
         }
         else if(msg.is_down() && mouse_x >= 460 && mouse_x <= 590 && mouse_y >= 240 && mouse_y <= 410)
         {
             player[game.humanid].general = forselect[1];
-            memset(forselect, 0, sizeof(forselect));
-            forselect[1] = 1;
+            memset(general_inf, 0, sizeof(general_inf));
+            general_inf[forselect[1]].selected = 1;
             break;
         }
         else if(msg.is_down() && mouse_x >= 610 && mouse_x <= 740 && mouse_y >= 240 && mouse_y <= 410)
         {
             player[game.humanid].general = forselect[2];
-            memset(forselect, 0, sizeof(forselect));
-            forselect[2] = 1;
+            memset(general_inf, 0, sizeof(general_inf));
+            general_inf[forselect[2]].selected = 1;
             break;
         }
         else if(msg.is_down() && mouse_x >= 760 && mouse_x <= 890 && mouse_y >= 240 && mouse_y <= 410)
         {
             player[game.humanid].general = forselect[3];
-            memset(forselect, 0, sizeof(forselect));
-            forselect[3] = 1;
+            memset(general_inf, 0, sizeof(general_inf));
+            general_inf[forselect[3]].selected = 1;
             break;
         }
     }
     bar(300, 200, 900, 450, gui.selector);
+    Rect(300, 200, 900, 450, YELLOW, gui.selector);
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 
     //电脑选将
@@ -267,10 +306,12 @@ void GeneralSelect(void)
     }
 
     //绘制武将
-    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[game.humanid].general) , (char*)".png")), 0, 0, gui.general);
+    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[game.humanid].general), (char*)".png")), 1070, 430, gui.general);
+    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 1) % 4].general), (char*)".png")), 1040, 150, gui.general);
+    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 2) % 4].general), (char*)".png")), 520, 20, gui.general);
+    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 3) % 4].general), (char*)".png")), 30, 150, gui.general);
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
-    getch();
-    setfillcolor(BLACK, gui.selector);
-    bar(0, 0, 1200, 600, gui.selector);
-    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+    setbkcolor(BLACK, gui.selector);
+    cleardevice(gui.general);
 }

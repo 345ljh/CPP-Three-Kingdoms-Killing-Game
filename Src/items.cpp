@@ -62,10 +62,10 @@ card_t card_inf[160] =
 //武将信息
 general_t general_inf[GENERALS] =
 {
-    {"魏国士兵", 0, MALE, "", 4, WEI, 0},
-    {"蜀国女兵", 1, FEMALE, "", 4, SHU, 0},
-    {"吴国弓兵", 2, MALE, "", 4, WU, 0},
-    {"黄巾军", 3, MALE, "", 4, QUN, 0},
+    {"魏国士兵", 0, MALE, "", 4, WEI, 0, 0},
+    {"蜀国女兵", 1, FEMALE, "", 4, SHU, 0, 0},
+    {"吴国弓兵", 2, MALE, "", 4, WU, 0, 0},
+    {"黄巾军", 3, MALE, "", 4, QUN, 0, 0},
 };
 
 int card[160];
