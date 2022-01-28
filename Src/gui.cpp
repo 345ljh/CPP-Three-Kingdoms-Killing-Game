@@ -4,6 +4,8 @@ mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
 gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
 
+int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时针,武将位置
+
 //将数值转换为字符串,字符串即返回值
 ///同一语句内不能多次调用,如 i = strcat(Myitoa(12), Myitoa(34) );会导致结果错误
 char* Myitoa(int num)
@@ -152,12 +154,13 @@ void GameGuiInit(void)
     setcolor(WHITE, gui.frame);
     setfont(20, 0, "隶书", gui.frame);
     outtextxy(1000, 70, "牌堆剩余:", gui.frame);
-    Rect(1070, 430, 1200, 600, YELLOW, gui.frame);
 
     //绘制其他角色
-    Rect(30, 150, 160, 320, YELLOW, gui.frame);
-    Rect(1040, 150, 1170, 320, YELLOW, gui.frame);
-    Rect(520, 20, 650, 190, YELLOW, gui.frame);
+    for(int i = 0; i <= 3; i++)
+    {
+        Rect(pos[2 * i], pos[2 * i + 1], pos[2 * i] + 130 ,pos[2 * i + 1] + 170, YELLOW, gui.frame);
+    }
+
 
     //信息显示图标
     PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.frame, TRANSPARENT, BLACK);
@@ -183,9 +186,11 @@ void GameGuiInit(void)
     outtextxy(1040, 575, str + game.humanid * 3, gui.frame);
     setcolor(YELLOW, gui.frame);
     setfont(20, 0, "隶书", gui.frame);
-    outtextxy(1080, 320, Link(str + ((game.humanid + 1) % 4) * 3, (char*)"号位"), gui.frame);
-    outtextxy(560, 190, Link(str + ((game.humanid + 2) % 4) * 3, (char*)"号位"), gui.frame);
-    outtextxy(70, 320, Link(str + ((game.humanid + 3) % 4) * 3, (char*)"号位"), gui.frame);
+
+    for(int i = 1; i <= 3; i++)
+    {
+        outtextxy(pos[2 * i] + 40, pos[2 * i + 1] + 170, Link(str + ((game.humanid + i) % PLAYERS) * 3, (char*)"号位"), gui.frame);
+    }
     //输出图像
     putimage(0, 0, gui.background);
     putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
@@ -304,12 +309,60 @@ void GeneralSelect(void)
         general_inf[pointer].selected = 1;
         player[(game.humanid + i) % PLAYERS].general = pointer;
     }
+    //绘制已选武将
+    for(int i = 0; i <= 3; i++)
+    {
+        PasteImage(Link( (char*)".\\Textures\\Generals\\",  \
+            Link( (char*)Myitoa(player[(game.humanid + i) % PLAYERS].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
+    }
 
-    //绘制武将
-    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[game.humanid].general), (char*)".png")), 1070, 430, gui.general);
-    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 1) % 4].general), (char*)".png")), 1040, 150, gui.general);
-    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 2) % 4].general), (char*)".png")), 520, 20, gui.general);
-    PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(player[(game.humanid + 3) % 4].general), (char*)".png")), 30, 150, gui.general);
+    //绘制武将名
+    {
+
+        char str[31];
+        for(int i = 0; i <= 3; i++)
+        {
+            switch(general_inf[player[(game.humanid + i) % PLAYERS].general].nation)
+            {
+            case WEI:
+            {
+                setfillcolor(EGERGB(62, 117, 181), gui.general);
+                strcpy(str, ".\\Textures\\Nations\\wei.png");
+                break;
+            }
+            case SHU:
+            {
+                setfillcolor(EGERGB(226, 104, 22), gui.general);
+                strcpy(str, ".\\Textures\\Nations\\shu.png");
+                break;
+            }
+            case WU:
+            {
+                setfillcolor(EGERGB(124, 170, 55), gui.general);
+                strcpy(str, ".\\Textures\\Nations\\wu.png");
+                break;
+            }
+            case QUN:
+            {
+                setfillcolor(EGERGB(141, 139, 95), gui.general);
+                strcpy(str, ".\\Textures\\Nations\\qun.png");
+                break;
+            }
+            case SHEN:
+            {
+                setfillcolor(EGERGB(240, 248, 148), gui.general);
+                strcpy(str, ".\\Textures\\Nations\\shen.png");
+                break;
+            }
+            }
+            bar(pos[2 * i], pos[2 * i + 1] - 20, pos[2 * i] + 130, pos[2 * i + 1], gui.general);
+            PasteImage((char*)str, pos[2 * i], pos[2 * i + 1] - 20, gui.general, TRANSPARENT, BLACK);
+            setcolor(WHITE, gui.general);
+            setfont(20, 0, "隶书", gui.general);
+            setbkmode(TRANSPARENT, gui.general);
+            outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % PLAYERS].general].name, gui.general);
+        }
+    }
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
 
     setbkcolor(BLACK, gui.selector);
