@@ -238,12 +238,12 @@ void GeneralSelect(void)
         }
         case SHU:
         {
-            setcolor(EGERGB(226, 104, 22), gui.selector);
+            setcolor(EGERGB(226, 54, 22), gui.selector);
             break;
         }
         case WU:
         {
-            setcolor(EGERGB(124, 170, 55), gui.selector);
+            setcolor(EGERGB(124, 170, 125), gui.selector);
             break;
         }
         case QUN:
@@ -268,38 +268,14 @@ void GeneralSelect(void)
         msg = getmouse();
         mousepos(&mouse_x, &mouse_y);
 
-        if(msg.is_down() && mouse_x >= 310 && mouse_x <= 440 && mouse_y >= 240 && mouse_y <= 410)
-        {
-            player[game.humanid].general = forselect[0];
-            memset(general_inf, 0, sizeof(general_inf));
-            general_inf[forselect[0]].selected = 1;
-            break;
-        }
-        else if(msg.is_down() && mouse_x >= 460 && mouse_x <= 590 && mouse_y >= 240 && mouse_y <= 410)
-        {
-            player[game.humanid].general = forselect[1];
-            memset(general_inf, 0, sizeof(general_inf));
-            general_inf[forselect[1]].selected = 1;
-            break;
-        }
-        else if(msg.is_down() && mouse_x >= 610 && mouse_x <= 740 && mouse_y >= 240 && mouse_y <= 410)
-        {
-            player[game.humanid].general = forselect[2];
-            memset(general_inf, 0, sizeof(general_inf));
-            general_inf[forselect[2]].selected = 1;
-            break;
-        }
-        else if(msg.is_down() && mouse_x >= 760 && mouse_x <= 890 && mouse_y >= 240 && mouse_y <= 410)
-        {
-            player[game.humanid].general = forselect[3];
-            memset(general_inf, 0, sizeof(general_inf));
-            general_inf[forselect[3]].selected = 1;
-            break;
-        }
+        if(msg.is_down() && mouse_x >= 310 && mouse_x <= 440 && mouse_y >= 240 && mouse_y <= 410) player[game.humanid].general = forselect[0];
+        else if(msg.is_down() && mouse_x >= 460 && mouse_x <= 590 && mouse_y >= 240 && mouse_y <= 410) player[game.humanid].general = forselect[1];
+        else if(msg.is_down() && mouse_x >= 610 && mouse_x <= 740 && mouse_y >= 240 && mouse_y <= 410) player[game.humanid].general = forselect[2];
+        else if(msg.is_down() && mouse_x >= 760 && mouse_x <= 890 && mouse_y >= 240 && mouse_y <= 410) player[game.humanid].general = forselect[3];
+        else continue;
+        break;
     }
-    bar(300, 200, 900, 450, gui.selector);
-    Rect(300, 200, 900, 450, YELLOW, gui.selector);
-    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+    for(int i = 0; i <= 3; i++) general_inf[forselect[i]].selected = (forselect[i] == player[game.humanid].general ? 1 : 0);
 
     //电脑选将
     for(int i = 1; i <= 3; i++)
@@ -317,54 +293,55 @@ void GeneralSelect(void)
     }
 
     //绘制武将名
+    char str[31];
+    for(int i = 0; i <= 3; i++)
     {
-
-        char str[31];
-        for(int i = 0; i <= 3; i++)
+        switch(general_inf[player[(game.humanid + i) % PLAYERS].general].nation)
         {
-            switch(general_inf[player[(game.humanid + i) % PLAYERS].general].nation)
-            {
-            case WEI:
-            {
-                setfillcolor(EGERGB(62, 117, 181), gui.general);
-                strcpy(str, ".\\Textures\\Nations\\wei.png");
-                break;
-            }
-            case SHU:
-            {
-                setfillcolor(EGERGB(226, 104, 22), gui.general);
-                strcpy(str, ".\\Textures\\Nations\\shu.png");
-                break;
-            }
-            case WU:
-            {
-                setfillcolor(EGERGB(124, 170, 55), gui.general);
-                strcpy(str, ".\\Textures\\Nations\\wu.png");
-                break;
-            }
-            case QUN:
-            {
-                setfillcolor(EGERGB(141, 139, 95), gui.general);
-                strcpy(str, ".\\Textures\\Nations\\qun.png");
-                break;
-            }
-            case SHEN:
-            {
-                setfillcolor(EGERGB(240, 248, 148), gui.general);
-                strcpy(str, ".\\Textures\\Nations\\shen.png");
-                break;
-            }
-            }
-            bar(pos[2 * i], pos[2 * i + 1] - 20, pos[2 * i] + 130, pos[2 * i + 1], gui.general);
-            PasteImage((char*)str, pos[2 * i], pos[2 * i + 1] - 20, gui.general, TRANSPARENT, BLACK);
-            setcolor(WHITE, gui.general);
-            setfont(20, 0, "隶书", gui.general);
-            setbkmode(TRANSPARENT, gui.general);
-            outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % PLAYERS].general].name, gui.general);
+        case WEI:
+        {
+            setfillcolor(EGERGB(62, 117, 181), gui.general);
+            strcpy(str, ".\\Textures\\Nations\\wei.png");
+            break;
         }
+        case SHU:
+        {
+            setfillcolor(EGERGB(226, 54, 22), gui.general);
+            strcpy(str, ".\\Textures\\Nations\\shu.png");
+            break;
+        }
+        case WU:
+        {
+            setfillcolor(EGERGB(124, 170, 125), gui.general);
+            strcpy(str, ".\\Textures\\Nations\\wu.png");
+            break;
+        }
+        case QUN:
+        {
+            setfillcolor(EGERGB(141, 139, 95), gui.general);
+            strcpy(str, ".\\Textures\\Nations\\qun.png");
+            break;
+        }
+        case SHEN:
+        {
+            setfillcolor(EGERGB(204, 193, 0), gui.general);
+            strcpy(str, ".\\Textures\\Nations\\shen.png");
+            break;
+        }
+        }
+        bar(pos[2 * i], pos[2 * i + 1] - 20, pos[2 * i] + 130, pos[2 * i + 1], gui.general);
+        PasteImage((char*)str, pos[2 * i], pos[2 * i + 1] - 20, gui.general, TRANSPARENT, BLACK);
+        setcolor( general_inf[player[(game.humanid + i) % PLAYERS].general].nation == SHEN ? BLACK : WHITE, gui.general);
+        setfont(20, 0, "隶书", gui.general);
+        setbkmode(TRANSPARENT, gui.general);
+        outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % PLAYERS].general].name, gui.general);
     }
-    putimage_transparent(NULL, gui.general, 0, 0, BLACK);
 
+    //重绘界面
     setbkcolor(BLACK, gui.selector);
-    cleardevice(gui.general);
+    cleardevice(gui.selector);
+    putimage_transparent(NULL, gui.general, 0, 0, BLACK);
+    putimage(0, 0, gui.background);
+    putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
+    putimage_transparent(NULL, gui.general, 0, 0, BLACK);
 }
