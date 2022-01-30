@@ -50,6 +50,8 @@
 		<Unit filename="Src/items.cpp" />
 		<Unit filename="Src/items.h" />
 		<Unit filename="Src/main.cpp" />
+		<Unit filename="Src/process.cpp" />
+		<Unit filename="Src/process.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

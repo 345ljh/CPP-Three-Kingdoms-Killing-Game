@@ -2,6 +2,7 @@
 #include "items.h"
 #include "gui.h"
 #include "actions.h"
+#include "process.h"
 
 #include <time.h>
 
@@ -13,6 +14,7 @@ int main()
     PileInit();
     GameGuiInit();
     GeneralSelect();
+    GameStart();
     getch();
     return 0;
 }

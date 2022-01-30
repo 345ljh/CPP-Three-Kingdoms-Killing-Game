@@ -88,6 +88,7 @@ typedef struct
     int maxcard;  //当前手牌上限
     int nowslash;  //当前回合已使用杀次数
     int maxslash;  //每回合使用杀的最大次数
+    int slashlimit;  //是否限制杀的使用次数
     int spirits;  //回合内使用酒的状态:0=未使用,1=已使用且存在伤害+1效果,2=已使用
 
     int card[100]; //当前拥有手牌,储存id=0代表为空
@@ -100,6 +101,8 @@ typedef struct
 
     int limitused;  //1=存在未使用的限定技=1,否则为0
     int awaken;  //1=存在觉醒技且已发动,否则为0
+
+    int temp[5];  //临时用变量,用于技能相关计算
 }player_t;
 
 typedef struct

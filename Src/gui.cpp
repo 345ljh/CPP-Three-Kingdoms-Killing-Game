@@ -121,6 +121,7 @@ void GameGuiInit(void)
 
     PasteImage((char*)".\\Textures\\background.png", 0, 0, gui.background);
 
+    //Íæ¼ÒÇøÓò
     setfillcolor(EGERGB(71, 98, 32), gui.frame);
     bar(0, 450, 1070, 600, gui.frame);
 
