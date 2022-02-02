@@ -1,8 +1,8 @@
 #include "actions.h"
 
-///±¾ÎÄ¼şÖĞgame¾ù×÷ÎªÈ«¾Ö±äÁ¿³öÏÖ
+///æœ¬æ–‡ä»¶ä¸­gameå‡ä½œä¸ºå…¨å±€å˜é‡å‡ºç°
 
-//ÅÆ¶Ñ³õÊ¼»¯
+//ç‰Œå †åˆå§‹åŒ–
 void PileInit(void)
 {
     int temp[160];
@@ -21,13 +21,13 @@ void PileInit(void)
     game.nowpile = 160;
 }
 
-//Ï´ÅÆ
+//æ´—ç‰Œ
 void Shuffle(void)
 {
     int pilecards = 0;
     int pointer;
 
-    //Í³¼ÆÆúÅÆ¶ÑÄÚÅÆµÄÊıÁ¿
+    //ç»Ÿè®¡å¼ƒç‰Œå †å†…ç‰Œçš„æ•°é‡
     for(int i = 0; i <= 150; i++)
     {
         if(card_inf[i].owner == -1) pilecards++;
@@ -44,15 +44,15 @@ void Shuffle(void)
     game.nowpile = pilecards;
 }
 
-//´ÓÅÆ¶Ñ¶¥ÃşÅÆ
-void Takecard(player_t player, int amount)
+//ä»ç‰Œå †é¡¶æ‘¸ç‰Œ
+void Takecard(player_t *player, int amount)
 {
     for(int i = 1; i <= amount; i++)
     {
-        if(card_inf[0].owner == -1) Shuffle();
-        card_inf[game.card[0]].owner = player.id;
-        player.card[player.cardamount] = game.card[0];
-        player.cardamount++;
+        if(!game.nowpile) Shuffle();
+        card_inf[game.card[0]].owner = player->id;
+        player->card[player->cardamount] = game.card[0];
+        player->cardamount++;
         game.nowpile--;
 
         for(int j = 0; j <= game.nowpile - 1; j++)
@@ -60,34 +60,34 @@ void Takecard(player_t player, int amount)
             game.card[j] = game.card[j + 1];
         }
         game.card[game.nowpile] = -1;
+    }
 
         /* skills here */
-    }
 }
 
-//ÆúÅÆ,ÆäÖĞexecutorÎªÆúÅÆÕß,playerÎª±»ÆúÅÆÕß
-void Throwcard(player_t executor, player_t player, int amount)
+//å¼ƒç‰Œ,å…¶ä¸­executorä¸ºå¼ƒç‰Œè€…,playerä¸ºè¢«å¼ƒç‰Œè€…
+void Throwcard(player_t *executor, player_t *player, int amount)
 {
     for(int i = 1; i <= amount; i++)
     {
         int selected = 0;
         //TODO: a function that the executor choose a card's id of player to throw
-        card_inf[player.card[selected]].owner = -1;
-        player.cardamount--;  //haven't added throwing cards in equipments or judge areas here
+        card_inf[player->card[selected]].owner = -1;
+        player->cardamount--;  //haven't added throwing cards in equipments or judge areas here
 
-        for(int j = selected; j <= player.cardamount - 1; j++)
+        for(int j = selected; j <= player->cardamount - 1; j++)
         {
-            player.card[j] = player.card[j + 1];
+            player->card[j] = player->card[j + 1];
         }
-        player.card[player.cardamount] = -1;
+        player->card[player->cardamount] = -1;
 
         /* skills here */
     }
 }
 
-//Õ¹Ê¾ÊÖÅÆ
-///amount=-1±íÊ¾È«²¿Õ¹Ê¾
-void Showcard(player_t executor, player_t player, int amount)
+//å±•ç¤ºæ‰‹ç‰Œ
+///amount=-1è¡¨ç¤ºå…¨éƒ¨å±•ç¤º
+void Showcard(player_t *executor, player_t *player, int amount)
 {
     if(amount != -1)
     {
@@ -106,10 +106,10 @@ void Showcard(player_t executor, player_t player, int amount)
     }
 }
 
-//»ñµÃÆäËû½ÇÉ«ÅÆ
-///Ä¬ÈÏtype=0±íÊ¾executor»ñµÃplayerµÄÅÆ,type=1±íÊ¾executor½»¸øplayerÅÆ
+//è·å¾—å…¶ä»–è§’è‰²ç‰Œ
+///é»˜è®¤type=0è¡¨ç¤ºexecutorè·å¾—playerçš„ç‰Œ,type=1è¡¨ç¤ºexecutoräº¤ç»™playerç‰Œ
 //TODO: amount=-1 stands for getting or giving all cards
-void Getcard(player_t executor, player_t player, int amount, int type = 0)
+void Getcard(player_t *executor, player_t *player, int amount, int type = 0)
 {
     if(type)
     {
@@ -124,8 +124,8 @@ void Getcard(player_t executor, player_t player, int amount, int type = 0)
             player.card[player.cardamount] = executor.card[selected[j]];
             executor.card[selected[j]] = -1;
             */
-            executor.cardamount--;
-            player.cardamount++;
+            executor->cardamount--;
+            player->cardamount++;
         }
         /* skills here */
     }
@@ -142,20 +142,21 @@ void Getcard(player_t executor, player_t player, int amount, int type = 0)
             executor.card[executor.cardamount] = player.card[selected[j]];
             player.card[selected[j]] = -1;
             */
-            player.cardamount--;
-            executor.cardamount++;
+            player->cardamount--;
+            executor->cardamount++;
         }
         /* skills here */
     }
 }
 
-//Ôì³ÉÉËº¦
-///executor=0±íÊ¾ÉËº¦ÎŞÀ´Ô´(ÈçÉÁµç),=-1±íÊ¾Ê§È¥ÌåÁ¦
-void Damage(player_t executor, player_t player, int amount, damage_e type)
+//é€ æˆä¼¤å®³
+//TODO: Add the card that causes the damage for the skill [å¥¸é›„]
+///executor=NULLè¡¨ç¤ºä¼¤å®³æ— æ¥æº(å¦‚é—ªç”µ),type=LOSSè¡¨ç¤ºå¤±å»ä½“åŠ›
+void Damage(player_t *executor, player_t *player, int amount, damage_e type)
 {
     /* skills here */
-    player.health -= amount;
-    if(player.health <= 0)
+    player->health -= amount;
+    if(player->health <= 0)
     {
         Neardeath(player);
     }
@@ -163,16 +164,16 @@ void Damage(player_t executor, player_t player, int amount, damage_e type)
     /* chain here */
 }
 
-//»Ö¸´
-void Recover(player_t player, int amount)
+//æ¢å¤
+void Recover(player_t *player, int amount)
 {
-    if(player.maxhealth - player.health < amount) amount = player.maxhealth - player.health;
-    player.health += amount;
+    if(player->maxhealth - player->health < amount) amount = player->maxhealth - player->health;
+    player->health += amount;
     /* skills here */
 }
 
-//±ôËÀ½áËã
-void Neardeath(player_t player)
+//æ¿’æ­»ç»“ç®—
+void Neardeath(player_t *player)
 {
     /* skills here */
     for(int i = 0; i <= PLAYERS - 1; i++)
@@ -180,33 +181,33 @@ void Neardeath(player_t player)
         do
         {
             /*  ask player that id = (player.id + i) % PLAYERS for a peach */
-            if(player.health > 0) return;
+            if(player->health > 0) return;
         }while(0/* used a peach */);
     }
 
-    if(player.health < 0) Death(player);
+    if(player->health < 0) Death(player);
 }
 
-//ËÀÍö½áËã
-void Death(player_t player)
+//æ­»äº¡ç»“ç®—
+void Death(player_t *player)
 {
-    player.controller = DEAD;
+    player->controller = DEAD;
     /* VictoryJudge(); */
 
-    for(int i = 0; i <= player.cardamount - 1; i++)
+    for(int i = 0; i <= player->cardamount - 1; i++)
     {
-        card_inf[player.card[i]].owner = -1;
+        card_inf[player->card[i]].owner = -1;
     }
 
-    Throwcard(player, player, player.cardamount);
+    Throwcard(player, player, player->cardamount);
 }
 
-//Ê¤ÀûÌõ¼şÅĞ¶¨
+//èƒœåˆ©æ¡ä»¶åˆ¤å®š
 void VictoryJudge(void)
 {
-    if(player[0].controller == DEAD && player[3].controller == DEAD)  //1ºÅÓë4ºÅ¾ùËÀÍö
+    if(player[0].controller == DEAD && player[3].controller == DEAD)  //1å·ä¸4å·å‡æ­»äº¡
     {
-        if(game.humanid != 0 && game.humanid != 3)  /* victory */;  //1ºÅÓë4ºÅ¾ùÎªµçÄÔ
+        if(game.humanid != 0 && game.humanid != 3)  /* victory */;  //1å·ä¸4å·å‡ä¸ºç”µè„‘
         else /* failed */;
     }
     else if( player[1].controller == DEAD && player[2].controller == DEAD)
@@ -216,8 +217,8 @@ void VictoryJudge(void)
     }
 }
 
-//Ê¹ÓÃÅÆ
-void Usecard(player_t executor)
+//ä½¿ç”¨ç‰Œ
+void Usecard(player_t *executor)
 {
     int card = 0;
     /* choose card */
@@ -235,16 +236,16 @@ void Usecard(player_t executor)
             }
         case TAO:
             {
-                if(executor.health < executor.maxhealth)
+                if(executor->health < executor->maxhealth)
                 {
-                    executor.health++;
+                    executor->health++;
                 }
                 else /* failed to use */;
                 break;
             }
         case JIU:
             {
-                if(!executor.spirits) executor.spirits = 1;
+                if(!executor->spirits) executor->spirits = 1;
                 else /* failed to use */;
                 break;
             }

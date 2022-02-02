@@ -1,13 +1,13 @@
 #include "gui.h"
 
 mouse_msg msg;
-int mouse_x, mouse_y;//ÓÃÓÚ»ñÈ¡Êó±ê×ø±ê
+int mouse_x, mouse_y;//ç”¨äºè·å–é¼ æ ‡åæ ‡
 gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
 
-int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //´ÓÍæ¼ÒÄæÊ±Õë,Îä½«Î»ÖÃ
+int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //ä»ç©å®¶é€†æ—¶é’ˆ,æ­¦å°†ä½ç½®
 
-//½«ÊıÖµ×ª»»Îª×Ö·û´®,×Ö·û´®¼´·µ»ØÖµ
-///Í¬Ò»Óï¾äÄÚ²»ÄÜ¶à´Îµ÷ÓÃ,Èç i = strcat(Myitoa(12), Myitoa(34) );»áµ¼ÖÂ½á¹û´íÎó
+//å°†æ•°å€¼è½¬æ¢ä¸ºå­—ç¬¦ä¸²,å­—ç¬¦ä¸²å³è¿”å›å€¼
+///åŒä¸€è¯­å¥å†…ä¸èƒ½å¤šæ¬¡è°ƒç”¨,å¦‚ i = strcat(Myitoa(12), Myitoa(34) );ä¼šå¯¼è‡´ç»“æœé”™è¯¯,æ•…ä½¿ç”¨2ä¸ªç›¸åŒåŠŸèƒ½çš„å‡½æ•°
 char* Myitoa(int num)
 {
     static char p[11];
@@ -16,9 +16,17 @@ char* Myitoa(int num)
     return p;
 }
 
-//ÎÄ×ÖÆ´½Ó,·µ»ØÖµÎªÆ´½ÓºóµÄ×Ö·û´®
-///Í¬Ò»Óï¾äÄÚ¶à´Îµ÷ÓÃLinkĞëÊ¹ÓÃÇ¶Ì×¶ø·Ç²¢ÁĞ,Èç Link(Link(Link(str1, str2), str3), str4)
-///²»ÄÜĞ´×÷ Link( Link(str1, str2), Link(str3, str4) )
+char* MyitoaII(int num)
+{
+    static char p[11];
+    memset(p, 0, sizeof(p));
+    itoa(num, p, 10);
+    return p;
+}
+
+//æ–‡å­—æ‹¼æ¥,è¿”å›å€¼ä¸ºæ‹¼æ¥åçš„å­—ç¬¦ä¸²
+///åŒä¸€è¯­å¥å†…å¤šæ¬¡è°ƒç”¨Linké¡»ä½¿ç”¨åµŒå¥—è€Œéå¹¶åˆ—,å¦‚ Link(Link(Link(str1, str2), str3), str4)
+///ä¸èƒ½å†™ä½œ Link( Link(str1, str2), Link(str3, str4) )
 char* Link(char* str1, char* str2)
 {
     static char p[101];
@@ -32,7 +40,7 @@ char* Link(char* str1, char* str2)
     return pcopy;
 }
 
-//»­¿ÕĞÄ³¤·½ĞÎ
+//ç”»ç©ºå¿ƒé•¿æ–¹å½¢
 void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img = NULL)
 {
     setcolor(color, img);
@@ -42,7 +50,7 @@ void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img = 
     line(left, bottom, left, top, img);
 }
 
-//»­¿ÕĞÄÈı½ÇĞÎ
+//ç”»ç©ºå¿ƒä¸‰è§’å½¢
 void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE img = NULL)
 {
     setcolor(color, img);
@@ -51,9 +59,9 @@ void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE i
     line(x3, y3, x1, y1, img);
 }
 
-//Í¼ÏñÕ³Ìùº¯Êı
-///µ÷ÓÃÊ±½«Â·¾¶×ªÎªchar*,·ñÔò±¨warning
-///´Ëº¯Êıµ÷ÓÃÊ±Ïòmode´«µİµÄTRANSPARENTÒÑ±»¶¨ÒåÎª1
+//å›¾åƒç²˜è´´å‡½æ•°
+///è°ƒç”¨æ—¶å°†è·¯å¾„è½¬ä¸ºchar*,å¦åˆ™æŠ¥warning
+///æ­¤å‡½æ•°è°ƒç”¨æ—¶å‘modeä¼ é€’çš„TRANSPARENTå·²è¢«å®šä¹‰ä¸º1
 void PasteImage(char* path, int x, int y, PIMAGE img = NULL, int mode = 0, color_t color = BLACK)
 {
     PIMAGE temp = newimage();
@@ -74,7 +82,7 @@ void PasteImage(char* path, int x, int y, PIMAGE img = NULL, int mode = 0, color
     delimage(temp);
 }
 
-//¿ªÊ¼½çÃæ
+//å¼€å§‹ç•Œé¢
 void ProgramStart(void)
 {
     initgraph(1200, 600);
@@ -83,16 +91,16 @@ void ProgramStart(void)
 
     setcolor(EGERGB(236, 95, 0));
     setbkmode(TRANSPARENT);
-    setfont(120, 0, "Á¥Êé");
-    outtextxy(420, 100, "Èı¹úÉ±");
+    setfont(120, 0, "éš¶ä¹¦");
+    outtextxy(420, 100, "ä¸‰å›½æ€");
 
     setfillcolor(EGERGB(136, 0, 21));
     bar(500, 350, 700, 400);
 
     setcolor(EGERGB(234, 234, 255));
     setbkmode(TRANSPARENT);
-    setfont(40, 0, "Á¥Êé");
-    outtextxy(520, 355, "¿ªÊ¼ÓÎÏ·");
+    setfont(40, 0, "éš¶ä¹¦");
+    outtextxy(520, 355, "å¼€å§‹æ¸¸æˆ");
 
     for(; is_run(); delay_fps(60))
     {
@@ -106,12 +114,12 @@ void ProgramStart(void)
     }
 }
 
-//¿ªÊ¼ÓÎÏ·Ê±½çÃæ»æÖÆ
+//å¼€å§‹æ¸¸æˆæ—¶ç•Œé¢ç»˜åˆ¶
 void GameGuiInit(void)
 {
     setbkcolor(BLACK);
     cleardevice();
-    //Í¼²ã³õÊ¼»¯
+    //å›¾å±‚åˆå§‹åŒ–
     getimage(gui.background, 0, 0, 1200, 600);
     getimage(gui.frame, 0, 0, 1200, 600);
     getimage(gui.general, 0, 0, 1200, 600);
@@ -119,57 +127,69 @@ void GameGuiInit(void)
     getimage(gui.selector, 0, 0, 1200, 600);
     getimage(gui.tips, 0, 0, 1200, 600);
 
+    setbkmode(TRANSPARENT, gui.background);
+    setbkmode(TRANSPARENT, gui.frame);
+    setbkmode(TRANSPARENT, gui.general);
+    setbkmode(TRANSPARENT, gui.playercard);
+    setbkmode(TRANSPARENT, gui.selector);
+    setbkmode(TRANSPARENT, gui.tips);
+
     PasteImage((char*)".\\Textures\\background.png", 0, 0, gui.background);
 
-    //Íæ¼ÒÇøÓò
-    setfillcolor(EGERGB(71, 98, 32), gui.frame);
-    bar(0, 450, 1070, 600, gui.frame);
+    //ç©å®¶åŒºåŸŸ
+    PIMAGE cardbar = newimage();
+    getimage(cardbar, 0, 0, 1200, 600);
+    setfillcolor(EGERGB(71, 98, 32), cardbar);
+    bar(0, 450, 1070, 600, cardbar);
+    putimage_alphatransparent(gui.background, cardbar, 0, 0, BLACK, 150);
+    delimage(cardbar);
 
-    //»æÖÆ±ß½ç
-    setcolor(YELLOW, gui.frame);
+    //ç»˜åˆ¶è¾¹ç•Œ
+    setcolor(EGERGB(190, 183, 68), gui.frame);
     line(150, 450, 150, 600, gui.frame);
-    for(int i = 1; i <= 3; i++)  line(0, 450 + 37.5 * i, 150, 450 + 37.5 * i, gui.frame);
-    for(int i = 1; i <= 8; i++)  line(150 + 100 * i, 450, 150 + 100 * i, 600, gui.frame);
+    for(int i = 1; i <= 3; i++)  line(0, 450 + 37.5 * i, 150, 450 + 37.5 * i, gui.background);
+    for(int i = 0; i <= 8; i++)  line(150 + 100 * i, 450, 150 + 100 * i, 600, gui.background);
 
-    //»æÖÆ°´Å¥
-    ///Ê¹ÓÃÌî³äÀ´ÇĞ»»°´Å¥¿ÉÓÃÓë·ñ
-    Rect(960, 510, 1050, 535, YELLOW, gui.frame);
-    Rect(960, 540, 1050, 565, YELLOW, gui.frame);
-    setbkmode(TRANSPARENT, gui.frame);
-    setfont(25, 0, "Á¥Êé", gui.frame);
-    outtextxy(980, 510, "È·¶¨", gui.frame);
-    outtextxy(980, 540, "È¡Ïû", gui.frame);
-    setfillcolor(LIGHTGRAY, gui.frame);
-    floodfill(981, 511, YELLOW, gui.frame);
-    floodfill(981, 541, YELLOW, gui.frame);
-    Tri(960, 585, 975, 575, 975, 595, EGERGB(44, 182, 14), gui.frame);
-    Tri(1000, 585, 985, 575, 985, 595, EGERGB(44, 182, 14), gui.frame);
-    setfillcolor(EGERGB(181, 230, 29), gui.frame);
-    floodfill(970, 585, EGERGB(44, 182, 14), gui.frame);
-    floodfill(990, 585, EGERGB(44, 182, 14), gui.frame);
+    //ç»˜åˆ¶æŒ‰é’®
+    Rect(960, 510, 1050, 535, EGERGB(190, 183, 68), gui.background);
+    Rect(960, 540, 1050, 565, EGERGB(190, 183, 68), gui.background);
+    setfillcolor(RED, gui.background);
+    floodfill(981, 511, EGERGB(190, 183, 68), gui.background);
+    floodfill(981, 541, EGERGB(190, 183, 68), gui.background);
+    setbkmode(TRANSPARENT, gui.background);
+    setfont(25, 0, "éš¶ä¹¦", gui.background);
+    setcolor(EGERGB(190, 183, 68), gui.background);
+    outtextxy(980, 510, "ç¡®å®š", gui.background);
+    outtextxy(980, 540, "å–æ¶ˆ", gui.background);
 
-    //»æÖÆÅÆ¾ÖĞÅÏ¢
-    setcolor(EGERGB(255, 127, 39), gui.frame);
-    setfont(40, 0, "Á¥Êé", gui.frame);
-    outtextxy(1000, 20, "µÚ     ÂÖ", gui.frame);
-    setcolor(WHITE, gui.frame);
-    setfont(20, 0, "Á¥Êé", gui.frame);
-    outtextxy(1000, 70, "ÅÆ¶ÑÊ£Óà:", gui.frame);
+    Tri(960, 585, 975, 575, 975, 595, EGERGB(44, 182, 14), gui.background);
+    Tri(1000, 585, 985, 575, 985, 595, EGERGB(44, 182, 14), gui.background);
+    setfillcolor(EGERGB(181, 230, 29), gui.background);
+    floodfill(970, 585, EGERGB(44, 182, 14), gui.background);
+    floodfill(990, 585, EGERGB(44, 182, 14), gui.background);
 
-    //»æÖÆÆäËû½ÇÉ«
+    //ç»˜åˆ¶ç‰Œå±€ä¿¡æ¯
+    setcolor(EGERGB(255, 127, 39), gui.background);
+    setfont(40, 0, "éš¶ä¹¦", gui.background);
+    outtextxy(1000, 20, "ç¬¬     è½®", gui.background);
+    setcolor(WHITE, gui.background);
+    setfont(20, 0, "éš¶ä¹¦", gui.background);
+    outtextxy(1000, 70, "ç‰Œå †å‰©ä½™:", gui.background);
+
+    //ç»˜åˆ¶å…¶ä»–è§’è‰²
     for(int i = 0; i <= 3; i++)
     {
-        Rect(pos[2 * i], pos[2 * i + 1], pos[2 * i] + 130 ,pos[2 * i + 1] + 170, YELLOW, gui.frame);
+        Rect(pos[2 * i], pos[2 * i + 1], pos[2 * i] + 130 ,pos[2 * i + 1] + 170, EGERGB(190, 183, 68), gui.background);
     }
 
 
-    //ĞÅÏ¢ÏÔÊ¾Í¼±ê
-    PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.frame, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 30, 340, gui.frame, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 1040, 340, gui.frame, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 650, 130, gui.frame, TRANSPARENT, BLACK);
+    //ä¿¡æ¯æ˜¾ç¤ºå›¾æ ‡
+    PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 30, 340, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 1040, 340, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\condition.png", 430, 130, gui.background, TRANSPARENT, BLACK);
 
-    //È·¶¨Î»ÖÃ
+    //ç¡®å®šä½ç½®
     for(int i = 0; i <= PLAYERS - 1; i++)
     {
         player[i].controller = AI;
@@ -178,34 +198,32 @@ void GameGuiInit(void)
     game.humanid = rand() % PLAYERS;
     player[game.humanid].controller = HUMAN;
 
-    char str[] = "Ò»\0¶ş\0Èı\0ËÄ\0";
-    setfillcolor(EGERGB(238, 89, 0), gui.frame);
+    char str[] = "ä¸€\0äºŒ\0ä¸‰\0å››\0";
+    setfillcolor(EGERGB(238, 89, 0), gui.background);
     setcolor(RED, gui.frame);
-    fillellipse(1050, 585, 15, 15, gui.frame);
-    setcolor(EGERGB(253, 228, 140), gui.frame);
-    setfont(20, 0, "Á¥Êé", gui.frame);
-    outtextxy(1040, 575, str + game.humanid * 3, gui.frame);
-    setcolor(YELLOW, gui.frame);
-    setfont(20, 0, "Á¥Êé", gui.frame);
+    fillellipse(1050, 585, 15, 15, gui.background);
+    setcolor(EGERGB(253, 228, 140), gui.background);
+    setfont(20, 0, "éš¶ä¹¦", gui.background);
+    outtextxy(1040, 575, str + game.humanid * 3, gui.background);
+    setcolor(EGERGB(190, 183, 68), gui.background);
+    setfont(20, 0, "éš¶ä¹¦", gui.background);
 
     for(int i = 1; i <= 3; i++)
     {
-        outtextxy(pos[2 * i] + 40, pos[2 * i + 1] + 170, Link(str + ((game.humanid + i) % PLAYERS) * 3, (char*)"ºÅÎ»"), gui.frame);
+        outtextxy(pos[2 * i] + 40, pos[2 * i + 1] + 170, Link(str + ((game.humanid + i) % PLAYERS) * 3, (char*)"å·ä½"), gui.background);
     }
-    //Êä³öÍ¼Ïñ
+    //è¾“å‡ºå›¾åƒ
     putimage(0, 0, gui.background);
-    putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
-
     return;
 }
 
-//Ñ¡½«
+//é€‰å°†
 void GeneralSelect(void)
 {
     int forselect[4];
     int pointer;
 
-    //È·¶¨Íæ¼Ò¿ÉÑ¡µÄ4½«
+    //ç¡®å®šç©å®¶å¯é€‰çš„4å°†
     for(int i = 0; i <= 3; i++)
     {
         pointer = rand() % GENERALS;
@@ -214,22 +232,22 @@ void GeneralSelect(void)
         forselect[i] = pointer;
     }
 
-    //Ñ¡½«¿ò
+    //é€‰å°†æ¡†
     setcolor(EGERGB(102, 0, 15), gui.selector);
     setfillcolor(EGERGB(83, 30, 0), gui.selector);
     bar(300, 200, 900, 450, gui.selector);
-    Rect(300, 200, 900, 450, YELLOW, gui.selector);
+    Rect(300, 200, 900, 450, EGERGB(190, 183, 68), gui.selector);
 
     setbkmode(TRANSPARENT, gui.selector);
     setcolor(EGERGB(249, 189, 34), gui.selector);
-    setfont(40, 0, "Á¥Êé", gui.selector);
-    outtextxy(520, 200, (char*)"Ñ¡ÔñÎä½«", gui.selector);
+    setfont(40, 0, "éš¶ä¹¦", gui.selector);
+    outtextxy(520, 200, (char*)"é€‰æ‹©æ­¦å°†", gui.selector);
 
-    //Îä½«ÃûÓëÍ¼Æ¬
+    //æ­¦å°†åä¸å›¾ç‰‡
     for(int i = 0; i <= 3; i++)
     {
         PasteImage(Link( (char*)".\\Textures\\Generals\\", Link( (char*)Myitoa(forselect[i]), (char*)".png")), 310 + 150 * i, 240, gui.selector);
-        setfont(20, 0, "Á¥Êé", gui.selector);
+        setfont(20, 0, "éš¶ä¹¦", gui.selector);
         switch(general_inf[forselect[i]].nation)
         {
         case WEI:
@@ -263,7 +281,7 @@ void GeneralSelect(void)
 
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 
-    //ÏìÓ¦Íæ¼ÒÑ¡½«
+    //å“åº”ç©å®¶é€‰å°†
     for(; is_run(); delay_fps(60))
     {
         msg = getmouse();
@@ -278,7 +296,7 @@ void GeneralSelect(void)
     }
     for(int i = 0; i <= 3; i++) general_inf[forselect[i]].selected = (forselect[i] == player[game.humanid].general ? 1 : 0);
 
-    //µçÄÔÑ¡½«
+    //ç”µè„‘é€‰å°†
     for(int i = 1; i <= 3; i++)
     {
         pointer = rand() % GENERALS;
@@ -286,14 +304,14 @@ void GeneralSelect(void)
         general_inf[pointer].selected = 1;
         player[(game.humanid + i) % PLAYERS].general = pointer;
     }
-    //»æÖÆÒÑÑ¡Îä½«
+    //ç»˜åˆ¶å·²é€‰æ­¦å°†
     for(int i = 0; i <= 3; i++)
     {
         PasteImage(Link( (char*)".\\Textures\\Generals\\",  \
             Link( (char*)Myitoa(player[(game.humanid + i) % PLAYERS].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
     }
 
-    //»æÖÆÎä½«Ãû
+    //ç»˜åˆ¶æ­¦å°†å
     char str[31];
     for(int i = 0; i <= 3; i++)
     {
@@ -333,16 +351,190 @@ void GeneralSelect(void)
         bar(pos[2 * i], pos[2 * i + 1] - 20, pos[2 * i] + 130, pos[2 * i + 1], gui.general);
         PasteImage((char*)str, pos[2 * i], pos[2 * i + 1] - 20, gui.general, TRANSPARENT, BLACK);
         setcolor( general_inf[player[(game.humanid + i) % PLAYERS].general].nation == SHEN ? BLACK : WHITE, gui.general);
-        setfont(20, 0, "Á¥Êé", gui.general);
+        setfont(20, 0, "éš¶ä¹¦", gui.general);
         setbkmode(TRANSPARENT, gui.general);
         outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % PLAYERS].general].name, gui.general);
     }
 
-    //ÖØ»æ½çÃæ
+    //é‡ç»˜ç•Œé¢
     setbkcolor(BLACK, gui.selector);
     cleardevice(gui.selector);
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
     putimage(0, 0, gui.background);
-    putimage_alphatransparent(NULL, gui.frame, 0, 0, BLACK, 150);
+    putimage_transparent(NULL, gui.frame, 0, 0, BLACK);
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
+}
+
+//æ¸¸æˆè¿‡ç¨‹ä¸­é‡ç»˜ä¿¡æ¯
+void DrawGui(void)
+{
+    cleardevice(gui.frame);
+    cleardevice(gui.playercard);
+
+    //è½®æ•°ä¸å‰©ä½™ç‰Œé‡
+    setcolor(EGERGB(255, 127, 39), gui.frame);
+    setfont(40, 0, "Lucida Handwriting", gui.frame);
+    outtextxy(1070, 20, Myitoa(game.turn), gui.frame);
+    setcolor(WHITE, gui.frame);
+    setfont(20, 0, "Lucida Handwriting", gui.frame);
+    outtextxy(1100, 70, Myitoa(game.nowpile), gui.frame);
+
+    setcolor(WHITE, gui.frame);
+    setfont(20, 0, "Lucida Handwriting", gui.frame);
+    outtextxy(1100, 70, Myitoa(game.nowpile), gui.frame);
+
+    //æ‰‹ç‰Œç¿»é¡µ
+    setcolor(EGERGB(181, 230, 29), gui.frame);
+    setfont(15, 0, "Lucida Handwriting", gui.frame);
+    outtextxy(1000, 580, Link(Link(Link(Myitoa(game.page + 1), (char*)"/"), MyitoaII(player[game.humanid].cardamount / 8 + 1) ), (char*)"é¡µ"), gui.frame);
+
+    //ä½“åŠ›ä¸æ‰‹ç‰Œä¿¡æ¯
+    for(int i = 0; i <= 3; i++)
+    {
+        int infpos[2 * PLAYERS] = {950, 450, 1040, 340, 430, 130, 30, 340};
+        setfont(30, 0, "Lucida Handwriting", gui.frame);
+        setcolor(player[(game.humanid + i) % 4].health / (float)player[(game.humanid + i) % 4].maxhealth > 2 / 3.0 ? EGERGB(34, 177, 76) :
+                 player[(game.humanid + i) % 4].health / (float)player[(game.humanid + i) % 4].maxhealth > 1 / 3.0 ? EGERGB(255, 128, 0) :
+                 EGERGB(255, 0, 0), gui.frame);
+        outtextxy(infpos[2 * i] + 30, infpos[2 * i + 1], Link(Link(Myitoa(player[(game.humanid + i) % 4].health), (char*)"/"),
+                                                         MyitoaII(player[(game.humanid + i) % 4].maxhealth) ), gui.frame);
+
+        setcolor(EGERGB(251, 227, 134), gui.frame);
+        outtextxy(infpos[2 * i] + 30, infpos[2 * i + 1] + 30, Link(Link(Myitoa(player[(game.humanid + i) % 4].cardamount), (char*)"/"),
+                                                         MyitoaII(player[(game.humanid + i) % 4].maxcard) ), gui.frame);
+    }
+
+    //ç¿»é¢,æ¨ªç½®,é™å®š,è§‰é†’
+    {
+        for(int i = 0; i <= 3; i++)
+        {
+            if(player[(game.humanid + i) % 4].turned) PasteImage((char*)".\\Textures\\general_back.png", pos[2 * i], pos[2 * i + 1], gui.frame,
+                    TRANSPARENT, BLACK);
+            if(player[(game.humanid + i) % 4].chained) PasteImage((char*)".\\Textures\\chain.png", pos[2 * i], pos[2 * i + 1] + 25, gui.frame,
+                    TRANSPARENT, EGERGB(255, 255, 255));
+            if(player[(game.humanid + i) % 4].limit) PasteImage((char*)".\\Textures\\limit.png",
+                    i ? pos[2 * i] + 132 : 1055 , i ? pos[2 * i + 1] : 420, gui.frame, TRANSPARENT, EGERGB(255, 255, 255));
+            if(player[(game.humanid + i) % 4].awaken) PasteImage((char*)".\\Textures\\awake.png",
+                    i ? pos[2 * i] + 132 : 1055, i ? pos[2 * i + 1] + 15 : 435, gui.frame, TRANSPARENT, EGERGB(255, 255, 255));
+
+        }
+    }
+
+    //å›åˆå†…é…’æ•ˆæœ
+    setfillcolor(EGERGB(255, 81, 81), gui.frame);
+    setcolor(EGERGB(91, 0, 0), gui.frame);
+    setfont(20, 0, "éš¶ä¹¦", gui.frame);
+
+    for(int i = 0; i <= 3; i++)
+    {
+        if(player[(game.humanid + i) % 4].spirits == 1)
+        {
+            fillellipse(pos[2 * i] + 115, pos[2 * i + 1] + 155, 15, 15, gui.frame);
+            outtextxy(pos[2 * i] + 105, pos[2 * i + 1] + 145, (char*)"é…’", gui.frame);
+        }
+    }
+
+    //ç©å®¶ä¸»åŠ¨æŠ€
+    ///å½“å‰ä»…è€ƒè™‘ä¸»åŠ¨æŠ€(ä¸åŒ…æ‹¬é™å®šæŠ€)åªæœ‰1ä¸ªçš„æƒ…å†µ
+    if(player[game.humanid].activeskill)
+    {
+        setfillcolor(EGERGB(36, 174, 154), gui.frame);
+        bar(1110, 570, 1160, 590, gui.frame);
+        Rect(1110, 570, 1160, 590, EGERGB(146, 233, 220), gui.frame);
+
+        setcolor(EGERGB(19, 89, 79), gui.frame);
+        setfont(23, 0, "éš¶ä¹¦", gui.frame);
+        outtextxy(1111, 568, general_inf[player[game.humanid].general].activeskill, gui.frame);
+    }
+
+    //ç©å®¶æ‰‹ç‰Œ
+    for(int i = 0; i <= 7; i++)
+    {
+        if(player[game.humanid].card[i] != -1)
+        {
+            PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa( (int)card_inf[player[game.humanid].card[i]].type) ), (char*)".png"),
+                   160 + 100 * i, 465, gui.playercard, TRANSPARENT, BLACK);
+            PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].card[i]].suit) ), (char*)".png"),
+                   161 + 100 * i, 466, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
+
+            setcolor((int)card_inf[player[game.humanid].card[i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+            setfont(15, 0, "Lucida Handwriting", gui.playercard);
+            outtextxy(230 + 100 * i, 466,
+                  card_inf[player[game.humanid].card[i]].num == 1 ? (char*)"A" :
+                  card_inf[player[game.humanid].card[i]].num == 10 ? (char*)"â’‘" :
+                  card_inf[player[game.humanid].card[i]].num == 11 ? (char*)"J" :
+                  card_inf[player[game.humanid].card[i]].num == 12 ? (char*)"Q" :
+                  card_inf[player[game.humanid].card[i]].num == 13 ? (char*)"K" :
+                  Myitoa( (int)card_inf[player[game.humanid].card[i]].num),
+                  gui.playercard);
+        }
+    }
+
+    //ç©å®¶è£…å¤‡
+    for(int i = 0; i <= 3; i++)
+    {
+        if(player[game.humanid].equips[i] != -1)
+        {
+            PasteImage( Link( Link( (char*)".\\Textures\\Equipments\\", Myitoa( (int)card_inf[player[game.humanid].equips[i]].type) ), (char*)".png"),
+                   5, 453.75 + 37.5 * i, gui.playercard, TRANSPARENT, BLACK);
+            PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].equips[i]].suit) ), (char*)".png"),
+                   123, 453.75 + 37.5 * i, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
+
+            setcolor((int)card_inf[player[game.humanid].equips[i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+            setfont(15, 0, "Lucida Handwriting", gui.playercard);
+            outtextxy(135, 453.75 + 37.5 * i,
+                  card_inf[player[game.humanid].equips[i]].num == 1 ? (char*)"A" :
+                  card_inf[player[game.humanid].equips[i]].num == 10 ? (char*)"â’‘" :
+                  card_inf[player[game.humanid].equips[i]].num == 11 ? (char*)"J" :
+                  card_inf[player[game.humanid].equips[i]].num == 12 ? (char*)"Q" :
+                  card_inf[player[game.humanid].equips[i]].num == 13 ? (char*)"K" :
+                  Myitoa( (int)card_inf[player[game.humanid].equips[i]].num),
+                  gui.playercard);
+        }
+    }
+
+    //å…¶ä»–è§’è‰²è£…å¤‡
+    for(int i = 1; i <= 3; i++)
+    {
+        for(int j = 1; j <= 3; j++)
+        {
+            if(player[(game.humanid + i) % 4].equips[j] != -1)
+            {
+                PasteImage( Link( Link( (char*)".\\Textures\\OtherEquipments\\", Myitoa( (int)card_inf[player[(game.humanid + i) % 4].equips[j]].type) ),
+                            (char*)".png"), pos[2 * i], pos[2 * i + 1] + 110 + 15 * j, gui.playercard, TRANSPARENT, BLACK);
+                PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[(game.humanid + i) % 4].equips[j]].suit) ),
+                            (char*)".png"), pos[2 * i] + 105, pos[2 * i + 1] + 110 + 15 * j, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
+
+                setcolor((int)card_inf[player[(game.humanid + i) % 4].equips[j]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+                setfont(15, 0, "Lucida Handwriting", gui.playercard);
+                outtextxy(pos[2 * i] + 120, pos[2 * i + 1] + 110 + 15 * j,
+                      card_inf[player[(game.humanid + i) % 4].equips[j]].num == 1 ? (char*)"A" :
+                      card_inf[player[(game.humanid + i) % 4].equips[j]].num == 10 ? (char*)"â’‘" :
+                      card_inf[player[(game.humanid + i) % 4].equips[j]].num == 11 ? (char*)"J" :
+                      card_inf[player[(game.humanid + i) % 4].equips[j]].num == 12 ? (char*)"Q" :
+                      card_inf[player[(game.humanid + i) % 4].equips[j]].num == 13 ? (char*)"K" :
+                      Myitoa( (int)card_inf[player[(game.humanid + i) % 4].equips[j]].num),
+                      gui.playercard);
+            }
+        }
+    }
+
+    //åˆ¤å®šåŒº
+    for(int i = 0; i <= 3; i++)
+    {
+        for(int j = 0; j <= 2; j++)
+        {
+            if(player[(game.humanid + i) % 4].judges[j][1] != -1)
+            {
+                PasteImage( Link( Link( (char*)".\\Textures\\Judges\\", Myitoa( (int)player[(game.humanid + i) % 4].judges[j][1]) ),
+                            (char*)".png"), i ? pos[2 * i] + 130 : 20 * (i + 1), i ? pos[2 * i + 1] + 150 - 20 * j : 430, gui.playercard, TRANSPARENT, BLACK);
+
+            }
+        }
+    }
+
+    putimage(0, 0, gui.background);
+    putimage_transparent(NULL, gui.general, 0, 0, BLACK);
+    putimage_transparent(NULL, gui.frame, 0, 0, BLACK);
+    putimage_transparent(NULL, gui.playercard, 0, 0, BLACK);
 }

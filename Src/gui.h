@@ -10,14 +10,16 @@
 
 typedef struct
 {
-    PIMAGE background;  //±³¾°Í¼²ã
-    PIMAGE frame;  //¸÷ÀàĞÅÏ¢Óë±ß½ç¡¢°´Å¥Í¼²ã
-    PIMAGE general;  //Îä½«ÓëÊÆÁ¦Í¼²ã
-    PIMAGE playercard;  //¸÷ÇøÓò¿¨ÅÆÍ¼²ã
-    PIMAGE selector;  //Ñ¡ÅÆÓëÑ¡¶¨Ä¿±êÍ¼²ã
-    PIMAGE tips;  //ÌáÊ¾ÎÄ×ÖÍ¼²ã
+    PIMAGE background;  //èƒŒæ™¯å›¾å±‚
+    PIMAGE frame;  //å„ç±»ä¿¡æ¯ä¸è¾¹ç•Œã€æŒ‰é’®å›¾å±‚
+    PIMAGE general;  //æ­¦å°†ä¸åŠ¿åŠ›å›¾å±‚
+    PIMAGE playercard;  //å„åŒºåŸŸå¡ç‰Œå›¾å±‚
+    PIMAGE selector;  //é€‰ç‰Œä¸é€‰å®šç›®æ ‡å›¾å±‚
+    PIMAGE tips;  //æç¤ºæ–‡å­—å›¾å±‚
 }gui_t;
 
+char* Myitoa(int num);
+char* MyitoaII(int num);
 char* Link(char* str1, char* str2);
 void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img);
 void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE img);
@@ -26,5 +28,7 @@ void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color);
 void ProgramStart(void);
 void GameGuiInit(void);
 void GeneralSelect(void);
+void DrawGui(void);
 
+extern gui_t gui;
 #endif // DRAW_H_INCLUDED

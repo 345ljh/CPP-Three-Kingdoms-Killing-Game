@@ -3,6 +3,8 @@
 
 #include "items.h"
 #include "actions.h"
+#include "gui.h"
+
 #include <string.h>
 
 void GameStart(void);

@@ -31,8 +31,8 @@ typedef enum
 
 typedef enum
 {
-    SPADE = 0x00, CLUB, HEART = 0x10, DIAMOND, NONE = 0x20
-}suit_e; //花色
+    SPADE = 0x00, CLUB, HEART, DIAMOND, NONE
+}suit_e; //花色,其中第1位可表示颜色
 
 typedef enum
 {
@@ -47,7 +47,7 @@ typedef enum
 
 typedef enum
 {
-    COMMON, FIRE, THUNDER
+    COMMON, FIRE, THUNDER, LOSS
 }damage_e; //伤害属性
 
 typedef enum
@@ -61,9 +61,10 @@ typedef struct
     int id;  //对应id
     gender_e gender;  //性别
     char skill[21];  //技能名,多个技能用空格分开
+    char activeskill[21]; //主动技名
     int maxhealth;  //体力上限
     nation_e nation;//势力
-    int limit;  //限定技是否拥有,0=无,1=有
+    int limit;  //是否拥有限定技,0=无,1=有
     int selected;  //是否已被选中(用于选将防止重复),0=未选,1=已选,2=待玩家选择
 } general_t;//武将信息
 
@@ -86,23 +87,27 @@ typedef struct
     int cardamount;  //当前手牌数
     int maxhealth; //体力上限
     int maxcard;  //当前手牌上限
+
     int nowslash;  //当前回合已使用杀次数
     int maxslash;  //每回合使用杀的最大次数
     int slashlimit;  //是否限制杀的使用次数
+    int targets; //杀可指定目标数
     int spirits;  //回合内使用酒的状态:0=未使用,1=已使用且存在伤害+1效果,2=已使用
 
     int card[100]; //当前拥有手牌,储存id=0代表为空
     int equips[4];  //装备区,分别为武器,防具,+1,-1
-    int judges[3]; //判定区,判定阶段由后向前结算
-    int range; //当前攻击距离
+    int judges[3][2]; //判定区,判定阶段由后向前结算,每行下标为顺序,列下标0为牌id,1为类别,用于处理[国色]等技能的转化
 
     int chained; //是否横置
     int turned;//是否翻面
 
-    int limitused;  //1=存在未使用的限定技=1,否则为0
+    int activeskill; //1=拥有主动触发或转换类等技能(需要另外页面释放),否则为0
+    int limit;  //1=存在未使用的限定技=1,否则为0
     int awaken;  //1=存在觉醒技且已发动,否则为0
 
     int temp[5];  //临时用变量,用于技能相关计算
+    int other[3];  //对其他角色产生影响的技能使用的临时变量,下标代表位次
+    int outcard[4][13]; //因技能移出游戏的牌
 }player_t;
 
 typedef struct
@@ -114,6 +119,7 @@ typedef struct
     int turn;  //当前轮数
     int active;  //当前行动者
     int period;  //当前阶段: 0=准备, 1=判定, 2=摸牌, 3=出牌, 4=弃牌, 5=结束
+    int page; //玩家手牌界面的页码数,处理手牌>8时的显示问题
 }game_t;
 
 extern game_t game;
