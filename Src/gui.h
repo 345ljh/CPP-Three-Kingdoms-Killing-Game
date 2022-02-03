@@ -3,6 +3,7 @@
 
 #include "graphics.h"
 #include "items.h"
+#include "app.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -18,13 +19,6 @@ typedef struct
     PIMAGE selector;  //选牌与选定目标图层
     PIMAGE tips;  //提示文字图层
 }gui_t;
-
-char* Myitoa(int num);
-char* MyitoaII(int num);
-char* Link(char* str1, char* str2);
-void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img);
-void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE img);
-void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color);
 
 void ProgramStart(void);
 void GameGuiInit(void);
