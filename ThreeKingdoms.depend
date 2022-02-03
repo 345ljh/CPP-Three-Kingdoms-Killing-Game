@@ -28,15 +28,16 @@
 1643728105 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
 	"actions.h"
 
-1643796146 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
+1643848253 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
 	"gui.h"
 
-1643788713 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
+1643818565 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
 	"graphics.h"
 	"items.h"
 	<string.h>
 	<stdlib.h>
 	<malloc.h>
+	<windows.h>
 
 1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - ¸±±¾\src\actions.cpp
 	"actions.h"
@@ -73,6 +74,16 @@
 	"gui.h"
 	<string.h>
 
-1643794169 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
+1643817408 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
 	"process.h"
+
+1643817363 c:\users\ljh\desktop\unfinished\threekingdoms\src\app.h
+	"graphics.h"
+	"items.h"
+	<string.h>
+	<stdlib.h>
+	<malloc.h>
+
+1643817328 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\app.cpp
+	"app.h"
 

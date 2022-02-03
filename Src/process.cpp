@@ -15,7 +15,7 @@ void GameStart(void)
         player[i].nowslash = 0;
         player[i].maxslash = 1;
         player[i].slashlimit = 1;
-        player[i].spirits = 1;
+        player[i].spirits = 0;
         player[i].targets = 1;
 
         player[i].chained = 0;

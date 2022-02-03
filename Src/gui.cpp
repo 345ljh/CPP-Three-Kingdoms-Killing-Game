@@ -102,11 +102,23 @@ void ProgramStart(void)
     setfont(40, 0, "隶书");
     outtextxy(520, 355, "开始游戏");
 
-    for(; is_run(); delay_fps(60))
+    //其他网页链接
+    PasteImage((char*)".\\Textures\\bili.png", 0, 500, NULL, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\github.png", 0, 550, NULL, TRANSPARENT, BLACK);
+
+    for(; is_run(); delay_fps(100))
     {
-        msg = getmouse();
+        while (mousemsg()) msg = getmouse();
 
         mousepos(&mouse_x, &mouse_y);
+        if(msg.is_down() && mouse_x >= 0 && mouse_x <= 50 && mouse_y >= 550 && mouse_y <= 600)
+        {
+            ShellExecute(NULL, "open", "https://github.com/345ljh/CPP-Three-Kingdoms-Killing-Game", NULL, NULL, SW_MINIMIZE);
+        }
+        if(msg.is_down() && mouse_x >= 0 && mouse_x <= 50 && mouse_y >= 500 && mouse_y <= 550)
+        {
+            MessageBox( NULL, TEXT("敬请期待!"), TEXT("提示"), 0);
+        }
         if(msg.is_down() && mouse_x >= 500 && mouse_x <= 700 && mouse_y >= 350 && mouse_y <= 400)
         {
             return;
@@ -223,6 +235,8 @@ void GeneralSelect(void)
     int forselect[4];
     int pointer;
 
+    delay_fps(2);
+
     //确定玩家可选的4将
     for(int i = 0; i <= 3; i++)
     {
@@ -282,9 +296,9 @@ void GeneralSelect(void)
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 
     //响应玩家选将
-    for(; is_run(); delay_fps(60))
+    for(; is_run(); delay_fps(100))
     {
-        msg = getmouse();
+        while (mousemsg()) msg = getmouse();
         mousepos(&mouse_x, &mouse_y);
 
         if(msg.is_down() && mouse_x >= 310 && mouse_x <= 440 && mouse_y >= 240 && mouse_y <= 410) player[game.humanid].general = forselect[0];
