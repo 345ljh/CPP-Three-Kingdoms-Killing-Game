@@ -2,6 +2,8 @@
 
 void GameStart(void)
 {
+    delay_fps(4);
+
     //初始化
     for(int i = 0; i <= 3; i++)
     {
@@ -39,7 +41,60 @@ void GameStart(void)
         Takecard(&player[i], 4);
     }
 
-    game.turn = 0;
+    game.turn = 1;
+    game.active = 0;
+    game.period = 0;
     game.page = 0;
+
     DrawGui();
+}
+
+void GameRun(void)
+{
+    ///Remember to DrawGui after EVERY change!!!
+    while(1)
+    {
+        if(player[game.active].controller != DEAD)
+        {
+            //准备阶段
+            game.period = 0;
+            /* skill here */
+
+            //判定阶段
+            game.period = 1;
+            int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
+            for(int i = 2; i >= 0; i++) //从后向前判定
+            {
+
+            }
+
+            //摸牌阶段
+            game.period = 2;
+            if(!(skip & 1) )
+            {
+                Takecard(&player[game.active], 2);
+            }
+
+            //出牌阶段
+            game.period = 3;
+            if(!(skip & 2))
+            {
+                /* use card */
+            }
+
+            //弃牌阶段
+            game.period = 4;
+            if(player[game.active].cardamount > player[game.active].maxcard)
+            {
+                Throwcard(&player[game.active], &player[game.active], player[game.active].cardamount - player[game.active].maxcard);
+            }
+
+            //结束阶段
+            game.period = 5;
+            /* skill here */
+        }
+
+        //轮数与当前回合角色更新
+        (++game.active %= PLAYERS) ? : game.turn++;
+    }
 }

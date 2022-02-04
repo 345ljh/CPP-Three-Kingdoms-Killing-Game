@@ -66,6 +66,7 @@ general_t general_inf[GENERALS] =
     {"蜀国女兵", 1, FEMALE, "", "", 4, SHU, 0, 0},
     {"吴国弓兵", 2, MALE, "", "", 4, WU, 0, 0},
     {"黄巾军", 3, MALE, "", "", 4, QUN, 0, 0},
+    {"金虎", 4, MALE, "", "贺岁", 8, SHEN, 0, 0},
 };
 
 int card[160];

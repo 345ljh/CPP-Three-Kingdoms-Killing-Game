@@ -8,5 +8,6 @@
 #include <string.h>
 
 void GameStart(void);
+void GameRun(void);
 
 #endif // PROCESS_H_INCLUDED

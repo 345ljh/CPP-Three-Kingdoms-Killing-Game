@@ -465,7 +465,7 @@ void DrawGui(void)
             if(player[(game.humanid + i) % 4].judges[j][1] != -1)
             {
                 PasteImage( Link( Link( (char*)".\\Textures\\Judges\\", Myitoa( (int)player[(game.humanid + i) % 4].judges[j][1]) ),
-                            (char*)".png"), i ? pos[2 * i] + 130 : 20 * (i + 1), i ? pos[2 * i + 1] + 150 - 20 * j : 430, gui.playercard, TRANSPARENT, BLACK);
+                            (char*)".png"), i ? pos[2 * i] + 130 : 20 * (j + 1), i ? pos[2 * i + 1] + 150 - 20 * j : 430, gui.playercard, TRANSPARENT, BLACK);
 
             }
         }

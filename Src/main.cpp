@@ -14,7 +14,9 @@ int main()
     PileInit();
     GameGuiInit();
     GeneralSelect();
+
     GameStart();
+    //GameRun();
     getch();
     return 0;
 }

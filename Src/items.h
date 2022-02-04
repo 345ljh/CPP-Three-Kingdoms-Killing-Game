@@ -2,7 +2,7 @@
 #define ITEMS_H_INCLUDED
 
 #define PLAYERS 4  //玩家数量
-#define GENERALS 4 //当前已加入武将数量
+#define GENERALS 5 //当前已加入武将数量
 
 
 typedef enum
