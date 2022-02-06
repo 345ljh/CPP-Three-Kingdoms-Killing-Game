@@ -471,6 +471,16 @@ void DrawGui(void)
         }
     }
 
+    //其他角色阶段提示
+    if(game.active != game.humanid)
+    {
+        char str[] = "准备\0判定\0摸牌\0出牌\0弃牌\0结束\0";
+        setcolor(LIGHTGREEN, gui.frame);
+        setfont(20, 0, "隶书", gui.background);
+        outtextxy(pos[2 * ((game.active - game.humanid + PLAYERS) % PLAYERS)] + 30, pos[2 * ((game.active - game.humanid + PLAYERS) % PLAYERS) + 1] + 170,
+                  Link(str + game.period * 5, (char*)"阶段"), gui.frame);
+    }
+
     putimage(0, 0, gui.background);
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
     putimage_transparent(NULL, gui.frame, 0, 0, BLACK);

@@ -18,6 +18,8 @@ typedef struct
     PIMAGE playercard;  //各区域卡牌图层
     PIMAGE selector;  //选牌与选定目标图层
     PIMAGE tips;  //提示文字图层
+    PIMAGE cards;  //弃牌堆绘制图层
+    PIMAGE arrow;  //指向目标图层
 }gui_t;
 
 void ProgramStart(void);
@@ -26,4 +28,7 @@ void GeneralSelect(void);
 void DrawGui(void);
 
 extern gui_t gui;
+extern mouse_msg msg;
+extern int mouse_x, mouse_y;
+
 #endif // DRAW_H_INCLUDED

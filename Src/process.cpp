@@ -58,6 +58,7 @@ void GameRun(void)
         {
             //准备阶段
             game.period = 0;
+            DrawGui();
             /* skill here */
 
             //判定阶段
@@ -65,7 +66,35 @@ void GameRun(void)
             int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
             for(int i = 2; i >= 0; i++) //从后向前判定
             {
+                if(player[game.active].judges[i][1] != -1 && !AskWuxie(game.active, player[game.active].judges[i][1]))
+                {
+                    switch ((type_e)player[game.active].judges[i][1])
+                    {
+                    case LE:
+                        {
+                            if(card_inf[Judging(&player[game.active])].suit != HEART) skip |= 2;
+                            break;
+                        }
+                    case BING:
+                        {
+                            if(card_inf[Judging(&player[game.active])].suit != CLUB) skip |= 1;
+                            break;
+                        }
+                    case SHANDIAN:
+                        {
+                            if(card_inf[Judging(&player[game.active])].suit == SPADE &&
+                               card_inf[Judging(&player[game.active])].num >= 2 && card_inf[Judging(&player[game.active])].num <= 9)
+                            Damage(NULL, &player[game.active], 3, THUNDER);
+                            break;
+                        }
+                    default:;
+                    }
+                }
+                card_inf[player[game.active].judges[i][0]].owner = -1;
+                player[game.active].judges[i][0] = -1;
+                player[game.active].judges[i][1] = -1;
 
+                DrawGui();
             }
 
             //摸牌阶段
@@ -73,6 +102,7 @@ void GameRun(void)
             if(!(skip & 1) )
             {
                 Takecard(&player[game.active], 2);
+                DrawGui();
             }
 
             //出牌阶段
@@ -87,10 +117,12 @@ void GameRun(void)
             if(player[game.active].cardamount > player[game.active].maxcard)
             {
                 Throwcard(&player[game.active], &player[game.active], player[game.active].cardamount - player[game.active].maxcard);
+                DrawGui();
             }
 
             //结束阶段
             game.period = 5;
+            DrawGui();
             /* skill here */
         }
 

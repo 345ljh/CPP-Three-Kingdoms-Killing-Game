@@ -53,6 +53,18 @@ void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE i
     line(x3, y3, x1, y1, img);
 }
 
+//画边框粗细为特定值的空心矩形
+///默认边框宽度为2
+///前4个变量均表示内框位置
+void LineRect(int left, int top, int right, int bottom, color_t color, PIMAGE img, int wide)
+{
+    setfillcolor(color, img);
+    bar(left - wide, top - wide, right + wide, top, img);
+    bar(left - wide, bottom, right + wide, bottom + wide, img);
+    bar(left - wide, top, left, bottom, img);
+    bar(right, top, right + wide, bottom, img);
+}
+
 //图像粘贴函数
 ///调用时将路径转为char*,否则报warning
 ///此函数调用时向mode传递的TRANSPARENT已被定义为1
@@ -74,4 +86,12 @@ void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color)
     }
     }
     delimage(temp);
+}
+
+//计算数组中非-1元素个数
+int ArrayOccupied(int* buf, int len)
+{
+    int res;
+    for(int i = 0; i <= len - 1; i++) if(buf[i] != -1) res++;
+    return res;
 }

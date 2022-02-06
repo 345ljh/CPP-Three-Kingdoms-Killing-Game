@@ -69,6 +69,5 @@ general_t general_inf[GENERALS] =
     {"金虎", 4, MALE, "", "贺岁", 8, SHEN, 0, 0},
 };
 
-int card[160];
 game_t game;
 player_t player[PLAYERS];
