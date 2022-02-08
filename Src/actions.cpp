@@ -140,6 +140,42 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     }
                 }
             }
+
+                //装备区
+            for(int i = 0; i <= 7; i++)
+            {
+                //手牌区
+                if(mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 + 37.5 * i && mouse_y <= 487.5 + 37.5 * i)
+                {
+                    if(player->equips[i] != -1)  //确定对应位置有手牌
+                    {
+                        int found = 0;
+                        for(int j = 0; j <= amount - 1; j++)
+                        {
+                            //若已选中则取消
+                            if(tothrow[j] == (0x10 | i))
+                            {
+                                tothrow[j] = -1;
+                                found++;
+                                break;
+                            }
+                        }
+
+                        //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                        if(ArrayOccupied(tothrow, amount) != amount)
+                        {
+                            for(int j = 0; j <= amount - 1; j++)
+                            {
+                                if(tothrow[j] == -1)
+                                {
+                                    tothrow[j] = 0x10 | i;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

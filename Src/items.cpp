@@ -71,3 +71,5 @@ general_t general_inf[GENERALS] =
 
 game_t game;
 player_t player[PLAYERS];
+
+FILE *fp = NULL; //监视变量

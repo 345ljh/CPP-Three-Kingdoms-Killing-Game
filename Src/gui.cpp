@@ -4,7 +4,7 @@ mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
 gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
 
-int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时针,武将位置
+const int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时针,武将位置
 
 //开始界面
 void ProgramStart(void)
@@ -324,7 +324,7 @@ void DrawGui(void)
     //手牌翻页
     setcolor(EGERGB(181, 230, 29), gui.frame);
     setfont(15, 0, "Lucida Handwriting", gui.frame);
-    outtextxy(1000, 580, Link(Link(Link(Myitoa(game.page + 1), (char*)"/"), MyitoaII(player[game.humanid].cardamount / 8 + 1) ), (char*)"页"), gui.frame);
+    outtextxy(1000, 580, Link(Link(Link(Myitoa(game.page + 1), (char*)"/"), MyitoaII((player[game.humanid].cardamount- 1) / 8 + 1) ), (char*)"页"), gui.frame);
 
     //体力与手牌信息
     for(int i = 0; i <= 3; i++)

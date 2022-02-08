@@ -14,6 +14,7 @@ void GameStart(void)
         player[i].maxcard = player[i].health;
         player[i].cardamount = 0;
 
+        player[i].takecard = 2;
         player[i].nowslash = 0;
         player[i].maxslash = 1;
         player[i].slashlimit = 1;
@@ -47,6 +48,7 @@ void GameStart(void)
     game.page = 0;
 
     DrawGui();
+
 }
 
 void GameRun(void)
@@ -57,14 +59,17 @@ void GameRun(void)
         if(player[game.active].controller != DEAD)
         {
             //准备阶段
+            delay_fps(2);
             game.period = 0;
             DrawGui();
             /* skill here */
 
             //判定阶段
+            delay_fps(2);
             game.period = 1;
             int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
-            for(int i = 2; i >= 0; i++) //从后向前判定
+
+            for(int i = 2; i >= 0; i--) //从后向前判定
             {
                 if(player[game.active].judges[i][1] != -1 && !AskWuxie(game.active, player[game.active].judges[i][1]))
                 {
@@ -90,22 +95,26 @@ void GameRun(void)
                     default:;
                     }
                 }
+
                 card_inf[player[game.active].judges[i][0]].owner = -1;
                 player[game.active].judges[i][0] = -1;
                 player[game.active].judges[i][1] = -1;
 
                 DrawGui();
+
             }
 
             //摸牌阶段
+            delay_fps(2);
             game.period = 2;
             if(!(skip & 1) )
             {
-                Takecard(&player[game.active], 2);
+                Takecard(&player[game.active], player[game.active].takecard);
                 DrawGui();
             }
 
             //出牌阶段
+            delay_fps(2);
             game.period = 3;
             if(!(skip & 2))
             {
@@ -113,6 +122,7 @@ void GameRun(void)
             }
 
             //弃牌阶段
+            delay_fps(2);
             game.period = 4;
             if(player[game.active].cardamount > player[game.active].maxcard)
             {
@@ -121,6 +131,7 @@ void GameRun(void)
             }
 
             //结束阶段
+            delay_fps(2);
             game.period = 5;
             DrawGui();
             /* skill here */

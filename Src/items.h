@@ -1,6 +1,8 @@
 #ifndef ITEMS_H_INCLUDED
 #define ITEMS_H_INCLUDED
 
+#include <stdio.h>
+
 #define PLAYERS 4  //玩家数量
 #define GENERALS 5 //当前已加入武将数量
 
@@ -88,6 +90,7 @@ typedef struct
     int maxhealth; //体力上限
     int maxcard;  //当前手牌上限
 
+    int takecard;  //摸牌阶段摸牌数
     int nowslash;  //当前回合已使用杀次数
     int maxslash;  //每回合使用杀的最大次数
     int slashlimit;  //是否限制杀的使用次数
@@ -126,5 +129,5 @@ extern game_t game;
 extern general_t general_inf[GENERALS];
 extern card_t card_inf[160];
 extern player_t player[PLAYERS];
-
+extern FILE *fp;
 #endif // ITEMS_H_INCLUDED
