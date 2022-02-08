@@ -75,79 +75,83 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
     area |= 2 & (player->equips[0] != -1 || player->equips[1] != -1 || player->equips[2] != -1 || player->equips[3] != -1);
     area |= 4 & (player->judges[0][0] != -1 || player->judges[1][0] != -1 || player->judges[2][0] != -1);
 
+    //玩家自己弃牌(如弃牌阶段)
     if(executor->controller == HUMAN &&player->controller == HUMAN)
     {
         int *tothrow = NULL;
         tothrow = (int*)calloc(amount, sizeof(int));   //储存所弃牌在区域中的位置id
         memset(tothrow, 0xFF, amount * sizeof(int));
-        DrawGui();
 
-        //已知玩家弃置自己的牌时不会涉及判定区
-        for(; is_run(); delay_fps(100))
+        //此部分不涉及判定区
+        for(; is_run(); delay_fps(15))
         {
             while (mousemsg()) msg = getmouse();
+            mousepos(&mouse_x, &mouse_y);
+
+            DrawGui();
+            cleardevice(gui.selector);
+
+            //弃牌数提示
+            setcolor(WHITE, gui.selector);
+            setfont(30, 0, "仿宋", gui.selector);
+            outtextxy(550, 415, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"), gui.selector);
 
             //全部绘制为未选定状态
-            if(ArrayOccupied(tothrow, amount) < amount)
-            {
-                if(area & 1) for(int i = 0; i <= 7; i++)
-                    if(player->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
-                if(area & 2) for(int i = 0; i <= 3; i++)
-                    if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
-            }
+            if(area & 1) for(int i = 0; i <= 7; i++)
+                if(player->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+            if(area & 2) for(int i = 0; i <= 3; i++)
+                if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
 
             //绘制已选定状态,tothrow低8位为选定牌在card/equips/judges的下标,高8位代表选定区域,0=手牌,1=装备区,2=判定区
             for(int i = 0; i <= amount - 1; i++)
             {
-                if(tothrow[i] >> 8 == 0 && game.page == tothrow[i] / 8 && player->card[tothrow[i]] != -1)
-                    LineRect(160 + 100 * tothrow[i] % 8, 465, 240 + 100 * tothrow[i] % 8, 585, EGERGB(255, 215, 77), gui.selector);
-                if(tothrow[i] >> 8 == 1 && player->equips[tothrow[i] % 0x10] != -1)
-                    LineRect(5, 453.75 + 37.5 * (tothrow[i] % 0x10), 145, 483.75 + 37.5 * (tothrow[i] % 0x10), EGERGB(255, 215, 77), gui.selector);
+                if(tothrow[i] != -1 && player->card[tothrow[i]] != -1 && tothrow[i] >> 8 == 0 && game.page == tothrow[i] / 8)
+                    LineRect(160 + 100 * (tothrow[i] % 8), 465, 240 + 100 * (tothrow[i] % 8), 585, EGERGB(255, 57, 57), gui.selector);
+                if(tothrow[i] != -1 && tothrow[i] >> 8 == 1 && player->equips[tothrow[i] % 0x10] != -1)
+                    LineRect(5, 453.75 + 37.5 * (tothrow[i] & 0xF), 145, 483.75 + 37.5 * (tothrow[i] & 0xF), EGERGB(255, 57, 57), gui.selector);
             }
 
             //检测按键
-            for(int i = 0; i <= 7; i++)
+            //手牌区
+            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
             {
-                //手牌区
-                if(mouse_x >= 150 + 100 * i && mouse_x <= 250 + 100 * i && mouse_y >= 450 && mouse_y <= 600)
+                int sel = (mouse_x - 150) / 100;
+                if(player->cardamount > game.page * 8 + sel)  //确定对应位置有手牌
                 {
-                    if(player->cardamount > game.page * 8 + i)  //确定对应位置有手牌
+                    int found = 0;
+                    for(int i = 0; i <= amount - 1; i++)
                     {
-                        int found = 0;
-                        for(int j = 0; j <= amount - 1; j++)
+                        //若已选中则取消
+                        if(tothrow[i] == game.page * 8 + sel)
                         {
-                            //若已选中则取消
-                            if(tothrow[j] == game.page * 8 + i)
-                            {
-                                tothrow[j] = -1;
-                                found++;
-                                break;
-                            }
+                            tothrow[i] = -1;
+                            found++;
+                            break;
                         }
+                    }
 
-                        //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                        if(ArrayOccupied(tothrow, amount) != amount)
+                    //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                    if(!found && ArrayOccupied(tothrow, amount) != amount)
+                    {
+                        for(int i = 0; i <= amount - 1; i++)
                         {
-                            for(int j = 0; j <= amount - 1; j++)
+                            if(tothrow[i] == -1)
                             {
-                                if(tothrow[j] == -1)
-                                {
-                                    tothrow[j] = game.page + i;
-                                    break;
-                                }
+                                tothrow[i] = game.page * 8 + sel;
+                                break;
                             }
                         }
                     }
                 }
             }
 
+
                 //装备区
-            for(int i = 0; i <= 7; i++)
+            for(int i = 0; i <= 3; i++)
             {
-                //手牌区
                 if(mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 + 37.5 * i && mouse_y <= 487.5 + 37.5 * i)
                 {
-                    if(player->equips[i] != -1)  //确定对应位置有手牌
+                    if(player->equips[i] != -1)  //确定对应位置有装备
                     {
                         int found = 0;
                         for(int j = 0; j <= amount - 1; j++)
@@ -176,6 +180,8 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     }
                 }
             }
+
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
         }
     }
 }
