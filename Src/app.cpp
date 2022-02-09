@@ -91,7 +91,24 @@ void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color)
 //计算数组中非-1元素个数
 int ArrayOccupied(int* buf, int len)
 {
-    int res;
+    int res = 0;
     for(int i = 0; i <= len - 1; i++) if(buf[i] != -1) res++;
     return res;
+}
+
+//将数组中非-1的元素下标最小化,用于整理手牌
+void IndexAlign(player_t* player)
+{
+    int *temp = NULL;
+    temp = (int*)calloc(player->cardamount, sizeof(int));
+
+    int index = 0;
+    for(int i = 0; index <= player->cardamount - 1; i++)
+        if(player->card[i] != -1) temp[index++] = player->card[i];
+
+    memset(player->card, 0xFF, sizeof(player->card));
+
+    for(int i = 0; i <= player->cardamount - 1; i++) player->card[i] = temp[i];
+
+    free(temp);
 }

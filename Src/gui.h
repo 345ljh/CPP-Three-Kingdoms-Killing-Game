@@ -18,7 +18,7 @@ typedef struct
     PIMAGE playercard;  //各区域卡牌图层
     PIMAGE selector;  //选牌与选定目标图层
     PIMAGE tips;  //提示文字图层
-    PIMAGE cards;  //弃牌堆绘制图层
+    PIMAGE throwcard;  //弃牌堆绘制图层
     PIMAGE arrow;  //指向目标图层
 }gui_t;
 

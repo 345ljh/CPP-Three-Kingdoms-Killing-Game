@@ -83,7 +83,7 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
         memset(tothrow, 0xFF, amount * sizeof(int));
 
         //此部分不涉及判定区
-        for(; is_run(); delay_fps(15))
+        for(; is_run(); delay_fps(10))
         {
             while (mousemsg()) msg = getmouse();
             mousepos(&mouse_x, &mouse_y);
@@ -111,6 +111,9 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     LineRect(5, 453.75 + 37.5 * (tothrow[i] & 0xF), 145, 483.75 + 37.5 * (tothrow[i] & 0xF), EGERGB(255, 57, 57), gui.selector);
             }
 
+            //确定键
+            if(ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+
             //检测按键
             //手牌区
             if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
@@ -131,7 +134,7 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     }
 
                     //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                    if(!found && ArrayOccupied(tothrow, amount) != amount)
+                    if(!found && ArrayOccupied(tothrow, amount) <= amount)
                     {
                         for(int i = 0; i <= amount - 1; i++)
                         {
@@ -145,42 +148,82 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                 }
             }
 
-
-                //装备区
-            for(int i = 0; i <= 3; i++)
+            //装备区
+            if(msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 600)
             {
-                if(mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 + 37.5 * i && mouse_y <= 487.5 + 37.5 * i)
+                int sel = (int)( (mouse_y - 450) / 37.5);
+                if(player->equips[sel] != -1)  //确定对应位置有装备
                 {
-                    if(player->equips[i] != -1)  //确定对应位置有装备
+                    int found = 0;
+                    for(int i = 0; i <= amount - 1; i++)
                     {
-                        int found = 0;
-                        for(int j = 0; j <= amount - 1; j++)
+                        //若已选中则取消
+                        if(tothrow[i] == (0x10 | sel))
                         {
-                            //若已选中则取消
-                            if(tothrow[j] == (0x10 | i))
-                            {
-                                tothrow[j] = -1;
-                                found++;
-                                break;
-                            }
+                            tothrow[i] = -1;
+                            found++;
+                            break;
                         }
+                    }
 
-                        //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                        if(ArrayOccupied(tothrow, amount) != amount)
+                    //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                    if(ArrayOccupied(tothrow, amount) <= amount)
+                    {
+                        for(int i = 0; i <= amount - 1; i++)
                         {
-                            for(int j = 0; j <= amount - 1; j++)
+                            if(tothrow[i] == -1)
                             {
-                                if(tothrow[j] == -1)
-                                {
-                                    tothrow[j] = 0x10 | i;
-                                    break;
-                                }
+                                tothrow[i] = 0x10 | sel;
+                                break;
                             }
                         }
                     }
                 }
             }
 
+            //翻页
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(game.page > 0) game.page--;
+            }
+            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(executor->cardamount > (game.page + 1) * 8) game.page++;
+            }
+
+            //确定键
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+            {
+                if(ArrayOccupied(tothrow, amount) == amount)
+                {
+                    for(int i = 0; i <= amount - 1; i++)
+                    {
+                        switch(tothrow[i] >> 8)
+                        {
+                        case 0:
+                        {
+                            card_inf[player->card[tothrow[i]]].owner = -1;
+                            player->card[tothrow[i]] = -1;
+                            player->cardamount--;
+                            break;
+                        }
+                        case 1:
+                        {
+                            card_inf[player->equips[tothrow[i] & 0xF]].owner = -1;
+                            player->equips[tothrow[i] & 0xF] = -1;
+                            break;
+                        }
+                        default:;
+                        }
+                    }
+
+                    //修改手牌下标
+                    IndexAlign(player);
+                }
+
+                DrawGui();
+                return;
+            }
             putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
         }
     }

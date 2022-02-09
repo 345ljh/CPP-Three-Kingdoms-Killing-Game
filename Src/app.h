@@ -1,6 +1,8 @@
 #ifndef APP_H_INCLUDED
 #define APP_H_INCLUDED
 
+#include "items.h"
+
 #include <graphics.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,5 +19,6 @@ void LineRect(int left, int top, int right, int bottom, color_t color, PIMAGE im
 void PasteImage(char* path, int x, int y, PIMAGE img = NULL, int mode = 0, color_t color = BLACK);
 
 int ArrayOccupied(int* buf, int len);
+void IndexAlign(player_t* player);
 
 #endif // APP_H_INCLUDED

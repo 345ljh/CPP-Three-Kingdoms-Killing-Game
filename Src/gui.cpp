@@ -309,6 +309,8 @@ void DrawGui(void)
     cleardevice(gui.frame);
     cleardevice(gui.playercard);
 
+    if(game.page * 8 + 1 > player[game.humanid].cardamount) game.page--;
+
     //轮数与剩余牌量
     setcolor(EGERGB(255, 127, 39), gui.frame);
     setfont(40, 0, "Lucida Handwriting", gui.frame);
@@ -388,22 +390,22 @@ void DrawGui(void)
     //玩家手牌
     for(int i = 0; i <= 7; i++)
     {
-        if(player[game.humanid].card[i] != -1)
+        if(player[game.humanid].card[game.page * 8 + i] != -1)
         {
-            PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa( (int)card_inf[player[game.humanid].card[i]].type) ), (char*)".png"),
+            PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].type) ), (char*)".png"),
                    160 + 100 * i, 465, gui.playercard, TRANSPARENT, BLACK);
-            PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].card[i]].suit) ), (char*)".png"),
+            PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].suit) ), (char*)".png"),
                    161 + 100 * i, 466, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
 
-            setcolor((int)card_inf[player[game.humanid].card[i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+            setcolor((int)card_inf[player[game.humanid].card[game.page * 8 + i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
             setfont(15, 0, "Lucida Handwriting", gui.playercard);
             outtextxy(230 + 100 * i, 466,
-                  card_inf[player[game.humanid].card[i]].num == 1 ? (char*)"A" :
-                  card_inf[player[game.humanid].card[i]].num == 10 ? (char*)"⒑" :
-                  card_inf[player[game.humanid].card[i]].num == 11 ? (char*)"J" :
-                  card_inf[player[game.humanid].card[i]].num == 12 ? (char*)"Q" :
-                  card_inf[player[game.humanid].card[i]].num == 13 ? (char*)"K" :
-                  Myitoa( (int)card_inf[player[game.humanid].card[i]].num),
+                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 1 ? (char*)"A" :
+                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 10 ? (char*)"⒑" :
+                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 11 ? (char*)"J" :
+                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 12 ? (char*)"Q" :
+                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 13 ? (char*)"K" :
+                  Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].num),
                   gui.playercard);
         }
     }
@@ -485,4 +487,5 @@ void DrawGui(void)
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
     putimage_transparent(NULL, gui.frame, 0, 0, BLACK);
     putimage_transparent(NULL, gui.playercard, 0, 0, BLACK);
+    putimage_transparent(NULL, gui.throwcard, 0, 0, BLACK);
 }

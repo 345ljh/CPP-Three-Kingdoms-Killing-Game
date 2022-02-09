@@ -59,13 +59,13 @@ void GameRun(void)
         if(player[game.active].controller != DEAD)
         {
             //准备阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 0;
             DrawGui();
             /* skill here */
 
             //判定阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 1;
             int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
 
@@ -105,7 +105,7 @@ void GameRun(void)
             }
 
             //摸牌阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 2;
             if(!(skip & 1) )
             {
@@ -114,7 +114,7 @@ void GameRun(void)
             }
 
             //出牌阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 3;
             if(!(skip & 2))
             {
@@ -122,7 +122,7 @@ void GameRun(void)
             }
 
             //弃牌阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 4;
             if(player[game.active].cardamount > player[game.active].maxcard)
             {
@@ -131,7 +131,7 @@ void GameRun(void)
             }
 
             //结束阶段
-            delay_fps(2);
+            delay_fps(4);
             game.period = 5;
             DrawGui();
             /* skill here */
