@@ -88,6 +88,42 @@ void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color)
     delimage(temp);
 }
 
+//卡牌粘贴函数
+///id=-2表示卡牌背面
+void PasteCard(int x, int y, int id, PIMAGE img)
+{
+    if(id >= 0)
+    {
+        PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa( (int)card_inf[id].type) ), (char*)".png"),
+                    x, y, img, TRANSPARENT, BLACK);
+        PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[id].suit) ), (char*)".png"),
+                    x + 1, y + 1, img, TRANSPARENT, EGERGB(255, 255, 255));
+
+        setcolor((int)card_inf[id].suit & 2 ? EGERGB(255, 0, 0) : EGERGB(11, 11, 11), img);
+        setfont(15, 0, "Lucida Handwriting", img);
+        outtextxy(x + 69, y + 1,
+                  card_inf[id].num == 1 ? (char*)"A" :
+                  card_inf[id].num == 10 ? (char*)"⒑" :
+                  card_inf[id].num == 11 ? (char*)"J" :
+                  card_inf[id].num == 12 ? (char*)"Q" :
+                  card_inf[id].num == 13 ? (char*)"K" :
+                  Myitoa( (int)card_inf[id].num), img);
+    }
+    else if(id == -2) PasteImage((char*)".\\Textures\\Cards\\back.png", x, y, img, TRANSPARENT, BLACK);
+}
+
+void Putcard(int id)
+{
+    PIMAGE temp = newimage();
+    getimage(temp,(char*)".\\Textures\\Cards\\back.png");
+    setbkmode(TRANSPARENT, temp);
+
+    PasteCard(0, 0, id, temp);
+    Rect(0, 0, 80, 120, EGERGB(1, 1, 1), temp);
+    putimage_rotate(gui.throwcard, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 3.1415);
+    delimage(temp);
+}
+
 //计算数组中非-1元素个数
 int ArrayOccupied(int* buf, int len)
 {

@@ -2,7 +2,7 @@
 
 mouse_msg msg;
 int mouse_x, mouse_y;//用于获取鼠标坐标
-gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
+gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
 
 const int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时针,武将位置
 
@@ -62,6 +62,8 @@ void GameGuiInit(void)
     getimage(gui.playercard, 0, 0, 1200, 600);
     getimage(gui.selector, 0, 0, 1200, 600);
     getimage(gui.tips, 0, 0, 1200, 600);
+    getimage(gui.throwcard, 0, 0, 1200, 600);
+    getimage(gui.arrow, 0, 0, 1200, 600);
 
     setbkmode(TRANSPARENT, gui.background);
     setbkmode(TRANSPARENT, gui.frame);
@@ -171,7 +173,6 @@ void GeneralSelect(void)
     }
 
     //选将框
-    setcolor(EGERGB(102, 0, 15), gui.selector);
     setfillcolor(EGERGB(83, 30, 0), gui.selector);
     bar(300, 200, 900, 450, gui.selector);
     Rect(300, 200, 900, 450, EGERGB(190, 183, 68), gui.selector);
@@ -388,27 +389,7 @@ void DrawGui(void)
     }
 
     //玩家手牌
-    for(int i = 0; i <= 7; i++)
-    {
-        if(player[game.humanid].card[game.page * 8 + i] != -1)
-        {
-            PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].type) ), (char*)".png"),
-                   160 + 100 * i, 465, gui.playercard, TRANSPARENT, BLACK);
-            PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].suit) ), (char*)".png"),
-                   161 + 100 * i, 466, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
-
-            setcolor((int)card_inf[player[game.humanid].card[game.page * 8 + i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
-            setfont(15, 0, "Lucida Handwriting", gui.playercard);
-            outtextxy(230 + 100 * i, 466,
-                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 1 ? (char*)"A" :
-                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 10 ? (char*)"⒑" :
-                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 11 ? (char*)"J" :
-                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 12 ? (char*)"Q" :
-                  card_inf[player[game.humanid].card[game.page * 8 + i]].num == 13 ? (char*)"K" :
-                  Myitoa( (int)card_inf[player[game.humanid].card[game.page * 8 + i]].num),
-                  gui.playercard);
-        }
-    }
+    for(int i = 0; i <= 7; i++) PasteCard(160 + 100 * i, 465, player[game.humanid].card[game.page * 8 + i], gui.playercard);
 
     //玩家装备
     for(int i = 0; i <= 3; i++)
@@ -420,7 +401,7 @@ void DrawGui(void)
             PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[game.humanid].equips[i]].suit) ), (char*)".png"),
                    123, 453.75 + 37.5 * i, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
 
-            setcolor((int)card_inf[player[game.humanid].equips[i]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+            setcolor((int)card_inf[player[game.humanid].equips[i]].suit & 2 ? EGERGB(255, 0, 0) : EGERGB(11, 11, 11), gui.playercard);
             setfont(15, 0, "Lucida Handwriting", gui.playercard);
             outtextxy(135, 453.75 + 37.5 * i,
                   card_inf[player[game.humanid].equips[i]].num == 1 ? (char*)"A" :
@@ -445,7 +426,7 @@ void DrawGui(void)
                 PasteImage( Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[player[(game.humanid + i) % 4].equips[j]].suit) ),
                             (char*)".png"), pos[2 * i] + 105, pos[2 * i + 1] + 110 + 15 * j, gui.playercard, TRANSPARENT, EGERGB(255, 255, 255));
 
-                setcolor((int)card_inf[player[(game.humanid + i) % 4].equips[j]].suit & 2 ? EGERGB(255, 0, 0) : 0, gui.playercard);
+                setcolor((int)card_inf[player[(game.humanid + i) % 4].equips[j]].suit & 2 ? EGERGB(255, 0, 0) : EGERGB(11, 11, 11), gui.playercard);
                 setfont(15, 0, "Lucida Handwriting", gui.playercard);
                 outtextxy(pos[2 * i] + 120, pos[2 * i + 1] + 110 + 15 * j,
                       card_inf[player[(game.humanid + i) % 4].equips[j]].num == 1 ? (char*)"A" :
@@ -484,8 +465,8 @@ void DrawGui(void)
     }
 
     putimage(0, 0, gui.background);
+    putimage_transparent(NULL, gui.throwcard, 0, 0, BLACK);
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
     putimage_transparent(NULL, gui.frame, 0, 0, BLACK);
     putimage_transparent(NULL, gui.playercard, 0, 0, BLACK);
-    putimage_transparent(NULL, gui.throwcard, 0, 0, BLACK);
 }

@@ -27,6 +27,8 @@ void Shuffle(void)
     int pilecards = 0;
     int pointer;
 
+    cleardevice(gui.throwcard);
+
     //统计弃牌堆内牌的数量
     for(int i = 0; i <= 150; i++)
     {
@@ -62,7 +64,7 @@ void Takecard(player_t *player, int amount)
         game.card[game.nowpile] = -1;
     }
 
-        /* skills here */
+    /* skills here */
 }
 
 //弃牌,其中executor为弃牌者,player为被弃牌者
@@ -70,131 +72,133 @@ void Takecard(player_t *player, int amount)
 ///此函数下弃手牌不能对所弃牌的种类进行限制,如火攻时的相同花色
 void Throwcard(player_t *executor, player_t *player, int amount, int area)
 {
-    //判断对应区域有牌
-    area |= 1 & (player->card[0] != -1);
-    area |= 2 & (player->equips[0] != -1 || player->equips[1] != -1 || player->equips[2] != -1 || player->equips[3] != -1);
-    area |= 4 & (player->judges[0][0] != -1 || player->judges[1][0] != -1 || player->judges[2][0] != -1);
 
-    //玩家自己弃牌(如弃牌阶段)
-    if(executor->controller == HUMAN &&player->controller == HUMAN)
+    //玩家操作弃牌
+    if(executor->controller == HUMAN)
     {
-        int *tothrow = NULL;
-        tothrow = (int*)calloc(amount, sizeof(int));   //储存所弃牌在区域中的位置id
-        memset(tothrow, 0xFF, amount * sizeof(int));
-
-        //此部分不涉及判定区
-        for(; is_run(); delay_fps(10))
+        //对玩家自己弃牌(如弃牌阶段)
+        if(player->controller == HUMAN)
         {
-            while (mousemsg()) msg = getmouse();
-            mousepos(&mouse_x, &mouse_y);
+            //判断对应区域有牌
+            area |= 1 & (player->card[0] != -1);
+            area |= 2 & (player->equips[0] != -1 || player->equips[1] != -1 || player->equips[2] != -1 || player->equips[3] != -1);
+            area |= 4 & (player->judges[0][0] != -1 || player->judges[1][0] != -1 || player->judges[2][0] != -1);
 
-            DrawGui();
-            cleardevice(gui.selector);
+            int *tothrow = NULL;
+            tothrow = (int*)calloc(amount, sizeof(int));   //储存所弃牌在区域中的位置id
+            memset(tothrow, 0xFF, amount * sizeof(int));
 
-            //弃牌数提示
-            setcolor(WHITE, gui.selector);
-            setfont(30, 0, "仿宋", gui.selector);
-            outtextxy(550, 415, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"), gui.selector);
-
-            //全部绘制为未选定状态
-            if(area & 1) for(int i = 0; i <= 7; i++)
-                if(player->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
-            if(area & 2) for(int i = 0; i <= 3; i++)
-                if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
-
-            //绘制已选定状态,tothrow低8位为选定牌在card/equips/judges的下标,高8位代表选定区域,0=手牌,1=装备区,2=判定区
-            for(int i = 0; i <= amount - 1; i++)
+            //此部分不涉及判定区
+            for(; is_run(); delay_fps(10))
             {
-                if(tothrow[i] != -1 && player->card[tothrow[i]] != -1 && tothrow[i] >> 8 == 0 && game.page == tothrow[i] / 8)
-                    LineRect(160 + 100 * (tothrow[i] % 8), 465, 240 + 100 * (tothrow[i] % 8), 585, EGERGB(255, 57, 57), gui.selector);
-                if(tothrow[i] != -1 && tothrow[i] >> 8 == 1 && player->equips[tothrow[i] % 0x10] != -1)
-                    LineRect(5, 453.75 + 37.5 * (tothrow[i] & 0xF), 145, 483.75 + 37.5 * (tothrow[i] & 0xF), EGERGB(255, 57, 57), gui.selector);
-            }
+                while (mousemsg()) msg = getmouse();
+                mousepos(&mouse_x, &mouse_y);
 
-            //确定键
-            if(ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+                DrawGui();
+                cleardevice(gui.selector);
 
-            //检测按键
-            //手牌区
-            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
-            {
-                int sel = (mouse_x - 150) / 100;
-                if(player->cardamount > game.page * 8 + sel)  //确定对应位置有手牌
+                //弃牌数提示
+                setcolor(WHITE, gui.selector);
+                setfont(30, 0, "仿宋", gui.selector);
+                outtextxy(550, 415, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"), gui.selector);
+
+                //全部绘制为未选定状态
+                if(area & 1) for(int i = 0; i <= 7; i++)
+                        if(player->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                if(area & 2) for(int i = 0; i <= 3; i++)
+                        if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
+
+                //绘制已选定状态,tothrow低8位为选定牌在card/equips/judges的下标,高8位代表选定区域,0=手牌,1=装备区,2=判定区
+                for(int i = 0; i <= amount - 1; i++)
                 {
-                    int found = 0;
-                    for(int i = 0; i <= amount - 1; i++)
-                    {
-                        //若已选中则取消
-                        if(tothrow[i] == game.page * 8 + sel)
-                        {
-                            tothrow[i] = -1;
-                            found++;
-                            break;
-                        }
-                    }
+                    if(tothrow[i] != -1 && player->card[tothrow[i]] != -1 && tothrow[i] >> 8 == 0 && game.page == tothrow[i] / 8)
+                        LineRect(160 + 100 * (tothrow[i] % 8), 465, 240 + 100 * (tothrow[i] % 8), 585, EGERGB(255, 57, 57), gui.selector);
+                    if(tothrow[i] != -1 && tothrow[i] >> 8 == 1 && player->equips[tothrow[i] % 0x10] != -1)
+                        LineRect(5, 453.75 + 37.5 * (tothrow[i] & 0xF), 145, 483.75 + 37.5 * (tothrow[i] & 0xF), EGERGB(255, 57, 57), gui.selector);
+                }
 
-                    //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                    if(!found && ArrayOccupied(tothrow, amount) <= amount)
+                //确定键
+                if(ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+
+                //检测按键
+                //手牌区
+                if( (area & 1) && msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
+                {
+                    int sel = (mouse_x - 150) / 100;
+                    if(player->cardamount > game.page * 8 + sel)  //确定对应位置有手牌
                     {
+                        int found = 0;
                         for(int i = 0; i <= amount - 1; i++)
                         {
-                            if(tothrow[i] == -1)
+                            //若已选中则取消
+                            if(tothrow[i] == game.page * 8 + sel)
                             {
-                                tothrow[i] = game.page * 8 + sel;
+                                tothrow[i] = -1;
+                                found++;
                                 break;
+                            }
+                        }
+
+                        //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                        if(!found && ArrayOccupied(tothrow, amount) <= amount)
+                        {
+                            for(int i = 0; i <= amount - 1; i++)
+                            {
+                                if(tothrow[i] == -1)
+                                {
+                                    tothrow[i] = game.page * 8 + sel;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            //装备区
-            if(msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 600)
-            {
-                int sel = (int)( (mouse_y - 450) / 37.5);
-                if(player->equips[sel] != -1)  //确定对应位置有装备
+                //装备区
+                if( (area & 2) && msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 600)
                 {
-                    int found = 0;
-                    for(int i = 0; i <= amount - 1; i++)
+                    int sel = (int)( (mouse_y - 450) / 37.5);
+                    if(player->equips[sel] != -1)  //确定对应位置有装备
                     {
-                        //若已选中则取消
-                        if(tothrow[i] == (0x10 | sel))
-                        {
-                            tothrow[i] = -1;
-                            found++;
-                            break;
-                        }
-                    }
-
-                    //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                    if(ArrayOccupied(tothrow, amount) <= amount)
-                    {
+                        int found = 0;
                         for(int i = 0; i <= amount - 1; i++)
                         {
-                            if(tothrow[i] == -1)
+                            //若已选中则取消
+                            if(tothrow[i] == (0x10 | sel))
                             {
-                                tothrow[i] = 0x10 | sel;
+                                tothrow[i] = -1;
+                                found++;
                                 break;
+                            }
+                        }
+
+                        //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                        if(ArrayOccupied(tothrow, amount) <= amount)
+                        {
+                            for(int i = 0; i <= amount - 1; i++)
+                            {
+                                if(tothrow[i] == -1)
+                                {
+                                    tothrow[i] = 0x10 | sel;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            //翻页
-            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
-            {
-                if(game.page > 0) game.page--;
-            }
-            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
-            {
-                if(executor->cardamount > (game.page + 1) * 8) game.page++;
-            }
+                //翻页
+                if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+                {
+                    if(game.page > 0) game.page--;
+                }
+                if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+                {
+                    if(executor->cardamount > (game.page + 1) * 8) game.page++;
+                }
 
-            //确定键
-            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
-            {
-                if(ArrayOccupied(tothrow, amount) == amount)
+                //确定键
+                if(ArrayOccupied(tothrow, amount) == amount && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
                     for(int i = 0; i <= amount - 1; i++)
                     {
@@ -203,6 +207,7 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                         case 0:
                         {
                             card_inf[player->card[tothrow[i]]].owner = -1;
+                            Putcard(player->card[tothrow[i]]);
                             player->card[tothrow[i]] = -1;
                             player->cardamount--;
                             break;
@@ -210,21 +215,55 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                         case 1:
                         {
                             card_inf[player->equips[tothrow[i] & 0xF]].owner = -1;
+                            Putcard(player->equips[tothrow[i] & 0xF]);
                             player->equips[tothrow[i] & 0xF] = -1;
                             break;
                         }
-                        default:;
                         }
                     }
 
                     //修改手牌下标
                     IndexAlign(player);
+                    DrawGui();
+                    return;
                 }
-
-                DrawGui();
-                return;
+                putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
             }
+        }
+
+        //对其他角色弃牌
+        else
+        {
+            //绘制区域
+            setfillcolor(EGERGB(83, 30, 0), gui.selector);
+            bar(415, 165, 785, 435, gui.selector);
+
+            setfont(12, 0, "仿宋", gui.selector);
+
+            setcolor( area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+            Rect(425, 175, 505, 295, area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+            outtextxy(453, 229, (char*)"手牌", gui.selector);
+            if( (area & 1) && player->cardamount) PasteCard(425, 175, -2 ,gui.selector);
+
+            char str[] = "武器\0防具\0-1马\0+1马\0";
+            setcolor( area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+            for(int i = 0; i <= 3; i++)
+            {
+                Rect(425 + 90 * i, 305, 505 + 90 * i, 425, area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
+                if( (area & 2) && player->equips[i] != -1)
+                    PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa(card_inf[player->equips[i]].type) ), (char*)".png"), 425, 175, gui.selector, TRANSPARENT, BLACK);
+            }
+
+            setcolor( area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+            for(int i = 0; i <= 2; i++)
+            {
+                Rect(515 + 90 * i, 175, 595 + 90 * i, 295, area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
+            }
+
             putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+            getch();
         }
     }
 }
@@ -344,7 +383,8 @@ void Neardeath(player_t *player)
         {
             /*  ask player that id = (player.id + i) % PLAYERS for a peach */
             if(player->health > 0) return;
-        }while(0/* used a peach */);
+        }
+        while(0/* used a peach */);
     }
 
     if(player->health < 0) Death(player);
@@ -409,7 +449,8 @@ int AskWuxie(int start, int card)
                 break;
             }
         }
-    }while(ans);
+    }
+    while(ans);
 
     return res % 2;
 }

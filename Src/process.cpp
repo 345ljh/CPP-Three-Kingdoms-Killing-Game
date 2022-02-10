@@ -53,6 +53,7 @@ void GameStart(void)
 
 void GameRun(void)
 {
+    Throwcard(&player[game.humanid], &player[(game.humanid + 1) % 4], 1, 1); //for the test
     ///Remember to DrawGui after EVERY change!!!
     while(1)
     {
