@@ -132,19 +132,20 @@ int ArrayOccupied(int* buf, int len)
     return res;
 }
 
-//将数组中非-1的元素下标最小化,用于整理手牌
-void IndexAlign(player_t* player)
+//将数组中非-1的元素下标最小化
+///len为处理后数组有效部分元素个数,blen为buf的元素个数
+void IndexAlign(int* buf, int len, int blen)
 {
     int *temp = NULL;
-    temp = (int*)calloc(player->cardamount, sizeof(int));
+    temp = (int*)calloc(len, sizeof(int));
 
     int index = 0;
-    for(int i = 0; index <= player->cardamount - 1; i++)
-        if(player->card[i] != -1) temp[index++] = player->card[i];
+    for(int i = 0; index <= len - 1; i++)
+        if(buf[i] != -1) temp[index++] = buf[i];
 
-    memset(player->card, 0xFF, sizeof(player->card));
+    memset(buf, 0xFF, blen * sizeof(int));
 
-    for(int i = 0; i <= player->cardamount - 1; i++) player->card[i] = temp[i];
+    for(int i = 0; i <= len - 1; i++) buf[i] = temp[i];
 
     free(temp);
 }

@@ -223,7 +223,7 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     }
 
                     //修改手牌下标
-                    IndexAlign(player);
+                    IndexAlign(player->card, player->cardamount, 160);
                     DrawGui();
                     return;
                 }
@@ -234,36 +234,113 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
         //对其他角色弃牌
         else
         {
-            //绘制区域
-            setfillcolor(EGERGB(83, 30, 0), gui.selector);
-            bar(415, 165, 785, 435, gui.selector);
-
-            setfont(12, 0, "仿宋", gui.selector);
-
-            setcolor( area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-            Rect(425, 175, 505, 295, area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-            outtextxy(453, 229, (char*)"手牌", gui.selector);
-            if( (area & 1) && player->cardamount) PasteCard(425, 175, -2 ,gui.selector);
-
-            char str[] = "武器\0防具\0-1马\0+1马\0";
-            setcolor( area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-            for(int i = 0; i <= 3; i++)
+            for(int i = 1; i <= amount; i++)
             {
-                Rect(425 + 90 * i, 305, 505 + 90 * i, 425, area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-                outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
-                if( (area & 2) && player->equips[i] != -1)
-                    PasteImage( Link( Link( (char*)".\\Textures\\Cards\\", Myitoa(card_inf[player->equips[i]].type) ), (char*)".png"), 425, 175, gui.selector, TRANSPARENT, BLACK);
-            }
+                delay_fps(3);
 
-            setcolor( area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-            for(int i = 0; i <= 2; i++)
-            {
-                Rect(515 + 90 * i, 175, 595 + 90 * i, 295, area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
-                outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
-            }
+                DrawGui();
+                cleardevice(gui.selector);
 
-            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
-            getch();
+                //绘制区域
+                setfillcolor(EGERGB(83, 30, 0), gui.selector);
+                bar(415, 145, 785, 435, gui.selector);
+
+                char topic[21] = "";
+                strcpy(topic, Link( Link( (char*)"弃置", general_inf[player->general].name), (char*)"的牌"));
+                setcolor(EGERGB(249, 189, 34), gui.selector);
+                setfont(20, 0, "隶书", gui.selector);
+                outtextxy(600 - strlen(topic) * 5, 145, topic, gui.selector);
+
+                setfont(12, 0, "仿宋", gui.selector);
+
+                setcolor( area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                Rect(425, 175, 505, 295, area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                outtextxy(453, 229, (char*)"手牌", gui.selector);
+                if( (area & 1) && player->cardamount)
+                {
+                    PasteCard(425, 175, -2 ,gui.selector);
+                    LineRect(425, 175, 505, 295, EGERGB(255, 215, 77), gui.selector);
+                }
+
+                char str[] = "武器\0防具\0-1马\0+1马\0";
+                setcolor( area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                for(int i = 0; i <= 3; i++)
+                {
+                    Rect(425 + 90 * i, 305, 505 + 90 * i, 425, area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                    outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
+                    if( (area & 2) && player->equips[i] != -1)
+                    {
+                        PasteCard(425 + 90 * i, 305, player->equips[i], gui.selector);
+                        LineRect(425 + 90 * i, 305, 505 + 90 * i, 425, EGERGB(255, 215, 77), gui.selector);
+                    }
+                }
+
+                setcolor( area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                for(int i = 0; i <= 2; i++)
+                {
+                    Rect(515 + 90 * i, 175, 595 + 90 * i, 295, area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                    outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
+                    if( (area & 4) && player->judges[i][0] != -1)
+                    {
+                        PasteCard(515 + 90 * i, 175, player->judges[i][0], gui.selector);
+                        LineRect(515 + 90 * i, 175, 595 + 90 * i, 295, EGERGB(255, 215, 77), gui.selector);
+                    }
+                }
+
+                putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+                int tothrow = -1;
+
+                //点选弃置
+                for(; is_run(); delay_fps(10))
+                {
+
+                    while (mousemsg()) msg = getmouse();
+                    mousepos(&mouse_x, &mouse_y);
+
+                    if( (area & 1) && msg.is_down() && mouse_x >= 425 && mouse_x <= 505 && mouse_y >= 175 && mouse_y <= 295)
+                    {
+                        tothrow = rand() % player->cardamount;
+                        card_inf[player->card[tothrow]].owner = -1;
+                        Putcard(player->card[tothrow]);
+                        player->card[tothrow] = -1;
+                        player->cardamount--;
+                        IndexAlign(player->card, player->cardamount, 160);
+
+                        break;
+
+                    }
+                    if( (area & 2) && msg.is_down() && mouse_x >= 425 && mouse_x <= 775 && mouse_y >= 305 && mouse_y <= 425)
+                    {
+                        tothrow = (mouse_x - 420) / 90;
+                        card_inf[player->equips[tothrow]].owner = -1;
+                        Putcard(player->equips[tothrow]);
+                        player->equips[i] = -1;
+
+                        break;
+                    }
+                    if( (area & 4) && msg.is_down() && mouse_x >= 515 && mouse_x <= 775 && mouse_y >= 175 && mouse_y <= 295)
+                    {
+                        tothrow = (mouse_x - 510) / 90;
+                        card_inf[player->judges[tothrow][0]].owner = -1;
+                        Putcard(player->judges[tothrow][0]);
+                        player->judges[i][0] = -1;
+                        player->judges[i][1] = -1;
+
+                        for(int j = 0; j <= 1; j++)
+                        {
+                            int temp[3];
+                            for(int k = 0; k <= 2; k++) temp[k] = player->judges[k][j];
+                            IndexAlign(temp, ArrayOccupied(temp, 3), 3);
+                            for(int k = 0; k <= 2; k++) player->judges[k][j] = temp[k];
+                        }
+
+                        break;
+                    }
+                }
+
+                DrawGui();
+            }
         }
     }
 }

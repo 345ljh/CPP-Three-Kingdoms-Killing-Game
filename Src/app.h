@@ -22,6 +22,6 @@ void PasteCard(int x, int y, int id, PIMAGE img);
 void Putcard(int id);
 
 int ArrayOccupied(int* buf, int len);
-void IndexAlign(player_t* player);
+void IndexAlign(int* buf, int len, int blen);
 
 #endif // APP_H_INCLUDED

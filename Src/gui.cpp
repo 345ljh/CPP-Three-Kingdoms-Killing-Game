@@ -72,6 +72,7 @@ void GameGuiInit(void)
     setbkmode(TRANSPARENT, gui.selector);
     setbkmode(TRANSPARENT, gui.tips);
 
+
     PasteImage((char*)".\\Textures\\background.png", 0, 0, gui.background);
 
     //玩家区域
@@ -177,7 +178,6 @@ void GeneralSelect(void)
     bar(300, 200, 900, 450, gui.selector);
     Rect(300, 200, 900, 450, EGERGB(190, 183, 68), gui.selector);
 
-    setbkmode(TRANSPARENT, gui.selector);
     setcolor(EGERGB(249, 189, 34), gui.selector);
     setfont(40, 0, "隶书", gui.selector);
     outtextxy(520, 200, (char*)"选择武将", gui.selector);
