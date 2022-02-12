@@ -1,5 +1,13 @@
 #include"app.h"
 
+//分段取值函数,用于牌的类别
+int TypeIdentify(type_e type)
+{
+    if((int)type < 0x10) return 0;
+    else if((int)type >= 0xA0) return 2;
+    else return 1;
+}
+
 //将数值转换为字符串,字符串即返回值
 ///同一语句内不能多次调用,如 i = strcat(Myitoa(12), Myitoa(34) );会导致结果错误,故使用2个相同功能的函数
 char* Myitoa(int num)

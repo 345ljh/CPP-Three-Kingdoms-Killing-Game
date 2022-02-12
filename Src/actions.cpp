@@ -68,21 +68,43 @@ void Takecard(player_t *player, int amount)
 }
 
 //弃牌,其中executor为弃牌者,player为被弃牌者
+///当executor与player均为玩家时返回值为弃置牌数,否则为0
 ///area表示可选其牌区域,0位为1表示手牌区,1位为装备区,2位为判定区,默认值为1(即只可弃置手牌)
-///此函数下弃手牌不能对所弃牌的种类进行限制,如火攻时的相同花色
-void Throwcard(player_t *executor, player_t *player, int amount, int area)
+///mode为8位整数,0~3位为可弃置的花色(对应suit_e).4~6位为可弃置的类型(低至高分别为基本,装备,锦囊),7位为cancel变量,默认为127(0b01111111)
+///cancel=1时可点击取消,此时返回值为0,cancel=0时无法取消,且当区域内牌不足时则全弃
+///mode当且仅当executor与player为同一角色时生效
+///add为附加变量,如[贯石斧]触发或技能等,默认值为0
+int Throwcard(player_t *executor, player_t *player, int amount, int area, int mode, int add)
 {
-
     //玩家操作弃牌
     if(executor->controller == HUMAN)
     {
         //对玩家自己弃牌(如弃牌阶段)
+        //此时并未涉及判定区
         if(player->controller == HUMAN)
         {
+            //解算mode
+            int suit = mode & 7;
+            int type = (mode & 112) >> 4;
+            int cancel = (mode & 128) >> 7;
+
+            //cancel=0时修改amount实现"若不足则全弃"
+            if(!cancel)
+            {
+                int accord = 0;
+
+                if(area | 1) for(int i = 0; i <= player->cardamount - 1; i++)
+                if (suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
+
+                if(area | 2) for(int i = 0; i <= 3; i++)
+                if (player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
+
+                if(accord < amount) amount = accord;
+            }
+
             //判断对应区域有牌
             area |= 1 & (player->card[0] != -1);
             area |= 2 & (player->equips[0] != -1 || player->equips[1] != -1 || player->equips[2] != -1 || player->equips[3] != -1);
-            area |= 4 & (player->judges[0][0] != -1 || player->judges[1][0] != -1 || player->judges[2][0] != -1);
 
             int *tothrow = NULL;
             tothrow = (int*)calloc(amount, sizeof(int));   //储存所弃牌在区域中的位置id
@@ -104,7 +126,9 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
 
                 //全部绘制为未选定状态
                 if(area & 1) for(int i = 0; i <= 7; i++)
-                        if(player->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                        if(player->card[game.page * 8 + i] != -1 && (suit & (1 << (int)card_inf[player->card[game.page * 8 + i]].suit)) &&
+                           (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + i]].type))) )
+                           LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
                 if(area & 2) for(int i = 0; i <= 3; i++)
                         if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
 
@@ -120,12 +144,16 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                 //确定键
                 if(ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
 
+                //取消键
+                if(cancel) LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
                 //检测按键
                 //手牌区
                 if( (area & 1) && msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
                 {
                     int sel = (mouse_x - 150) / 100;
-                    if(player->cardamount > game.page * 8 + sel)  //确定对应位置有手牌
+                    if(player->cardamount > game.page * 8 + sel && (suit & (1 << (int)card_inf[player->card[game.page * 8 + sel]].suit)) &&
+                           (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + sel]].type))) )  //确定对应位置有手牌且花色,类型符合
                     {
                         int found = 0;
                         for(int i = 0; i <= amount - 1; i++)
@@ -197,6 +225,12 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     if(executor->cardamount > (game.page + 1) * 8) game.page++;
                 }
 
+                //取消键
+                if(cancel && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+                {
+                    return 0;
+                }
+
                 //确定键
                 if(ArrayOccupied(tothrow, amount) == amount && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
@@ -225,7 +259,7 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
                     //修改手牌下标
                     IndexAlign(player->card, player->cardamount, 160);
                     DrawGui();
-                    return;
+                    return amount;
                 }
                 putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
             }
@@ -341,8 +375,10 @@ void Throwcard(player_t *executor, player_t *player, int amount, int area)
 
                 DrawGui();
             }
+            return 0;
         }
     }
+    return 0;  //TODO: AI
 }
 
 //展示手牌

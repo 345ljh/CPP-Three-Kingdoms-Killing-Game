@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+int TypeIdentify(type_e type);
 char* Myitoa(int num);
 char* MyitoaII(int num);
 char* Link(char* str1, char* str2);

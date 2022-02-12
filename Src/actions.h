@@ -3,6 +3,7 @@
 
 #include "items.h"
 #include "gui.h"
+#include "app.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -13,7 +14,7 @@ void PileInit(void);
 void Shuffle(void);
 
 void Takecard(player_t *player, int amount);
-void Throwcard(player_t *executor, player_t *player, int amount, int area = 1);
+int Throwcard(player_t *executor, player_t *player, int amount, int area = 1, int mode = 127, int add = 0);
 void Showcard(player_t *executor, player_t *player, int amount);
 void Getcard(player_t *executor, player_t *player, int amount, int type);
 int Judging(player_t *player);
