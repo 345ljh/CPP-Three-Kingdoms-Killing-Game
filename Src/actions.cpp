@@ -391,7 +391,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
         if(player->id == executor->id)
         {
             //解算mode
-            int suit = mode & 7;
+            int suit = mode & 15;
             int type = (mode & 112) >> 4;
             int cancel = (mode & 128) >> 7;
 
@@ -412,7 +412,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
             {
                 //使用优先级判断弃牌
                 int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
-                THROW_AI;
+                ThrowAi(player, state, area, suit, type);
 
                 if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
                     (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
@@ -424,10 +424,6 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
         //对其他角色弃牌
         else
         {
-            //防THROW_AI处报错
-            int suit = 15;
-            int type = 112;
-
             //根据阵营确定优先级
             int statetemp[2][12] = {{1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 0, 2, 3, 4, 2}};
             int state[12];
@@ -436,7 +432,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
 
             for(int times = 1; times <= amount; times++)
             {
-                THROW_AI;
+                ThrowAi(player, state, area);
 
                 if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
                     (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
