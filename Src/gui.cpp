@@ -310,7 +310,7 @@ void DrawGui(void)
     cleardevice(gui.frame);
     cleardevice(gui.playercard);
 
-    if(game.page * 8 + 1 > player[game.humanid].cardamount) game.page--;
+    while(game.page * 8 + 1 > player[game.humanid].cardamount && game.page) game.page--;
 
     //轮数与剩余牌量
     setcolor(EGERGB(255, 127, 39), gui.frame);

@@ -8,9 +8,6 @@
 
 int main()
 {
-    //用于变量监视
-    fp = fopen(".\\watch.txt", "w");
-
     srand(time(NULL));
     ProgramStart();
 

@@ -413,6 +413,10 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 //使用优先级判断弃牌
                 int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
                 THROW_AI;
+
+                if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
+                    (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                return times;
             }
             return amount;
         }

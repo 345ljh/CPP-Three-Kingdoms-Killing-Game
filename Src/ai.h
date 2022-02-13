@@ -25,7 +25,8 @@ if(area & 1) for(int i = 0; i <= player->cardamount - 1; i++) \
             /*优先级相等,增加1个元素*/ \
             else if(StateCompareAi(state, player->card[i]) == maxstate) \
             { \
-                realloc(tothrow, ++len * sizeof(int)); \
+                int *ptemp = tothrow; \
+                tothrow = (int*)realloc(ptemp, ++len * sizeof(int)); \
                 tothrow[len - 1] = player->card[i]; \
             } \
         } \
@@ -98,6 +99,7 @@ case 2: \
     break; \
 } \
 } \
+free(tothrow);
 
 
 
