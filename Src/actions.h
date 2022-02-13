@@ -4,6 +4,7 @@
 #include "items.h"
 #include "gui.h"
 #include "app.h"
+#include "ai.h"
 
 #include <string.h>
 #include <stdlib.h>

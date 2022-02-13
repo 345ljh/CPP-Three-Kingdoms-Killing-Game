@@ -84,7 +84,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
         if(player->controller == HUMAN)
         {
             //解算mode
-            int suit = mode & 7;
+            int suit = mode & 15;
             int type = (mode & 112) >> 4;
             int cancel = (mode & 128) >> 7;
 
@@ -192,7 +192,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                         for(int i = 0; i <= amount - 1; i++)
                         {
                             //若已选中则取消
-                            if(tothrow[i] == (0x10 | sel))
+                            if(tothrow[i] == (0x100 | sel))
                             {
                                 tothrow[i] = -1;
                                 found++;
@@ -207,7 +207,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                             {
                                 if(tothrow[i] == -1)
                                 {
-                                    tothrow[i] = 0x10 | sel;
+                                    tothrow[i] = 0x100 | sel;
                                     break;
                                 }
                             }
@@ -248,9 +248,9 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                         }
                         case 1:
                         {
-                            card_inf[player->equips[tothrow[i] & 0xF]].owner = -1;
-                            Putcard(player->equips[tothrow[i] & 0xF]);
-                            player->equips[tothrow[i] & 0xF] = -1;
+                            card_inf[player->equips[tothrow[i] & 0xFF]].owner = -1;
+                            Putcard(player->equips[tothrow[i] & 0xFF]);
+                            player->equips[tothrow[i] & 0xFF] = -1;
                             break;
                         }
                         }
@@ -268,7 +268,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
         //对其他角色弃牌
         else
         {
-            for(int i = 1; i <= amount; i++)
+            for(int time = 1; time <= amount; time++)
             {
                 delay_fps(3);
 
@@ -349,7 +349,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                         tothrow = (mouse_x - 420) / 90;
                         card_inf[player->equips[tothrow]].owner = -1;
                         Putcard(player->equips[tothrow]);
-                        player->equips[i] = -1;
+                        player->equips[tothrow] = -1;
 
                         break;
                     }
@@ -358,8 +358,8 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                         tothrow = (mouse_x - 510) / 90;
                         card_inf[player->judges[tothrow][0]].owner = -1;
                         Putcard(player->judges[tothrow][0]);
-                        player->judges[i][0] = -1;
-                        player->judges[i][1] = -1;
+                        player->judges[tothrow][0] = -1;
+                        player->judges[tothrow][1] = -1;
 
                         for(int j = 0; j <= 1; j++)
                         {
@@ -378,7 +378,41 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
             return 0;
         }
     }
-    return 0;  //TODO: AI
+    //executor为电脑
+    else
+    {
+        delay_fps(3);
+        //对自己弃牌
+        if(player->id == executor->id)
+        {
+            //解算mode
+            int suit = mode & 7;
+            int type = (mode & 112) >> 4;
+            int cancel = (mode & 128) >> 7;
+
+            if(!cancel)
+            {
+                int accord = 0;
+
+                if(area | 1) for(int i = 0; i <= player->cardamount - 1; i++)
+                    if(suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
+
+                if(area | 2) for(int i = 0; i <= 3; i++)
+                    if(player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
+
+                if(accord < amount) amount = accord;
+                }
+
+            for(int time = 0; time <= amount - 1; time++)
+            {
+                //使用优先级判断弃牌
+                int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
+                THROW_AI;
+            }
+            return amount;
+        }
+    }
+    return 0;//avoid of warning
 }
 
 //展示手牌
