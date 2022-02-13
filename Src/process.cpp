@@ -125,6 +125,7 @@ void GameRun(void)
             //弃牌阶段
             delay_fps(4);
             game.period = 4;
+            DrawGui();
             if(player[game.active].cardamount > player[game.active].maxcard)
             {
                 Throwcard(&player[game.active], &player[game.active], player[game.active].cardamount - player[game.active].maxcard);

@@ -268,7 +268,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
         //对其他角色弃牌
         else
         {
-            for(int time = 1; time <= amount; time++)
+            for(int times = 1; times <= amount; times++)
             {
                 delay_fps(3);
 
@@ -373,6 +373,11 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                     }
                 }
 
+                //若无可弃牌则返回
+                if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
+                     (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                return times;
+
                 DrawGui();
             }
             return 0;
@@ -401,13 +406,37 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                     if(player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
 
                 if(accord < amount) amount = accord;
-                }
+            }
 
-            for(int time = 0; time <= amount - 1; time++)
+            for(int times = 0; times <= amount - 1; times++)
             {
                 //使用优先级判断弃牌
                 int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
                 THROW_AI;
+            }
+            return amount;
+        }
+
+        //对其他角色弃牌
+        else
+        {
+            //防THROW_AI处报错
+            int suit = 15;
+            int type = 112;
+
+            //根据阵营确定优先级
+            int statetemp[2][12] = {{1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 0, 2, 3, 4, 2}};
+            int state[12];
+            if(player->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
+            else memcpy(state, statetemp[1], sizeof(state));
+
+            for(int times = 1; times <= amount; times++)
+            {
+                THROW_AI;
+
+                if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
+                    (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                return times;
             }
             return amount;
         }
