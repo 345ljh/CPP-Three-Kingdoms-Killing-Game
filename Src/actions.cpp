@@ -94,10 +94,10 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 int accord = 0;
 
                 if(area | 1) for(int i = 0; i <= player->cardamount - 1; i++)
-                if (suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
+                        if (suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
 
                 if(area | 2) for(int i = 0; i <= 3; i++)
-                if (player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
+                        if (player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
 
                 if(accord < amount) amount = accord;
             }
@@ -127,8 +127,8 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 //全部绘制为未选定状态
                 if(area & 1) for(int i = 0; i <= 7; i++)
                         if(player->card[game.page * 8 + i] != -1 && (suit & (1 << (int)card_inf[player->card[game.page * 8 + i]].suit)) &&
-                           (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + i]].type))) )
-                           LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                                (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + i]].type))) )
+                            LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
                 if(area & 2) for(int i = 0; i <= 3; i++)
                         if(player->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
 
@@ -153,7 +153,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 {
                     int sel = (mouse_x - 150) / 100;
                     if(player->cardamount > game.page * 8 + sel && (suit & (1 << (int)card_inf[player->card[game.page * 8 + sel]].suit)) &&
-                           (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + sel]].type))) )  //确定对应位置有手牌且花色,类型符合
+                            (type & (1 << TypeIdentify(card_inf[player->card[game.page * 8 + sel]].type))) )  //确定对应位置有手牌且花色,类型符合
                     {
                         int found = 0;
                         for(int i = 0; i <= amount - 1; i++)
@@ -292,7 +292,7 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 outtextxy(453, 229, (char*)"手牌", gui.selector);
                 if( (area & 1) && player->cardamount)
                 {
-                    PasteCard(425, 175, -2 ,gui.selector);
+                    PasteCard(425, 175, -2,gui.selector);
                     LineRect(425, 175, 505, 295, EGERGB(255, 215, 77), gui.selector);
                 }
 
@@ -375,8 +375,8 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
 
                 //若无可弃牌则返回
                 if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
-                     (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
-                return times;
+                        (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                    return times;
 
                 DrawGui();
             }
@@ -400,10 +400,10 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 int accord = 0;
 
                 if(area | 1) for(int i = 0; i <= player->cardamount - 1; i++)
-                    if(suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
+                        if(suit & (1 << (int)card_inf[player->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->card[i]].type)))) accord++;
 
                 if(area | 2) for(int i = 0; i <= 3; i++)
-                    if(player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
+                        if(player->equips[i] != -1 && suit & (1 << (int)card_inf[player->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[player->equips[i]].type)))) accord++;
 
                 if(accord < amount) amount = accord;
             }
@@ -415,8 +415,8 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 ThrowAi(player, state, area, suit, type);
 
                 if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
-                    (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
-                return times;
+                        (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                    return times;
             }
             return amount;
         }
@@ -435,8 +435,8 @@ int Throwcard(player_t *executor, player_t *player, int amount, int area, int mo
                 ThrowAi(player, state, area);
 
                 if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
-                    (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
-                return times;
+                        (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                    return times;
             }
             return amount;
         }
@@ -467,45 +467,154 @@ void Showcard(player_t *executor, player_t *player, int amount)
 
 //获得其他角色牌
 ///默认type=0表示executor获得player的牌,type=1表示executor交给player牌
-//TODO: amount=-1 stands for getting or giving all cards
-void Getcard(player_t *executor, player_t *player, int amount, int type = 0)
+///executou与player必不相同
+int Getcard(player_t *executor, player_t *player, int amount, int area, int type)
 {
-    if(type)
+    if(type == 0)
     {
-        /*
-        int* selected = NULL;
-        selected = (int*)calloc(amount, sizeof(int));
-        */
-        for(int i = 1; i <= amount; i++)
+        if(executor->controller == HUMAN)
         {
-            /*
-            card_inf[executor.card[selected[j]]] = player.id;
-            player.card[player.cardamount] = executor.card[selected[j]];
-            executor.card[selected[j]] = -1;
-            */
-            executor->cardamount--;
-            player->cardamount++;
+            for(int times = 1; times <= amount; times++)
+            {
+                delay_fps(3);
+
+                DrawGui();
+                cleardevice(gui.selector);
+
+                //绘制区域
+                setfillcolor(EGERGB(83, 30, 0), gui.selector);
+                bar(415, 145, 785, 435, gui.selector);
+
+                char topic[21] = "";
+                strcpy(topic, Link( Link( (char*)"获得", general_inf[player->general].name), (char*)"的牌"));
+                setcolor(EGERGB(249, 189, 34), gui.selector);
+                setfont(20, 0, "隶书", gui.selector);
+                outtextxy(600 - strlen(topic) * 5, 145, topic, gui.selector);
+
+                setfont(12, 0, "仿宋", gui.selector);
+
+                setcolor( area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                Rect(425, 175, 505, 295, area & 1 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                outtextxy(453, 229, (char*)"手牌", gui.selector);
+                if( (area & 1) && player->cardamount)
+                {
+                    PasteCard(425, 175, -2,gui.selector);
+                    LineRect(425, 175, 505, 295, EGERGB(255, 215, 77), gui.selector);
+                }
+
+                char str[] = "武器\0防具\0-1马\0+1马\0";
+                setcolor( area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                for(int i = 0; i <= 3; i++)
+                {
+                    Rect(425 + 90 * i, 305, 505 + 90 * i, 425, area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                    outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
+                    if( (area & 2) && player->equips[i] != -1)
+                    {
+                        PasteCard(425 + 90 * i, 305, player->equips[i], gui.selector);
+                        LineRect(425 + 90 * i, 305, 505 + 90 * i, 425, EGERGB(255, 215, 77), gui.selector);
+                    }
+                }
+
+                setcolor( area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                for(int i = 0; i <= 2; i++)
+                {
+                    Rect(515 + 90 * i, 175, 595 + 90 * i, 295, area & 4 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
+                    outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
+                    if( (area & 4) && player->judges[i][0] != -1)
+                    {
+                        PasteCard(515 + 90 * i, 175, player->judges[i][0], gui.selector);
+                        LineRect(515 + 90 * i, 175, 595 + 90 * i, 295, EGERGB(255, 215, 77), gui.selector);
+                    }
+                }
+
+                putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+                int tothrow = -1;
+
+                //点选弃置
+                for(; is_run(); delay_fps(10))
+                {
+
+                    while (mousemsg()) msg = getmouse();
+                    mousepos(&mouse_x, &mouse_y);
+
+                    if( (area & 1) && msg.is_down() && mouse_x >= 425 && mouse_x <= 505 && mouse_y >= 175 && mouse_y <= 295)
+                    {
+                        tothrow = rand() % player->cardamount;
+                        executor->cardamount++;
+                        executor->card[executor->cardamount - 1] = player->card[tothrow];
+                        card_inf[player->card[tothrow]].owner = executor->id;
+                        player->card[tothrow] = -1;
+                        player->cardamount--;
+                        IndexAlign(player->card, player->cardamount, 160);
+
+                        break;
+
+                    }
+                    if( (area & 2) && msg.is_down() && mouse_x >= 425 && mouse_x <= 775 && mouse_y >= 305 && mouse_y <= 425)
+                    {
+                        tothrow = (mouse_x - 420) / 90;
+                        executor->cardamount++;
+                        executor->card[executor->cardamount - 1] = player->equips[tothrow];
+                        card_inf[player->equips[tothrow]].owner = executor->id;
+                        player->equips[tothrow] = -1;
+
+                        break;
+                    }
+                    if( (area & 4) && msg.is_down() && mouse_x >= 515 && mouse_x <= 775 && mouse_y >= 175 && mouse_y <= 295)
+                    {
+                        tothrow = (mouse_x - 510) / 90;
+                        executor->cardamount++;
+                        executor->card[executor->cardamount - 1] = player->judges[tothrow][0];
+                        card_inf[player->judges[tothrow][0]].owner = executor->id;
+                        Putcard(player->judges[tothrow][0]);
+                        player->judges[tothrow][0] = -1;
+                        player->judges[tothrow][1] = -1;
+
+                        for(int j = 0; j <= 1; j++)
+                        {
+                            int temp[3];
+                            for(int k = 0; k <= 2; k++) temp[k] = player->judges[k][j];
+                            IndexAlign(temp, ArrayOccupied(temp, 3), 3);
+                            for(int k = 0; k <= 2; k++) player->judges[k][j] = temp[k];
+                        }
+
+                        break;
+                    }
+                }
+
+                //若无可获得牌则返回
+                if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
+                        (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                    return times;
+
+                DrawGui();
+            }
+            return 0;
         }
-        /* skills here */
     }
+
     else
     {
-        /*
-        int* selected = NULL;
-        selected = (int*)calloc(amount, sizeof(int));
-        */
-        for(int i = 1; i <= amount; i++)
+        delay_fps(3);
+        //根据阵营确定优先级
+        int statetemp[2][12] = {{1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 0, 2, 3, 4, 2}};
+        int state[12];
+        if(player->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
+        else memcpy(state, statetemp[1], sizeof(state));
+
+        for(int times = 1; times <= amount; times++)
         {
-            /*
-            card_inf[player.card[selected[j]]] = executor.id;
-            executor.card[executor.cardamount] = player.card[selected[j]];
-            player.card[selected[j]] = -1;
-            */
-            player->cardamount--;
-            executor->cardamount++;
+            GetAi(executor, player, state, area);
+
+            if(!( (area & 1 ? player->cardamount : 0) + (area & 2 ? ArrayOccupied(player->equips, 4) : 0) +
+                    (area & 4 ? (player->judges[0][0] != -1) + (player->judges[1][0] != -1) + (player->judges[2][0] != -1) : 0) ))
+                return times;
         }
-        /* skills here */
+        return amount;
     }
+
+    return 0;//avoid of warning
 }
 
 //判定
