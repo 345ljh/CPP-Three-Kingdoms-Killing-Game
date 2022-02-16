@@ -60,7 +60,7 @@ void GameRun(void)
             //准备阶段
             delay_fps(8);
             game.period = 0;
-            DrawGui();    Judging(&player[game.active]); //for the test
+            DrawGui();
             /* skill here */
 
             //判定阶段
