@@ -108,9 +108,8 @@ typedef struct
     int limit;  //1=存在未使用的限定技=1,否则为0
     int awaken;  //1=存在觉醒技且已发动,否则为0
 
-    int temp[5];  //临时用变量,用于技能相关计算
-    int other[3];  //对其他角色产生影响的技能使用的临时变量,下标代表位次
-    int outcard[4][13]; //因技能移出游戏的牌
+    int temp[13];  //临时用变量,用于自身技能相关计算
+    int other[3];  //受到其他角色技能产生影响使用的临时变量,下标代表位次,低8位为值,高8位代表来源武将
 }player_t;
 
 typedef struct

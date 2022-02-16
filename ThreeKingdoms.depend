@@ -1,13 +1,12 @@
 # depslib dependency file v1.0
-1644746174 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+1644994886 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
 	"graphics.h"
 	"items.h"
 	"gui.h"
 	"actions.h"
 	"process.h"
-	<time.h>
 
-1644471818 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1644985638 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
 	<stdio.h>
 
 1644291299 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
@@ -20,7 +19,7 @@
 	"graphics.h"
 	<time.h>
 
-1644829702 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
+1644991082 c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.h
 	"items.h"
 	"gui.h"
 	"app.h"
@@ -30,13 +29,13 @@
 	<malloc.h>
 	<graphics.h>
 
-1644829747 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
+1644996803 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
 	"actions.h"
 
-1644736248 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
+1644994863 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
 	"gui.h"
 
-1644327035 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
+1644994886 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
 	"graphics.h"
 	"items.h"
 	"app.h"
@@ -44,6 +43,7 @@
 	<stdlib.h>
 	<malloc.h>
 	<windows.h>
+	<time.h>
 
 1643201814 source:c:\users\ljh\desktop\unfinished\threekingdoms - ¸±±¾\src\actions.cpp
 	"actions.h"
@@ -80,7 +80,7 @@
 	"gui.h"
 	<string.h>
 
-1644829875 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
+1644992133 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
 	"process.h"
 
 1644677513 c:\users\ljh\desktop\unfinished\threekingdoms\src\app.h

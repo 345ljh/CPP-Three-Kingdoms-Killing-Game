@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <windows.h>
+#include <time.h>
 
 typedef struct
 {

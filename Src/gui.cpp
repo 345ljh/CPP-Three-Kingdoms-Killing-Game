@@ -9,6 +9,9 @@ const int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时�
 //开始界面
 void ProgramStart(void)
 {
+    setcaption("三国杀");
+    srand(time(NULL));
+
     initgraph(1200, 600);
 
     PasteImage((char*)".\\Textures\\origin.png", 0, 0);

@@ -31,7 +31,6 @@ void GameStart(void)
         memset(player[i].card, 0xFF, sizeof(player[i].card));
         memset(player[i].equips, 0xFF, sizeof(player[i].equips));
         memset(player[i].judges, 0xFF, sizeof(player[i].judges));
-        memset(player[i].outcard, 0xFF, sizeof(player[i].outcard));
 
         memset(player[i].temp, 0, sizeof(player[i].temp));
         memset(player[i].other, 0, sizeof(player[i].other));
@@ -53,21 +52,22 @@ void GameStart(void)
 
 void GameRun(void)
 {
-    //Throwcard(&player[game.humanid], &player[(game.humanid + 1) % 4], 2, 1); //for the test
     ///Remember to DrawGui after EVERY change!!!
     while(1)
     {
         if(player[game.active].controller != DEAD)
         {
             //准备阶段
-            delay_fps(4);
+            delay_fps(8);
             game.period = 0;
-            DrawGui();
+            DrawGui();    Judging(&player[game.active]); //for the test
             /* skill here */
 
             //判定阶段
             delay_fps(4);
             game.period = 1;
+            DrawGui();
+
             int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
 
             for(int i = 2; i >= 0; i--) //从后向前判定
@@ -110,7 +110,7 @@ void GameRun(void)
             game.period = 2;
             if(!(skip & 1) )
             {
-                Takecard(&player[game.active], player[game.active].takecard);
+                Takecard(&player[game.active], player[game.active].takecard + (game.turn == 1 ? (game.active == 3) - !game.active : 0));
                 DrawGui();
             }
 

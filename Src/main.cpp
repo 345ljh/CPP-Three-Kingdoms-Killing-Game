@@ -4,11 +4,8 @@
 #include "actions.h"
 #include "process.h"
 
-#include <time.h>
-
 int main()
 {
-    srand(time(NULL));
     ProgramStart();
 
     PileInit();
