@@ -16,10 +16,10 @@ void Shuffle(void);
 
 void Takecard(player_t *player, int amount);
 int Throwcard(player_t *executor, player_t *player, int amount, int area = 1, int mode = 127, int add = 0);
-void Showcard(player_t *executor, player_t *player, int amount);
+int Showcard(player_t *executor, player_t *player, int amount, int cancel = 0, int add = 0);
 int Getcard(player_t *executor, player_t *player, int amount, int area = 1, int type = 0);
 int Judging(player_t *player);
-void Damage(player_t *executor, player_t *player, int amount, damage_e type);
+void Damage(player_t *executor, player_t *player, int amount, damage_e type, int linkstart = 1);
 void Recover(player_t *player, int amount);
 
 void Neardeath(player_t *player);

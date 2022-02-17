@@ -99,7 +99,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         if (recipient->equips[i] != -1 && suit & (1 << (int)card_inf[recipient->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type)))) accord++;
 
                 if(area | 4) for(int i = 0; i <= 2; i++)
-                    if(recipient->judges[i][0] != -1 && suit & (1 << (int)card_inf[recipient->judges[i][0]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->judges[i][0]].type)))) accord++;
+                        if(recipient->judges[i][0] != -1 && suit & (1 << (int)card_inf[recipient->judges[i][0]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->judges[i][0]].type)))) accord++;
 
                 if(accord < amount) amount = accord;
             }
@@ -500,25 +500,154 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
     return 0;//avoid of warning
 }
 
-//展示手牌
-///amount=-1表示全部展示
-void Showcard(player_t *executor, player_t *recipient, int amount)
+//展示自己手牌
+int Showcard(player_t *executor, player_t *recipient, int amount, int cancel, int add)
 {
-    if(amount != -1)
+    if(amount > recipient->cardamount) amount = recipient->cardamount;
+
+    int *toshow = NULL;
+    toshow = (int*)calloc(amount, sizeof(int));
+    memset(toshow, 0xFF, amount * sizeof(int));
+
+    if(recipient->controller == HUMAN)
     {
-        /*
-        int* selected = NULL;
-        selected = (int*)calloc(amount, sizeof(int));
-        */
-        for(int i = 1; i <= amount; i++)
+        for(; is_run(); delay_fps(10))
         {
-            /* select cards */
-        }
-        for(int j = 0; j <= amount - 1; j++)
-        {
-            /* output thr information of recipient.card[selected[j]] */
+            while (mousemsg()) msg = getmouse();
+            mousepos(&mouse_x, &mouse_y);
+
+            DrawGui();
+            cleardevice(gui.selector);
+
+            setcolor(WHITE, gui.selector);
+            setfont(30, 0, "仿宋", gui.selector);
+            outtextxy(520, 415, Link( Link( Link( Link( (char*)"选择", Myitoa(ArrayOccupied(toshow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌展示"), gui.selector);
+
+            //全部绘制为未选定状态
+            for(int i = 0; i <= 7; i++)
+                if(recipient->card[game.page * 8 + i] != -1) LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+
+            //绘制已选定状态
+            for(int i = 0; i <= amount - 1; i++)
+            {
+                if(toshow[i] != -1 && recipient->card[toshow[i]] != -1 && toshow[i] >> 8 == 0 && game.page == toshow[i] / 8)
+                    LineRect(160 + 100 * (toshow[i] % 8), 465, 240 + 100 * (toshow[i] % 8), 585, EGERGB(255, 57, 57), gui.selector);
+            }
+
+            //确定键
+            if((cancel && ArrayOccupied(toshow, amount)) || ArrayOccupied(toshow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+
+            //取消键
+            if(cancel) LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+            //检测按键
+            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
+            {
+                int sel = (mouse_x - 150) / 100;
+                if(recipient->cardamount > game.page * 8 + sel)
+                {
+                    int found = 0;
+                    for(int i = 0; i <= amount - 1; i++)
+                    {
+                        //若已选中则取消
+                        if(toshow[i] == game.page * 8 + sel)
+                        {
+                            toshow[i] = -1;
+                            found++;
+                            break;
+                        }
+                    }
+
+                    //若未选中则选定,将toshow中目前下标最小的-1改为该牌id
+                    if(!found && ArrayOccupied(toshow, amount) <= amount)
+                    {
+                        for(int i = 0; i <= amount - 1; i++)
+                        {
+                            if(toshow[i] == -1)
+                            {
+                                toshow[i] = game.page * 8 + sel;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            //翻页
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(game.page > 0) game.page--;
+            }
+            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(executor->cardamount > (game.page + 1) * 8) game.page++;
+            }
+
+            //取消键
+            if(cancel && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+            {
+                return 0;
+            }
+
+            //确定键展示
+            if( (cancel || ArrayOccupied(toshow, amount) == amount) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+            {
+                break;
+            }
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
         }
     }
+    //电脑展示,随机展示amount张
+    else
+    {
+        delay_fps(5);
+
+        for(int i = 0; i <= amount - 1; i++)
+        {
+            int pointer = rand() % recipient->cardamount;
+            int rep = 0;
+
+            //检测重复
+            do
+            {
+                rep = 0;
+                for(int j = 0; j <= i - 1; j++)
+                {
+                    if(pointer == toshow[j])
+                    {
+                        rep = 1;
+                        ++pointer %= recipient->cardamount;
+                        break;
+                    }
+                }
+            }while(rep);
+
+            toshow[i] = pointer;
+        }
+    }
+
+    //展示
+    cleardevice(gui.selector);
+    setfillcolor(EGERGB(83, 30, 0), gui.selector);
+    bar( amount >= 3 ? (amount <= 8 ? 590 - 40 * amount : 270) : 470, 200, amount >= 3 ? (amount <= 8 ? 610 + 40 * amount : 930) : 730, 400, gui.selector);
+
+    char topic[31] = "";
+    strcpy(topic, Link( Link( Link(general_inf[recipient->general].name, (char*)"展示的"), Myitoa(amount) ), (char*)"张手牌") );
+    setcolor(EGERGB(249, 189, 34), gui.selector);
+    setfont(20, 0, "隶书", gui.selector);
+    outtextxy(600 - strlen(topic) * 5, 200, topic, gui.selector);
+
+    for(int i = 0; i <= amount - 1; i++)
+    {
+        PasteCard( (amount <= 8 ? 600 - 40 * amount + 80 * i : 270 + 240.0 * i / (amount - 1) ), 240, recipient->card[toshow[i]], gui.selector);
+    }
+
+    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+    delay_ms(0);
+    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+    delay_fps(0.6);
+    return amount;
 }
 
 //获得其他角色牌
@@ -715,10 +844,10 @@ int Judging(player_t *recipient)
 
     setfont(35, 0, "仿宋", gui.selector);
     outtextxy(45, 28, card_inf[res].num == 1 ? (char*)"A" :
-                  card_inf[res].num == 11 ? (char*)"J" :
-                  card_inf[res].num == 12 ? (char*)"Q" :
-                  card_inf[res].num == 13 ? (char*)"K" :
-                  Myitoa( (int)card_inf[res].num), gui.selector);
+              card_inf[res].num == 11 ? (char*)"J" :
+              card_inf[res].num == 12 ? (char*)"Q" :
+              card_inf[res].num == 13 ? (char*)"K" :
+              Myitoa( (int)card_inf[res].num), gui.selector);
 
     setfont(25, 0, "仿宋", gui.selector);
     outtextxy(80, 35, card_inf[res].name, gui.selector);
@@ -733,7 +862,8 @@ int Judging(player_t *recipient)
 
 //造成伤害
 ///executor=NULL表示伤害无来源(如闪电),type=LOSS表示失去体力
-void Damage(player_t *executor, player_t *recipient, int amount, damage_e type)
+///linkstart=1表示为伤害传导的起点(默认值)
+void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, int linkstart)
 {
     delay_fps(5);
 
@@ -747,16 +877,13 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type)
     }
 
     //连锁结算
-    if(recipient->chained && (type == FIRE || type == THUNDER) )
+    if(linkstart && recipient->chained && (type == FIRE || type == THUNDER) )
     {
         recipient->chained = 0;
         DrawGui();
 
         for(int i = 1; i <= 3; i++)
-        {
-            if(player[(recipient->id + i) % PLAYERS].chained) Damage(executor, &player[(recipient->id + i) % PLAYERS], amount, type);
-            break;
-        }
+            if(player[(recipient->id + i) % PLAYERS].chained) Damage(executor, &player[(recipient->id + i) % PLAYERS], amount, type, 0);
     }
 }
 
@@ -794,9 +921,30 @@ void Death(player_t *recipient)
     for(int i = 0; i <= recipient->cardamount - 1; i++)
     {
         card_inf[recipient->card[i]].owner = -1;
+        Putcard(recipient->card[i]);
+        recipient->card[i] = -1;
     }
 
-    Throwcard(recipient, recipient, recipient->cardamount);
+    for(int i = 0; i <= 3; i++)
+    {
+        if(recipient->equips[i] != -1)
+        {
+            card_inf[recipient->equips[i]].owner = -1;
+            Putcard(recipient->equips[i]);
+            recipient->equips[i] = -1;
+        }
+    }
+
+    for(int i = 0; i <= 2; i++)
+    {
+        if(recipient->judges[i][0] != -1)
+        {
+            card_inf[recipient->judges[i][0]].owner = -1;
+            Putcard(recipient->judges[i][0]);
+            recipient->judges[i][0] = -1;
+            recipient->judges[i][1] = -1;
+        }
+    }
 }
 
 //胜利条件判定
