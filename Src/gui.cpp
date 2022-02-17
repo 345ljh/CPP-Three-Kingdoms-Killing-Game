@@ -132,12 +132,12 @@ void GameGuiInit(void)
     PasteImage((char*)".\\Textures\\condition.png", 430, 130, gui.background, TRANSPARENT, BLACK);
 
     //确定位置
-    for(int i = 0; i <= PLAYERS - 1; i++)
+    for(int i = 0; i <= 4 - 1; i++)
     {
         player[i].controller = AI;
     }
 
-    game.humanid = rand() % PLAYERS;
+    game.humanid = rand() % 4;
     player[game.humanid].controller = HUMAN;
 
     char str[] = "一\0二\0三\0四\0";
@@ -152,7 +152,7 @@ void GameGuiInit(void)
 
     for(int i = 1; i <= 3; i++)
     {
-        outtextxy(pos[2 * i] + 40, pos[2 * i + 1] + 170, Link(str + ((game.humanid + i) % PLAYERS) * 3, (char*)"号位"), gui.background);
+        outtextxy(pos[2 * i] + 40, pos[2 * i + 1] + 170, Link(str + ((game.humanid + i) % 4) * 3, (char*)"号位"), gui.background);
     }
     //输出图像
     putimage(0, 0, gui.background);
@@ -244,20 +244,20 @@ void GeneralSelect(void)
         pointer = rand() % GENERALS;
         while(general_inf[pointer].selected) ++pointer %= GENERALS;
         general_inf[pointer].selected = 1;
-        player[(game.humanid + i) % PLAYERS].general = pointer;
+        player[(game.humanid + i) % 4].general = pointer;
     }
     //绘制已选武将
     for(int i = 0; i <= 3; i++)
     {
         PasteImage(Link( (char*)".\\Textures\\Generals\\",  \
-            Link( (char*)Myitoa(player[(game.humanid + i) % PLAYERS].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
+            Link( (char*)Myitoa(player[(game.humanid + i) % 4].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
     }
 
     //绘制武将名
     char str[31];
     for(int i = 0; i <= 3; i++)
     {
-        switch(general_inf[player[(game.humanid + i) % PLAYERS].general].nation)
+        switch(general_inf[player[(game.humanid + i) % 4].general].nation)
         {
         case WEI:
         {
@@ -292,10 +292,10 @@ void GeneralSelect(void)
         }
         bar(pos[2 * i], pos[2 * i + 1] - 20, pos[2 * i] + 130, pos[2 * i + 1], gui.general);
         PasteImage((char*)str, pos[2 * i], pos[2 * i + 1] - 20, gui.general, TRANSPARENT, BLACK);
-        setcolor( general_inf[player[(game.humanid + i) % PLAYERS].general].nation == SHEN ? BLACK : WHITE, gui.general);
+        setcolor( general_inf[player[(game.humanid + i) % 4].general].nation == SHEN ? BLACK : WHITE, gui.general);
         setfont(20, 0, "隶书", gui.general);
         setbkmode(TRANSPARENT, gui.general);
-        outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % PLAYERS].general].name, gui.general);
+        outtextxy(pos[2 * i] + 30, pos[2 * i + 1] - 20, general_inf[player[(game.humanid + i) % 4].general].name, gui.general);
     }
 
     //重绘界面
@@ -335,7 +335,7 @@ void DrawGui(void)
     //体力与手牌信息
     for(int i = 0; i <= 3; i++)
     {
-        int infpos[2 * PLAYERS] = {950, 450, 1040, 340, 430, 130, 30, 340};
+        int infpos[2 * 4] = {950, 450, 1040, 340, 430, 130, 30, 340};
         setfont(30, 0, "Lucida Handwriting", gui.frame);
         setcolor(player[(game.humanid + i) % 4].health / (float)player[(game.humanid + i) % 4].maxhealth > 2 / 3.0 ? EGERGB(34, 177, 76) :
                  player[(game.humanid + i) % 4].health / (float)player[(game.humanid + i) % 4].maxhealth > 1 / 3.0 ? EGERGB(255, 128, 0) :
@@ -463,7 +463,7 @@ void DrawGui(void)
         char str[] = "准备\0判定\0摸牌\0出牌\0弃牌\0结束\0";
         setcolor(LIGHTGREEN, gui.frame);
         setfont(20, 0, "隶书", gui.background);
-        outtextxy(pos[2 * ((game.active - game.humanid + PLAYERS) % PLAYERS)] + 30, pos[2 * ((game.active - game.humanid + PLAYERS) % PLAYERS) + 1] + 170,
+        outtextxy(pos[2 * ((game.active - game.humanid + 4) % 4)] + 30, pos[2 * ((game.active - game.humanid + 4) % 4) + 1] + 170,
                   Link(str + game.period * 5, (char*)"阶段"), gui.frame);
     }
 

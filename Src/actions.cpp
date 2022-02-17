@@ -883,7 +883,7 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
         DrawGui();
 
         for(int i = 1; i <= 3; i++)
-            if(player[(recipient->id + i) % PLAYERS].chained) Damage(executor, &player[(recipient->id + i) % PLAYERS], amount, type, 0);
+            if(player[(recipient->id + i) % 4].chained) Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
     }
 }
 
@@ -895,15 +895,69 @@ void Recover(player_t *recipient, int amount)
     recipient->maxcard += amount;
 }
 
+//玩家手动选定目标
+///allowed为可选目标,与返回值一样为0~15的整数,0~3位分别对应一至四号位
+///maxtarget为最大目标数
+int SelectTarget(int allowed, int maxtarget, int add)
+{
+    int sel = 0;
+
+    for(; is_run(); delay_fps(10))
+    {
+        while (mousemsg()) msg = getmouse();
+        mousepos(&mouse_x, &mouse_y);
+
+        cleardevice(gui.selector);
+
+        setcolor(WHITE, gui.selector);
+        setfont(30, 0, "仿宋", gui.selector);
+        outtextxy(480, 415, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标"), gui.selector);
+
+        //绘制选定情况
+        for(int i = 0; i <= 3; i++)
+            if(allowed & (1 << i)) LineRect(pos[(4 - game.humanid + i) % 4 * 2], pos[(4 - game.humanid + i) % 4 * 2 + 1] - 20,  //将绝对位置(pos)和相对位置(i)进行转换
+                                            pos[(4 - game.humanid + i) % 4 * 2] + 130, pos[(4 - game.humanid + i) % 4 * 2 + 1] + 170,
+                                            sel & (1 << i) ? EGERGB(255, 57, 57) : EGERGB(255, 215, 77), gui.selector);
+
+        LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+        if(sel) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+
+        putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+        //计算已选目标数
+        int selected = 0;
+        for(int i = 0; i <= 3; i++) if(sel & (1 << i)) selected++;
+
+        //选择目标
+        for(int i = 0; i <= 3; i++)
+            if(msg.is_down() && (allowed & (1 << i)) && mouse_x >= pos[(4 - game.humanid + i) % 4 * 2] && mouse_x <= pos[(4 - game.humanid + i) % 4 * 2] + 130
+                                                    && mouse_y >= pos[(4 - game.humanid + i) % 4 * 2 + 1] - 20 && mouse_y <= pos[(4 - game.humanid + i) % 4 * 2 + 1] + 170)
+                    sel ^= ( (selected < maxtarget || (sel & (1 << i))) << i);
+
+        //取消
+        if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+        {
+            return 0;
+        }
+
+        //确定
+        if(sel && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+        {
+            return sel;
+        }
+    }
+    return 0;
+}
+
 //濒死结算
 void Neardeath(player_t *recipient)
 {
     /* skills here */
-    for(int i = 0; i <= PLAYERS - 1; i++)
+    for(int i = 0; i <= 4 - 1; i++)
     {
         do
         {
-            /*  ask recipient that id = (recipient.id + i) % PLAYERS for a peach */
+            /*  ask recipient that id = (recipient.id + i) % 4 for a peach */
             if(recipient->health > 0) return;
         }
         while(0/* used a peach */);
@@ -987,7 +1041,7 @@ int AskWuxie(int start, int card)
 
             if(ans)
             {
-                (start += i) %= PLAYERS;  //下一次询问从此次使用者开始
+                (start += i) %= 4;  //下一次询问从此次使用者开始
                 res++;
                 break;
             }

@@ -21,6 +21,7 @@ int Getcard(player_t *executor, player_t *player, int amount, int area = 1, int 
 int Judging(player_t *player);
 void Damage(player_t *executor, player_t *player, int amount, damage_e type, int linkstart = 1);
 void Recover(player_t *player, int amount);
+int SelectTarget(int allowed, int maxtarget, int add = 0);
 
 void Neardeath(player_t *player);
 void Death(player_t *player);

@@ -140,6 +140,6 @@ void GameRun(void)
         }
 
         //轮数与当前回合角色更新
-        (++game.active %= PLAYERS) ? : game.turn++;
+        (++game.active %= 4) ? : game.turn++;
     }
 }

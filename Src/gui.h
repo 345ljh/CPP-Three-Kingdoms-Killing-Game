@@ -31,5 +31,6 @@ void DrawGui(void);
 extern gui_t gui;
 extern mouse_msg msg;
 extern int mouse_x, mouse_y;
+extern const int pos[8];
 
 #endif // DRAW_H_INCLUDED
