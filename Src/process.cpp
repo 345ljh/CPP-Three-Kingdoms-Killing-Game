@@ -55,8 +55,18 @@ void GameRun(void)
     ///Remember to DrawGui after EVERY change!!!
     while(1)
     {
+        if(game.active == 0)
+        {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 13);
+            printf("\n——————第%d轮——————\n\n", game.turn);
+        }
+
         if(player[game.active].controller != DEAD)
         {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
+            printf("——————%s的回合开始——————\n", general_inf[player[game.active].general].name);
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+
             //准备阶段
             delay_fps(8);
             game.period = 0;

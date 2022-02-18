@@ -11,6 +11,8 @@ void ProgramStart(void)
 {
     setcaption("三国杀");
     srand(time(NULL));
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+    printf("——————此界面用于记录牌局信息，请勿关闭——————\n");
 
     initgraph(1200, 600);
 
@@ -392,7 +394,7 @@ void DrawGui(void)
     }
 
     //玩家手牌
-    for(int i = 0; i <= 7; i++) PasteCard(160 + 100 * i, 465, player[game.humanid].card[game.page * 8 + i], gui.playercard);
+    for(int i = 0; i <= 7; i++) Pastecard(160 + 100 * i, 465, player[game.humanid].card[game.page * 8 + i], gui.playercard);
 
     //玩家装备
     for(int i = 0; i <= 3; i++)

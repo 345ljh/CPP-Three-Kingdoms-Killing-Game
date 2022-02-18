@@ -98,7 +98,7 @@ void PasteImage(char* path, int x, int y, PIMAGE img, int mode, color_t color)
 
 //卡牌粘贴函数
 ///id=-2表示卡牌背面
-void PasteCard(int x, int y, int id, PIMAGE img)
+void Pastecard(int x, int y, int id, PIMAGE img)
 {
     if(id >= 0)
     {
@@ -120,16 +120,83 @@ void PasteCard(int x, int y, int id, PIMAGE img)
     else if(id == -2) PasteImage((char*)".\\Textures\\Cards\\back.png", x, y, img, TRANSPARENT, BLACK);
 }
 
+//将牌输出到屏幕上,实现弃牌堆效果
 void Putcard(int id)
 {
     PIMAGE temp = newimage();
     getimage(temp,(char*)".\\Textures\\Cards\\back.png");
     setbkmode(TRANSPARENT, temp);
 
-    PasteCard(0, 0, id, temp);
+    Pastecard(0, 0, id, temp);
     Rect(0, 0, 80, 120, EGERGB(1, 1, 1), temp);
     putimage_rotate(gui.throwcard, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 3.1415);
     delimage(temp);
+}
+
+//输出卡牌信息
+void Printcard(int id)
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+
+    printf("【");
+    printf("%s ", card_inf[id].name);
+
+    switch(card_inf[id].suit)
+    {
+    case SPADE:
+        {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+            printf("黑桃");
+            break;
+        }
+    case CLUB:
+        {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+            printf("梅花");
+            break;
+        }
+    case HEART:
+        {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+            printf("红桃");
+            break;
+        }
+    case DIAMOND:
+        {
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+            printf("方片");
+            break;
+        }
+    default:;
+    }
+
+    switch(card_inf[id].num)
+    {
+    case 1:
+        {
+            printf("A");
+            break;
+        }
+    case 11:
+        {
+            printf("J");
+            break;
+        }
+    case 12:
+        {
+            printf("Q");
+            break;
+        }
+    case 13:
+        {
+            printf("K");
+            break;
+        }
+    default: printf("%d", card_inf[id].num);
+    }
+
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+    printf("】");
 }
 
 //计算数组中非-1元素个数

@@ -273,6 +273,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 //确定键
                 if( (cancel || ArrayOccupied(tothrow, amount) == amount) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
+                    printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
                     for(int i = 0; i <= amount - 1; i++)
                     {
                         if(tothrow[i] != -1)
@@ -282,6 +283,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                             {
                                 card_inf[recipient->card[tothrow[i]]].owner = -1;
                                 Putcard(recipient->card[tothrow[i]]);
+                                Printcard(recipient->card[tothrow[i]]);
                                 recipient->card[tothrow[i]] = -1;
                                 recipient->cardamount--;
                                 break;
@@ -290,6 +292,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                             {
                                 card_inf[recipient->equips[tothrow[i] & 0xFF]].owner = -1;
                                 Putcard(recipient->equips[tothrow[i] & 0xFF]);
+                                Printcard(recipient->equips[tothrow[i] & 0xFF]);
                                 recipient->equips[tothrow[i] & 0xFF] = -1;
                                 break;
                             }
@@ -297,6 +300,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                             {
                                 card_inf[recipient->judges[tothrow[i] & 0xFF][0]].owner = -1;
                                 Putcard(recipient->judges[tothrow[i] & 0xFF][0]);
+                                Printcard(recipient->judges[tothrow[i] & 0xFF][0]);
                                 recipient->judges[tothrow[i] & 0xFF][0] = -1;
                                 recipient->judges[tothrow[i] & 0xFF][1] = -1;
 
@@ -310,6 +314,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                             }
                             }
                     }
+                    printf("\n");
                     //修改手牌下标
                     IndexAlign(recipient->card, recipient->cardamount, 160);
                     DrawGui();
@@ -345,7 +350,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 outtextxy(453, 229, (char*)"手牌", gui.selector);
                 if( (area & 1) && recipient->cardamount)
                 {
-                    PasteCard(425, 175, -2,gui.selector);
+                    Pastecard(425, 175, -2,gui.selector);
                     LineRect(425, 175, 505, 295, EGERGB(255, 215, 77), gui.selector);
                 }
 
@@ -357,7 +362,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                     outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
                     if( (area & 2) && recipient->equips[i] != -1)
                     {
-                        PasteCard(425 + 90 * i, 305, recipient->equips[i], gui.selector);
+                        Pastecard(425 + 90 * i, 305, recipient->equips[i], gui.selector);
                         LineRect(425 + 90 * i, 305, 505 + 90 * i, 425, EGERGB(255, 215, 77), gui.selector);
                     }
                 }
@@ -369,7 +374,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                     outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
                     if( (area & 4) && recipient->judges[i][0] != -1)
                     {
-                        PasteCard(515 + 90 * i, 175, recipient->judges[i][0], gui.selector);
+                        Pastecard(515 + 90 * i, 175, recipient->judges[i][0], gui.selector);
                         LineRect(515 + 90 * i, 175, 595 + 90 * i, 295, EGERGB(255, 215, 77), gui.selector);
                     }
                 }
@@ -390,6 +395,11 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         tothrow = rand() % recipient->cardamount;
                         card_inf[recipient->card[tothrow]].owner = -1;
                         Putcard(recipient->card[tothrow]);
+
+                        printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->card[tothrow]);
+                        printf("\n");
+
                         recipient->card[tothrow] = -1;
                         recipient->cardamount--;
                         IndexAlign(recipient->card, recipient->cardamount, 160);
@@ -402,8 +412,12 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         tothrow = (mouse_x - 420) / 90;
                         card_inf[recipient->equips[tothrow]].owner = -1;
                         Putcard(recipient->equips[tothrow]);
-                        recipient->equips[tothrow] = -1;
 
+                        printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->equips[tothrow]);
+                        printf("\n");
+
+                        recipient->equips[tothrow] = -1;
                         break;
                     }
                     if( (area & 4) && msg.is_down() && mouse_x >= 515 && mouse_x <= 775 && mouse_y >= 175 && mouse_y <= 295)
@@ -411,6 +425,11 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         tothrow = (mouse_x - 510) / 90;
                         card_inf[recipient->judges[tothrow][0]].owner = -1;
                         Putcard(recipient->judges[tothrow][0]);
+
+                        printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->judges[tothrow][0]);
+                        printf("\n");
+
                         recipient->judges[tothrow][0] = -1;
                         recipient->judges[tothrow][1] = -1;
 
@@ -464,6 +483,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 if(accord < amount) amount = accord;
             }
 
+            printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
+
             for(int times = 0; times <= amount - 1; times++)
             {
                 //使用优先级判断弃牌
@@ -474,6 +495,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
+
+            printf("\n");
             return amount;
         }
 
@@ -486,6 +509,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
             if(recipient->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
             else memcpy(state, statetemp[1], sizeof(state));
 
+            printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
+
             for(int times = 1; times <= amount; times++)
             {
                 ThrowAi(recipient, state, area);
@@ -494,6 +519,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
+            printf("\n");
             return amount;
         }
     }
@@ -638,9 +664,12 @@ int Showcard(player_t *executor, player_t *recipient, int amount, int cancel, in
     setfont(20, 0, "隶书", gui.selector);
     outtextxy(600 - strlen(topic) * 5, 200, topic, gui.selector);
 
+    printf("%s展示%d张手牌", general_inf[recipient->general].name, amount);
+
     for(int i = 0; i <= amount - 1; i++)
     {
-        PasteCard( (amount <= 8 ? 600 - 40 * amount + 80 * i : 270 + 240.0 * i / (amount - 1) ), 240, recipient->card[toshow[i]], gui.selector);
+        Pastecard( (amount <= 8 ? 600 - 40 * amount + 80 * i : 270 + 240.0 * i / (amount - 1) ), 240, recipient->card[toshow[i]], gui.selector);
+        Printcard(recipient->card[toshow[i]]);
     }
 
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
@@ -684,7 +713,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
 
                 if( (area & 1) && recipient->cardamount)
                 {
-                    PasteCard(425, 175, -2, gui.selector);
+                    Pastecard(425, 175, -2, gui.selector);
                     LineRect(425, 175, 505, 295, EGERGB(255, 215, 77), gui.selector);
                 }
 
@@ -696,7 +725,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                     outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
                     if( (area & 2) && recipient->equips[i] != -1)
                     {
-                        PasteCard(425 + 90 * i, 305, recipient->equips[i], gui.selector);
+                        Pastecard(425 + 90 * i, 305, recipient->equips[i], gui.selector);
                         LineRect(425 + 90 * i, 305, 505 + 90 * i, 425, EGERGB(255, 215, 77), gui.selector);
                     }
                 }
@@ -708,7 +737,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                     outtextxy(543 + 90 * i, 229, (char*)"判定", gui.selector);
                     if( (area & 4) && recipient->judges[i][0] != -1)
                     {
-                        PasteCard(515 + 90 * i, 175, recipient->judges[i][0], gui.selector);
+                        Pastecard(515 + 90 * i, 175, recipient->judges[i][0], gui.selector);
                         LineRect(515 + 90 * i, 175, 595 + 90 * i, 295, EGERGB(255, 215, 77), gui.selector);
                     }
                 }
@@ -726,8 +755,14 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                     if( (area & 1) && msg.is_down() && mouse_x >= 425 && mouse_x <= 505 && mouse_y >= 175 && mouse_y <= 295)
                     {
                         tothrow = rand() % recipient->cardamount;
+
                         executor->cardamount++;
                         executor->card[executor->cardamount - 1] = recipient->card[tothrow];
+
+                        printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->card[tothrow]);
+                        printf("\n");
+
                         card_inf[recipient->card[tothrow]].owner = executor->id;
                         recipient->card[tothrow] = -1;
                         recipient->cardamount--;
@@ -741,6 +776,11 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                         tothrow = (mouse_x - 420) / 90;
                         executor->cardamount++;
                         executor->card[executor->cardamount - 1] = recipient->equips[tothrow];
+
+                        printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->equips[tothrow]);
+                        printf("\n");
+
                         card_inf[recipient->equips[tothrow]].owner = executor->id;
                         recipient->equips[tothrow] = -1;
 
@@ -751,8 +791,12 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                         tothrow = (mouse_x - 510) / 90;
                         executor->cardamount++;
                         executor->card[executor->cardamount - 1] = recipient->judges[tothrow][0];
+
+                        printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+                        Printcard(recipient->judges[tothrow][0]);
+                        printf("\n");
+
                         card_inf[recipient->judges[tothrow][0]].owner = executor->id;
-                        Putcard(recipient->judges[tothrow][0]);
                         recipient->judges[tothrow][0] = -1;
                         recipient->judges[tothrow][1] = -1;
 
@@ -787,14 +831,23 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
             if(recipient->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
             else memcpy(state, statetemp[1], sizeof(state));
 
+            printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
             for(int times = 1; times <= amount; times++)
             {
                 GetAi(executor, recipient, state, area);
 
+                //提前结束情形
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
+                {
+                    if(executor->controller != HUMAN && recipient->controller != HUMAN) printf("%d张牌", amount);
+                    printf("\n");
                     return times;
+                }
             }
+
+            if(executor->controller != HUMAN && recipient->controller != HUMAN) printf("%d张牌", amount);
+            printf("\n");
             return amount;
         }
     }
@@ -834,6 +887,10 @@ int Judging(player_t *recipient)
     setfont(20, 0, "隶书", gui.selector);
     outtextxy(120 - strlen(topic) * 5, 0, topic, gui.selector);
 
+    printf("%s的判定结果为", general_inf[recipient->general].name);
+    Printcard(res);
+    printf("\n");
+
     PIMAGE suitpic[2] = {newimage(), newimage()};  //花色图片需要放大,而使用放大贴图的时候不能同时透明,所以使用双图层
     getimage(suitpic[0], Link( Link( (char*)".\\Textures\\Suits\\", Myitoa( (int)card_inf[res].suit) ), (char*)".png"));
     getimage(suitpic[1], 0, 0, 1200, 600);
@@ -867,23 +924,53 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
 {
     delay_fps(5);
 
-    recipient->health -= amount;
-    recipient->maxcard -= amount;  //手牌上限一般随体力变化
-    DrawGui();
-
-    if(recipient->health <= 0)
+    if(amount > 0)
     {
-        Neardeath(recipient);
-    }
-
-    //连锁结算
-    if(linkstart && recipient->chained && (type == FIRE || type == THUNDER) )
-    {
-        recipient->chained = 0;
+        recipient->health -= amount;
+        recipient->maxcard -= amount;  //手牌上限一般随体力变化
         DrawGui();
 
-        for(int i = 1; i <= 3; i++)
-            if(player[(recipient->id + i) % 4].chained) Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
+        switch(type)
+        {
+        case COMMON:
+            {
+                if(executor) printf("%s受到%s造成的%d点伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                break;
+            }
+        case FIRE:
+            {
+                if(executor) printf("%s受到%s造成的%d点火焰伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点火焰伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                break;
+        }
+        case THUNDER:
+            {
+                if(executor) printf("%s受到%s造成的%d点雷电伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点雷电伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                break;
+        }
+        case LOSS:
+            {
+                printf("%s失去%d点体力,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                break;
+            }
+        }
+
+        if(recipient->health <= 0)
+        {
+            Neardeath(recipient);
+        }
+
+        //连锁结算
+        if(linkstart && recipient->chained && (type == FIRE || type == THUNDER) )
+        {
+            recipient->chained = 0;
+            DrawGui();
+
+            for(int i = 1; i <= 3; i++)
+                if(player[(recipient->id + i) % 4].chained) Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
+        }
     }
 }
 
@@ -893,6 +980,7 @@ void Recover(player_t *recipient, int amount)
     if(recipient->maxhealth - recipient->health < amount) amount = recipient->maxhealth - recipient->health;
     recipient->health += amount;
     recipient->maxcard += amount;
+    printf("%s恢复%d点体力,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
 }
 
 //玩家手动选定目标

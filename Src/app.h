@@ -19,8 +19,9 @@ void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE i
 void LineRect(int left, int top, int right, int bottom, color_t color, PIMAGE img = NULL, int wide = 3);
 
 void PasteImage(char* path, int x, int y, PIMAGE img = NULL, int mode = 0, color_t color = BLACK);
-void PasteCard(int x, int y, int id, PIMAGE img);
+void Pastecard(int x, int y, int id, PIMAGE img);
 void Putcard(int id);
+void Printcard(int id);
 
 int ArrayOccupied(int* buf, int len);
 void IndexAlign(int* buf, int len, int blen);
