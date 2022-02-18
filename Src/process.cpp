@@ -3,7 +3,7 @@
 //程序开始
 void ProgramStart(void)
 {
-    setcaption("三国杀");
+    setcaption("三国杀 ThreeKingdomsKilling-CPP");
     srand(time(NULL));
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
     printf("——————此界面用于记录牌局信息，请勿关闭——————\n");
@@ -204,6 +204,9 @@ void GameStart(void)
 
         memset(player[i].temp, 0, sizeof(player[i].temp));
         memset(player[i].other, 0, sizeof(player[i].other));
+
+        player[i].skillcard = (int*)calloc(1, sizeof(int));
+        player[i].skillcard[0] = -1;
     }
 
     for(int i = 0; i <= 3; i++)

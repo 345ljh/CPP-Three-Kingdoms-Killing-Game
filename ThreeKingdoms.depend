@@ -6,7 +6,7 @@
 	"actions.h"
 	"process.h"
 
-1645110395 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1645177625 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
 	<stdio.h>
 
 1645110395 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
@@ -80,7 +80,7 @@
 	"gui.h"
 	<string.h>
 
-1645166883 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
+1645177577 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
 	"process.h"
 
 1645153997 c:\users\ljh\desktop\unfinished\threekingdoms\src\app.h
@@ -100,4 +100,6 @@
 
 1645165551 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.cpp
 	"ai.h"
+
+1645169656 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\icon.rc
 

@@ -51,6 +51,9 @@
 		<Unit filename="Src/app.h" />
 		<Unit filename="Src/gui.cpp" />
 		<Unit filename="Src/gui.h" />
+		<Unit filename="Src/icon.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="Src/items.cpp" />
 		<Unit filename="Src/items.h" />
 		<Unit filename="Src/main.cpp" />
