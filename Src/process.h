@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+void ProgramStart(void);
+void GeneralSelect(void);
 void GameStart(void);
 void GameRun(void);
 

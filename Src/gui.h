@@ -23,9 +23,8 @@ typedef struct
     PIMAGE arrow;  //指向目标图层
 }gui_t;
 
-void ProgramStart(void);
+void ProgramStartGui(void);
 void GameGuiInit(void);
-void GeneralSelect(void);
 void DrawGui(void);
 
 extern gui_t gui;
