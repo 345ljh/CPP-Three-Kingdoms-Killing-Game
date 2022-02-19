@@ -14,7 +14,9 @@
 void PileInit(void);
 void Shuffle(void);
 
-void Takecard(player_t *player, int amount);
+void Playcard(player_t *executor);
+void Execard(player_t *executor, player_t *recipient, int id);
+void Drawcard(player_t *player, int amount);
 int Throwcard(player_t *executor, player_t *player, int amount, int area = 1, int mode = 127, int add = 0);
 int Showcard(player_t *executor, player_t *player, int amount, int cancel = 0, int add = 0);
 int Getcard(player_t *executor, player_t *player, int amount, int area = 1, int type = 0);

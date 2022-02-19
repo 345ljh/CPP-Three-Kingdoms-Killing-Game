@@ -88,7 +88,7 @@ void GeneralSelect(void)
             setcolor(EGERGB(240, 248, 148), gui.selector);
             break;
         }
-    }
+        }
         outtextxy(310 + 150 * i, 410, general_inf[forselect[i]].name, gui.selector);
     }
 
@@ -121,7 +121,7 @@ void GeneralSelect(void)
     for(int i = 0; i <= 3; i++)
     {
         PasteImage(Link( (char*)".\\Textures\\Generals\\",  \
-            Link( (char*)Myitoa(player[(game.humanid + i) % 4].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
+                         Link( (char*)Myitoa(player[(game.humanid + i) % 4].general), (char*)".png")), pos[2 * i], pos[2 * i + 1], gui.general);
     }
 
     //绘制武将名
@@ -211,7 +211,7 @@ void GameStart(void)
 
     for(int i = 0; i <= 3; i++)
     {
-        Takecard(&player[i], 4);
+        Drawcard(&player[i], 4);
     }
 
     game.turn = 1;
@@ -236,90 +236,98 @@ void GameRun(void)
 
         if(player[game.active].controller != DEAD)
         {
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
-            printf("——————%s的回合开始——————\n", general_inf[player[game.active].general].name);
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
-
-            //准备阶段
-            delay_fps(8);
-            game.period = 0;
-            DrawGui();
-            /* skill here */
-
-            //判定阶段
-            delay_fps(4);
-            game.period = 1;
-            DrawGui();
-
-            int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
-
-            for(int i = 2; i >= 0; i--) //从后向前判定
+            if(player[game.active].turned == 0)
             {
-                if(player[game.active].judges[i][1] != -1 && !AskWuxie(game.active, player[game.active].judges[i][1]))
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
+                printf("——————%s的回合开始——————\n", general_inf[player[game.active].general].name);
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+
+                //准备阶段
+                delay_fps(8);
+                game.period = 0;
+                DrawGui();
+                /* skill here */
+
+                //判定阶段
+                delay_fps(4);
+                game.period = 1;
+                DrawGui();
+
+                int skip = 0; //1位=1为[乐]判定成功,0位=1为[兵]判定成功
+
+                for(int i = 2; i >= 0; i--) //从后向前判定
                 {
-                    switch ((type_e)player[game.active].judges[i][1])
+                    if(player[game.active].judges[i][1] != -1 && !AskWuxie(game.active, player[game.active].judges[i][1]))
                     {
-                    case LE:
+                        switch ((type_e)player[game.active].judges[i][1])
+                        {
+                        case LE:
                         {
                             if(card_inf[Judging(&player[game.active])].suit != HEART) skip |= 2;
                             break;
                         }
-                    case BING:
+                        case BING:
                         {
                             if(card_inf[Judging(&player[game.active])].suit != CLUB) skip |= 1;
                             break;
                         }
-                    case SHANDIAN:
+                        case SHANDIAN:
                         {
                             if(card_inf[Judging(&player[game.active])].suit == SPADE &&
-                               card_inf[Judging(&player[game.active])].num >= 2 && card_inf[Judging(&player[game.active])].num <= 9)
-                            Damage(NULL, &player[game.active], 3, THUNDER);
+                                    card_inf[Judging(&player[game.active])].num >= 2 && card_inf[Judging(&player[game.active])].num <= 9)
+                                Damage(NULL, &player[game.active], 3, THUNDER);
                             break;
                         }
-                    default:;
+                        default:
+                            ;
+                        }
                     }
+
+                    card_inf[player[game.active].judges[i][0]].owner = -1;
+                    player[game.active].judges[i][0] = -1;
+                    player[game.active].judges[i][1] = -1;
+
+                    DrawGui();
+
                 }
 
-                card_inf[player[game.active].judges[i][0]].owner = -1;
-                player[game.active].judges[i][0] = -1;
-                player[game.active].judges[i][1] = -1;
+                //摸牌阶段
+                delay_fps(4);
+                game.period = 2;
+                if(!(skip & 1) )
+                {
+                    Drawcard(&player[game.active], player[game.active].takecard + (game.turn == 1 ? (game.active == 3) - !game.active : 0));
+                    DrawGui();
+                }
 
+                //出牌阶段
+                delay_fps(4);
+                game.period = 3;
+                if(!(skip & 2))
+                {
+                    Playcard(&player[game.active]);
+                }
+
+                //弃牌阶段
+                delay_fps(4);
+                game.period = 4;
                 DrawGui();
-
-            }
-
-            //摸牌阶段
-            delay_fps(4);
-            game.period = 2;
-            if(!(skip & 1) )
-            {
-                Takecard(&player[game.active], player[game.active].takecard + (game.turn == 1 ? (game.active == 3) - !game.active : 0));
+                if(player[game.active].cardamount > player[game.active].maxcard)
+                {
+                    Throwcard(&player[game.active], &player[game.active], player[game.active].cardamount - player[game.active].maxcard);
+                    DrawGui();
+                }
+                //结束阶段
+                delay_fps(4);
+                game.period = 5;
                 DrawGui();
+                /* skill here */
             }
-
-            //出牌阶段
-            delay_fps(4);
-            game.period = 3;
-            if(!(skip & 2))
+            else
             {
-                /* use card */
+                player[game.active].turned = 0;
+                printf("%s从背面翻至正面\n", general_inf[player[game.active].general].name);
             }
-
-            //弃牌阶段
-            delay_fps(4);
-            game.period = 4;
-            DrawGui();
-            if(player[game.active].cardamount > player[game.active].maxcard)
-            {
-                Throwcard(&player[game.active], &player[game.active], player[game.active].cardamount - player[game.active].maxcard);
-                DrawGui();
-            }
-
-            //结束阶段
-            delay_fps(4);
-            game.period = 5;
-            DrawGui();
-            /* skill here */
         }
 
         //轮数与当前回合角色更新

@@ -44,8 +44,126 @@ void Shuffle(void)
     game.nowpile = pilecards;
 }
 
+//出牌阶段
+void Playcard(player_t *executor)
+{
+    if(executor->controller == HUMAN)
+    {
+        for(; is_run(); delay_fps(10))
+        {
+            while (mousemsg()) msg = getmouse();
+            mousepos(&mouse_x, &mouse_y);
+
+            cleardevice(gui.selector);
+
+            setcolor(WHITE, gui.selector);
+            setfont(30, 0, "仿宋", gui.selector);
+            outtextxy(350, 415, (char*)"请选择一张卡牌或点击\"取消\"结束", gui.selector);
+
+            //取消键
+            LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+            //选择手牌
+            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
+            {
+                cleardevice(gui.selector);
+                DrawGui();
+
+                int sel = (mouse_x - 150) / 100 + game.page * 8;
+                LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
+
+                //判断所选类型
+                //装备牌
+                if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90)
+                {
+                    for(; is_run(); delay_fps(10))
+                    {
+                        while (mousemsg()) msg = getmouse();
+                        mousepos(&mouse_x, &mouse_y);
+
+                        char str[31] = "";
+                        strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
+                        outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
+
+                        LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+                        LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+                        putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+                        if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+                        {
+                            Execard(executor, executor, executor->card[sel]);
+                            executor->card[sel] = -1;
+                            executor->cardamount--;
+
+                            IndexAlign(executor->card, executor->cardamount, 160);
+                            break;
+                        }
+                        if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
+                    }
+                }
+            }
+
+            //翻页
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(game.page > 0) game.page--;
+            }
+            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(executor->cardamount > (game.page + 1) * 8) game.page++;
+            }
+
+            //取消
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+            {
+                return;
+            }
+
+            //选择牌后点"取消"直接break会连续触发按钮,导致出牌阶段结束,Circ语句仅在"取消"键
+            if(0) Circ: delay_fps(2);
+
+            DrawGui();
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+        }
+    }
+    else
+    {
+        ;
+    }
+    return;
+}
+
+//执行一张牌的效果
+///此定义中未涉及转换,即"正常"使用一张牌
+void Execard(player_t *executor, player_t *recipient, int id)
+{
+    //装备牌
+    if( (int)card_inf[id].type >= 0x10 || (int)card_inf[id].type < 0x60)
+    {
+
+        int index = (int)card_inf[id].type < 0x60 ? 0 : ( (int)card_inf[id].type >> 4) - 5;
+
+        //原有装备
+        if(executor->equips[index] != -1)
+        {
+            card_inf[executor->equips[index]].owner = -1;
+            Putcard(executor->equips[index]);
+            executor->equips[index] = -1;
+        }
+
+        printf("%s装备", general_inf[executor->general].name);
+        Printcard(id);
+        printf("\n");
+
+        executor->equips[index] = id;
+        card_inf[id].owner = executor->id;
+    }
+}
+
 //从牌堆顶摸牌
-void Takecard(player_t *recipient, int amount)
+void Drawcard(player_t *recipient, int amount)
 {
     for(int i = 1; i <= amount; i++)
     {
@@ -1064,7 +1182,6 @@ void Death(player_t *recipient)
     {
         card_inf[recipient->card[i]].owner = -1;
         Putcard(recipient->card[i]);
-        recipient->card[i] = -1;
     }
 
     for(int i = 0; i <= 3; i++)
@@ -1073,7 +1190,6 @@ void Death(player_t *recipient)
         {
             card_inf[recipient->equips[i]].owner = -1;
             Putcard(recipient->equips[i]);
-            recipient->equips[i] = -1;
         }
     }
 
@@ -1083,10 +1199,23 @@ void Death(player_t *recipient)
         {
             card_inf[recipient->judges[i][0]].owner = -1;
             Putcard(recipient->judges[i][0]);
-            recipient->judges[i][0] = -1;
-            recipient->judges[i][1] = -1;
         }
     }
+
+    memset(recipient->card, 0xFF, sizeof(recipient->card));
+    memset(recipient->equips, 0xFF, sizeof(recipient->equips));
+    memset(recipient->judges, 0xFF, sizeof(recipient->judges));
+
+    memset(recipient->temp, 0, sizeof(recipient->temp));
+    memset(recipient->other, 0, sizeof(recipient->other));
+
+    recipient->maxhealth = general_inf[recipient->general].maxhealth;
+    recipient->health = recipient->maxhealth;
+    recipient->maxcard = recipient->health;
+    recipient->cardamount = 0;
+    recipient->limit = 0;
+    recipient->awaken = 0;
+
 }
 
 //胜利条件判定
