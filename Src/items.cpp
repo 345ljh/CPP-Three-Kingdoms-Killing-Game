@@ -1,3 +1,8 @@
+/**
+ * @file    items.cpp
+ * @brief   各类结构体类型与对象的声明
+ */
+
 #include "items.h"
 
 card_t card_inf[160] =

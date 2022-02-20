@@ -1,3 +1,8 @@
+/**
+ * @file    gui.cpp
+ * @brief   绘制图形化界面
+ */
+
 #include "gui.h"
 
 mouse_msg msg;

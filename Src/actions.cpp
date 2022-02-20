@@ -1,3 +1,8 @@
+/**
+ * @file    actions.cpp
+ * @brief   游戏过程中具体行为
+ */
+
 #include "actions.h"
 
 //牌堆初始化
@@ -519,7 +524,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 setfillcolor(EGERGB(83, 30, 0), gui.selector);
                 bar(415, 145, 785, 435, gui.selector);
 
-                char topic[21] = "";
+                char topic[121] = "";
                 strcpy(topic, Link( Link( (char*)"弃置", general_inf[recipient->general].name), (char*)"的牌"));
                 setcolor(EGERGB(249, 189, 34), gui.selector);
                 setfont(20, 0, "隶书", gui.selector);
@@ -840,7 +845,7 @@ int Showcard(player_t *executor, player_t *recipient, int amount, int cancel, in
     setfillcolor(EGERGB(83, 30, 0), gui.selector);
     bar( amount >= 3 ? (amount <= 8 ? 590 - 40 * amount : 270) : 470, 200, amount >= 3 ? (amount <= 8 ? 610 + 40 * amount : 930) : 730, 400, gui.selector);
 
-    char topic[31] = "";
+    char topic[121] = "";
     strcpy(topic, Link( Link( Link(general_inf[recipient->general].name, (char*)"展示的"), Myitoa(amount) ), (char*)"张手牌") );
     setcolor(EGERGB(249, 189, 34), gui.selector);
     setfont(20, 0, "隶书", gui.selector);
@@ -881,7 +886,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                 setfillcolor(EGERGB(83, 30, 0), gui.selector);
                 bar(415, 145, 785, 435, gui.selector);
 
-                char topic[21] = "";
+                char topic[121] = "";
                 strcpy(topic, Link( Link( (char*)"获得", general_inf[recipient->general].name), (char*)"的牌"));
                 setcolor(EGERGB(249, 189, 34), gui.selector);
                 setfont(20, 0, "隶书", gui.selector);
@@ -1063,7 +1068,7 @@ int Judging(player_t *recipient)
     setfillcolor(EGERGB(83, 30, 0), gui.selector);
     bar(0, 0, 240, 80, gui.selector);
 
-    char topic[31] = "";
+    char topic[121] = "";
     strcpy(topic, Link(general_inf[recipient->general].name, (char*)"的判定结果") );
     setcolor(EGERGB(249, 189, 34), gui.selector);
     setfont(20, 0, "隶书", gui.selector);
@@ -1350,15 +1355,15 @@ int AskShan(player_t *recipient, int add)
             cleardevice(gui.selector);
 
             //提示
-            char topic[41] = "";
-            if(add == 0) strcpy(topic, (char*)"成为杀的目标，请使用一张闪");
-            setcolor(EGERGB(249, 189, 34), gui.selector);
-            setfont(20, 0, "隶书", gui.selector);
-            outtextxy(600 - strlen(topic) * 5, 145, topic, gui.selector);
+            char str[121] = "";
+            if(add == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
+            setcolor(WHITE, gui.selector);
+            setfont(30, 0, "仿宋", gui.selector);
+            outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
             //高亮[闪]
             for(int i = 0; i <= 7; i++)
-                if(card_inf[recipient->card[game.page * 8 + i]].type == SHAN)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 57, 57), gui.selector);
+                if(card_inf[recipient->card[game.page * 8 + i]].type == SHAN)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
             if(sel != -1)
             {
                 LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);

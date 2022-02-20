@@ -1,3 +1,8 @@
+/**
+ * @file    process.cpp
+ * @brief   游戏初始化与运行的总体框架
+ */
+
 #include "process.h"
 
 //程序开始

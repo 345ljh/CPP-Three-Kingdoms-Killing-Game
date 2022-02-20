@@ -31,8 +31,8 @@ typedef enum
 
 typedef enum
 {
-    SPADE = 0x00, CLUB, HEART, DIAMOND, NONE
-}suit_e; //花色,其中第1位可表示颜色
+    SPADE = 0x00, CLUB, HEART, DIAMOND, NONEBLACK, NONE, NONERED
+}suit_e; //花色,其中第1位可表示颜色(为5即NONE无色除外)
 
 typedef enum
 {

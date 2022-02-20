@@ -59,6 +59,7 @@
 		<Unit filename="Src/main.cpp" />
 		<Unit filename="Src/process.cpp" />
 		<Unit filename="Src/process.h" />
+		<Unit filename="Src/reference.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

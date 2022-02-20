@@ -1,3 +1,9 @@
+/**
+ * @file    ai.cpp
+ * @brief   AI对牌局的分析与判断
+ */
+
+
 #include "ai.h"
 
 //弃牌AI
