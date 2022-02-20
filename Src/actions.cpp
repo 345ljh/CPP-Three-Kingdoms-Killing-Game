@@ -80,8 +80,9 @@ void Playcard(player_t *executor)
                     LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
 
                     //判断所选类型
-                    //装备牌
-                    if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90)
+                    //出牌阶段一般只能指定自己的牌
+                    if(( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ||  //装备
+                       (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) )  //桃
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -89,7 +90,8 @@ void Playcard(player_t *executor)
                             mousepos(&mouse_x, &mouse_y);
 
                             char str[31] = "";
-                            strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
+                            if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
+                            if(card_inf[executor->card[sel]].type == TAO) strcpy(str, "使用桃回复1点体力");
                             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
                             LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
@@ -208,7 +210,7 @@ void Execard(player_t *executor, player_t *recipient, int id, int type)
         card_inf[id].owner = executor->id;
     }
     //杀
-    if(type < 0x02)
+    if(type == SHA || type == HUOSHA || type == LEISHA)
     {
         cleardevice(gui.selector);
         DrawGui();
@@ -228,6 +230,15 @@ void Execard(player_t *executor, player_t *recipient, int id, int type)
         printf("\n");
         Putcard(id);
         if(!AskShan(recipient, 0))  Damage(executor, recipient, basdamage, (damage_e)card_inf[id].type, 1);
+    }
+    //非濒死使用桃
+    if((type_e)type == TAO)
+    {
+        printf("%s使用", general_inf[executor->general].name);
+        Printcard(id);
+        printf("\n");
+
+        Recover(executor, 1);
     }
 }
 

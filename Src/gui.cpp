@@ -30,8 +30,8 @@ void ProgramStartGui(void)
     outtextxy(520, 355, "开始游戏");
 
     //其他网页链接
-    PasteImage((char*)".\\Textures\\bili.png", 0, 500, NULL, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\github.png", 0, 550, NULL, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\Apps\\bili.png", 0, 500, NULL, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\Apps\\github.png", 0, 550, NULL, TRANSPARENT, BLACK);
 }
 
 //开始游戏时界面绘制
@@ -107,10 +107,10 @@ void GameGuiInit(void)
 
 
     //信息显示图标
-    PasteImage((char*)".\\Textures\\condition.png", 950, 450, gui.background, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 30, 340, gui.background, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 1040, 340, gui.background, TRANSPARENT, BLACK);
-    PasteImage((char*)".\\Textures\\condition.png", 430, 130, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\States\\condition.png", 950, 450, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\States\\condition.png", 30, 340, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\States\\condition.png", 1040, 340, gui.background, TRANSPARENT, BLACK);
+    PasteImage((char*)".\\Textures\\States\\condition.png", 430, 130, gui.background, TRANSPARENT, BLACK);
 
     //确定位置
     for(int i = 0; i <= 4 - 1; i++)
@@ -186,13 +186,13 @@ void DrawGui(void)
     {
         for(int i = 0; i <= 3; i++)
         {
-            if(player[(game.humanid + i) % 4].turned) PasteImage((char*)".\\Textures\\general_back.png", pos[2 * i], pos[2 * i + 1], gui.frame,
+            if(player[(game.humanid + i) % 4].turned) PasteImage((char*)".\\Textures\\States\\general_back.png", pos[2 * i], pos[2 * i + 1], gui.frame,
                     TRANSPARENT, BLACK);
-            if(player[(game.humanid + i) % 4].chained) PasteImage((char*)".\\Textures\\chain.png", pos[2 * i], pos[2 * i + 1] + 25, gui.frame,
+            if(player[(game.humanid + i) % 4].chained) PasteImage((char*)".\\Textures\\States\\chain.png", pos[2 * i], pos[2 * i + 1] + 25, gui.frame,
                     TRANSPARENT, EGERGB(255, 255, 255));
-            if(player[(game.humanid + i) % 4].limit) PasteImage((char*)".\\Textures\\limit.png",
+            if(player[(game.humanid + i) % 4].limit) PasteImage((char*)".\\Textures\\States\\limit.png",
                     i ? pos[2 * i] + 132 : 1055 , i ? pos[2 * i + 1] : 420, gui.frame, TRANSPARENT, EGERGB(255, 255, 255));
-            if(player[(game.humanid + i) % 4].awaken) PasteImage((char*)".\\Textures\\awake.png",
+            if(player[(game.humanid + i) % 4].awaken) PasteImage((char*)".\\Textures\\States\\awake.png",
                     i ? pos[2 * i] + 132 : 1055, i ? pos[2 * i + 1] + 15 : 435, gui.frame, TRANSPARENT, EGERGB(255, 255, 255));
 
         }
