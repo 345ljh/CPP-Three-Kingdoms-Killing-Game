@@ -176,14 +176,16 @@ void Playcard(player_t *executor)
 }
 
 //执行一张牌的效果
-///此定义中未涉及转换,即"正常"使用一张牌
-void Execard(player_t *executor, player_t *recipient, int id)
+///此定义中未涉及"视为使用"或将多张当做一张使用
+///type为执行牌的类型,若未转化牌则为默认值-1
+void Execard(player_t *executor, player_t *recipient, int id, int type)
 {
+    type = (type == -1) ? (int)card_inf[id].type : type;
     //装备牌
-    if( (int)card_inf[id].type >= 0x10 && (int)card_inf[id].type < 0x60)
+    if( type >= 0x10 && type < 0x60)
     {
 
-        int index = (int)card_inf[id].type < 0x60 ? 0 : ( (int)card_inf[id].type >> 4) - 5;
+        int index = type < 0x60 ? 0 : (type >> 4) - 5;
 
         //原有装备
         if(executor->equips[index] != -1)
@@ -201,7 +203,7 @@ void Execard(player_t *executor, player_t *recipient, int id)
         card_inf[id].owner = executor->id;
     }
     //杀
-    if( (int)card_inf[id].type < 0x02)
+    if(type < 0x02)
     {
         cleardevice(gui.selector);
         DrawGui();
@@ -1332,10 +1334,80 @@ int AskWuxie(int start, int card)
 }
 
 //询问闪
-///返回值为是否出闪,add为触发原因(无论何种类型的杀均输入0)
+///返回值为是否出闪,add为触发原因
+///add=0表示被杀指定(无论属性)
 int AskShan(player_t *recipient, int add)
 {
-    DrawGui();
-    //TODO
+    if(recipient->controller == HUMAN)
+    {
+        int sel = -1;
+        for(; is_run(); delay_fps(10))
+        {
+            while (mousemsg()) msg = getmouse();
+            mousepos(&mouse_x, &mouse_y);
+
+            DrawGui();
+            cleardevice(gui.selector);
+
+            //提示
+            char topic[41] = "";
+            if(add == 0) strcpy(topic, (char*)"成为杀的目标，请使用一张闪");
+            setcolor(EGERGB(249, 189, 34), gui.selector);
+            setfont(20, 0, "隶书", gui.selector);
+            outtextxy(600 - strlen(topic) * 5, 145, topic, gui.selector);
+
+            //高亮[闪]
+            for(int i = 0; i <= 7; i++)
+                if(card_inf[recipient->card[game.page * 8 + i]].type == SHAN)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 57, 57), gui.selector);
+            if(sel != -1)
+            {
+                LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
+                LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+            }
+
+            LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+            //检测按键
+            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
+            {
+                int tosel = (mouse_x - 150) / 100;
+                if(card_inf[recipient->card[game.page * 8 + tosel]].type == SHAN) sel = game.page * 8 + tosel;
+            }
+
+            if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+            {
+                if(add == 0)
+                {
+                    printf("%s使用", general_inf[recipient->general].name);
+                    Printcard(recipient->card[sel]);
+                    printf("\n");
+                }
+
+                Putcard(recipient->card[sel]);
+                card_inf[recipient->card[sel]].owner = -1;
+                recipient->card[sel] = -1;
+                recipient->cardamount--;
+                IndexAlign(recipient->card, recipient->cardamount, 160);
+                return 1;
+            }
+
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+            {
+                DrawGui();
+                return 0;
+            }
+
+            //翻页
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(game.page > 0) game.page--;
+            }
+            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(recipient->cardamount > (game.page + 1) * 8) game.page++;
+            }
+        }
+    }
     return 0;
 }
