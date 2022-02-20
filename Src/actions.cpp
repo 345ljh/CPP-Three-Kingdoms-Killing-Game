@@ -70,36 +70,76 @@ void Playcard(player_t *executor)
                 DrawGui();
 
                 int sel = (mouse_x - 150) / 100 + game.page * 8;
-                LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
-
-                //判断所选类型
-                //装备牌
-                if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90)
+                if(sel < executor->cardamount)
                 {
-                    for(; is_run(); delay_fps(10))
+                    LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
+
+                    //判断所选类型
+                    //装备牌
+                    if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90)
                     {
-                        while (mousemsg()) msg = getmouse();
-                        mousepos(&mouse_x, &mouse_y);
-
-                        char str[31] = "";
-                        strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
-                        outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
-
-                        LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
-                        LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
-
-                        putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
-
-                        if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+                        for(; is_run(); delay_fps(10))
                         {
-                            Execard(executor, executor, executor->card[sel]);
-                            executor->card[sel] = -1;
-                            executor->cardamount--;
+                            while (mousemsg()) msg = getmouse();
+                            mousepos(&mouse_x, &mouse_y);
 
-                            IndexAlign(executor->card, executor->cardamount, 160);
-                            break;
+                            char str[31] = "";
+                            strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
+                            outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
+
+                            LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+                            LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+                            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+                            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+                            {
+                                Execard(executor, executor, executor->card[sel]);
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                break;
+                            }
+                            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
                         }
-                        if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
+                    }
+                    //杀
+                    if((int)card_inf[executor->card[sel]].type <= 0x02)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            //判断次数限制
+                            if(executor->slashlimit && executor->equips[0] != ZHUGE && executor->nowslash >= executor->maxslash) goto Circ;
+
+                            //计算合法目标
+                            int allowtar = 15 ^ (1 << executor->id);  //除去自己
+                            for(int i = 1; i <= 3; i++)
+                            {
+                                //对位且两侧有间隔时基础距离为2,否则为1
+                                int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller) ? 2 : 1;
+                                //+1与-1马的计算
+                                distance += player[(executor->id + i) % 4].equips[3] != -1;
+                                distance -= executor->equips[3] != -1;
+                                //比较攻击范围
+                                int range = executor->equips[0] != -1 ? executor->equips[0] >> 4 : 1;
+                                if(distance > range) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            }
+
+                            int tar = SelectTarget(allowtar, executor->targets);
+                            if(tar)
+                            {
+                                for(int i = 0; i <= 3; i++)
+                                {
+                                    if(tar & (1 << i)) Execard(executor, &player[i], executor->card[sel]);
+                                }
+
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                            }
+                            goto Circ;
+                        }
                     }
                 }
             }
@@ -140,7 +180,7 @@ void Playcard(player_t *executor)
 void Execard(player_t *executor, player_t *recipient, int id)
 {
     //装备牌
-    if( (int)card_inf[id].type >= 0x10 || (int)card_inf[id].type < 0x60)
+    if( (int)card_inf[id].type >= 0x10 && (int)card_inf[id].type < 0x60)
     {
 
         int index = (int)card_inf[id].type < 0x60 ? 0 : ( (int)card_inf[id].type >> 4) - 5;
@@ -159,6 +199,28 @@ void Execard(player_t *executor, player_t *recipient, int id)
 
         executor->equips[index] = id;
         card_inf[id].owner = executor->id;
+    }
+    //杀
+    if( (int)card_inf[id].type < 0x02)
+    {
+        cleardevice(gui.selector);
+        DrawGui();
+
+        //[酒]效果
+        int basdamage = 1;
+        if(executor->spirits == 1)
+        {
+            basdamage ++;
+            executor->spirits = 2;
+        }
+        //回合内计算次数
+        if(game.active == executor->id) executor->nowslash++;
+
+        printf("%s对%s使用", general_inf[executor->general].name,  general_inf[recipient->general].name);
+        Printcard(id);
+        printf("\n");
+        Putcard(id);
+        if(!AskShan(recipient, 0))  Damage(executor, recipient, basdamage, (damage_e)card_inf[id].type, 1);
     }
 }
 
@@ -1052,25 +1114,25 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
         {
         case COMMON:
             {
-                if(executor) printf("%s受到%s造成的%d点伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
-                else printf("%s受到%d点伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                if(executor) printf("%s受到%s造成的%d点伤害,体力值为%d\n", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点伤害,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
                 break;
             }
         case FIRE:
             {
-                if(executor) printf("%s受到%s造成的%d点火焰伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
-                else printf("%s受到%d点火焰伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                if(executor) printf("%s受到%s造成的%d点火焰伤害,体力值为%d\n", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点火焰伤害,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
                 break;
         }
         case THUNDER:
             {
-                if(executor) printf("%s受到%s造成的%d点雷电伤害,体力值为%d", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
-                else printf("%s受到%d点雷电伤害,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                if(executor) printf("%s受到%s造成的%d点雷电伤害,体力值为%d\n", general_inf[recipient->general].name, general_inf[executor->general].name, amount, recipient->health);
+                else printf("%s受到%d点雷电伤害,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
                 break;
         }
         case LOSS:
             {
-                printf("%s失去%d点体力,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+                printf("%s失去%d点体力,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
                 break;
             }
         }
@@ -1113,7 +1175,7 @@ int SelectTarget(int allowed, int maxtarget, int add)
         while (mousemsg()) msg = getmouse();
         mousepos(&mouse_x, &mouse_y);
 
-        cleardevice(gui.selector);
+        //cleardevice(gui.selector);
 
         setcolor(WHITE, gui.selector);
         setfont(30, 0, "仿宋", gui.selector);
@@ -1209,9 +1271,9 @@ void Death(player_t *recipient)
     memset(recipient->temp, 0, sizeof(recipient->temp));
     memset(recipient->other, 0, sizeof(recipient->other));
 
-    recipient->maxhealth = general_inf[recipient->general].maxhealth;
-    recipient->health = recipient->maxhealth;
-    recipient->maxcard = recipient->health;
+    recipient->maxhealth = 0;
+    recipient->health = 0;
+    recipient->maxcard = 0;
     recipient->cardamount = 0;
     recipient->limit = 0;
     recipient->awaken = 0;
@@ -1267,4 +1329,13 @@ int AskWuxie(int start, int card)
     while(ans);
 
     return res % 2;
+}
+
+//询问闪
+///返回值为是否出闪,add为触发原因(无论何种类型的杀均输入0)
+int AskShan(player_t *recipient, int add)
+{
+    DrawGui();
+    //TODO
+    return 0;
 }

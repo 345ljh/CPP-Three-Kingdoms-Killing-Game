@@ -330,6 +330,13 @@ void GameRun(void)
             }
         }
 
+        //重置杀和酒的次数
+        for(int i = 0; i <= 3; i++)
+        {
+            player[i].spirits = 0;
+            player[i].nowslash = 0;
+        }
+
         //轮数与当前回合角色更新
         (++game.active %= 4) ? : game.turn++;
     }

@@ -30,4 +30,5 @@ void Death(player_t *player);
 void VictoryJudge(void);
 
 int AskWuxie(int start, int card);
+int AskShan(player_t *recipient, int add);
 #endif // ACTIONS_H_INCLUDED
