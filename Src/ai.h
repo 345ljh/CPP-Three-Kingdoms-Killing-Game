@@ -7,5 +7,5 @@
 void ThrowAi(player_t *player, int* state, int area, int suit = 15, int type = 7);
 void GetAi(player_t *executor, player_t* player, int* state, int area);
 int StateCompareAi(int state[13], int id);
-
+int AnswerAi(player_t *recepient, type_e type);
 #endif // AI_H_INCLUDED

@@ -177,7 +177,7 @@ void Playcard(player_t *executor)
     }
     else
     {
-        ;
+        ;//TODO: AI
     }
     return;
 }
@@ -189,7 +189,7 @@ void Execard(player_t *executor, player_t *recipient, int id, int type)
 {
     type = (type == -1) ? (int)card_inf[id].type : type;
     //装备牌
-    if( type >= 0x10 && type < 0x60)
+    if( type >= 0x10 && type < 0x90)
     {
 
         int index = type < 0x60 ? 0 : (type >> 4) - 5;
@@ -1424,6 +1424,26 @@ int AskShan(player_t *recipient, int add)
                 if(recipient->cardamount > (game.page + 1) * 8) game.page++;
             }
         }
+    }
+    else
+    {
+        int sel = AnswerAi(recipient, SHAN);
+        if(sel != -1)
+        {
+
+            printf("%s使用", general_inf[recipient->general].name);
+            Printcard(recipient->card[sel]);
+            printf("\n");
+
+
+            Putcard(recipient->card[sel]);
+            card_inf[recipient->card[sel]].owner = -1;
+            recipient->card[sel] = -1;
+            recipient->cardamount--;
+            IndexAlign(recipient->card, recipient->cardamount, 160);
+            return 1;
+        }
+        else return 0;
     }
     return 0;
 }

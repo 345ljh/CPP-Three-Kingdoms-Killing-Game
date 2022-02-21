@@ -1,6 +1,7 @@
 /**
  * @file    ai.cpp
  * @brief   AI对牌局的分析与判断
+ * @note    所有函数以"Ai"结尾
  */
 
 
@@ -219,7 +220,7 @@ void GetAi(player_t *executor, player_t* recipient, int* state, int area)
     free(tothrow);
 }
 
-//弃牌权重比对,返回值叫大者优先弃置
+//弃牌权重比对,返回值较大者优先弃置
 ///state中元素按顺序代表:[手牌区]杀,闪,桃/酒,无懈,其他普通锦囊,延时锦囊,装备,[判定区],[装备区]武器,防具,-1,+1
 ///id低16位为card_inf对应的id,高8位表示区域
 int StateCompareAi(int state[13], int id)
@@ -238,4 +239,29 @@ int StateCompareAi(int state[13], int id)
     ((int)card_inf[id].type >= 0x10 && (int)card_inf[id].type < 0x60) ? state[8] :
     ( ((int)card_inf[id].type & 0xF0) == 0x60) ? state[9] :
     ( ((int)card_inf[id].type & 0xF0) == 0x70) ? state[10] : state[11];
+}
+
+//出牌响应AI
+///返回值为手牌中的位置,若没有符合条件的牌则返回-1
+///若type为SHA则3种类型的杀均可响应
+int AnswerAi(player_t *recipient, type_e type)
+{
+        int *buf = NULL;
+        int amount = 0;
+        buf = (int*)calloc(0, sizeof(int));
+
+        //判断手牌中是否有闪,若有则随机出一张
+        for(int i = 0; i <= recipient->cardamount - 1; i++)
+        {
+            if( (type == SHA && (card_inf[recipient->card[i]].type == SHA || card_inf[recipient->card[i]].type == HUOSHA || card_inf[recipient->card[i]].type == LEISHA)) ||
+               card_inf[recipient->card[i]].type == type)
+               {
+                   int *ptemp = buf;
+                   buf = (int*)realloc(ptemp, ++amount * sizeof(int));
+                   buf[amount - 1] = i;
+               }
+        }
+
+        if(amount) return buf[rand() % amount];
+        else return -1;
 }
