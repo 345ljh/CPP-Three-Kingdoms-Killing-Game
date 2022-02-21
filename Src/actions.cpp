@@ -82,7 +82,8 @@ void Playcard(player_t *executor)
                     //判断所选类型
                     //出牌阶段一般只能指定自己的牌
                     if(( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ||  //装备
-                       (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) )  //桃
+                       (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) ||  //桃
+                       (card_inf[executor->card[sel]].type == JIU && executor->spirits == 0) )  //酒
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -92,6 +93,7 @@ void Playcard(player_t *executor)
                             char str[31] = "";
                             if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
                             if(card_inf[executor->card[sel]].type == TAO) strcpy(str, "使用桃回复1点体力");
+                            if(card_inf[executor->card[sel]].type == JIU) strcpy(str, "使用酒，本阶段下一张杀的伤害+1");
                             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
                             LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
@@ -101,7 +103,7 @@ void Playcard(player_t *executor)
 
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                             {
-                                Execard(executor, executor, executor->card[sel]);
+                                Execard(executor, 1 << executor->id, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
 
@@ -112,7 +114,8 @@ void Playcard(player_t *executor)
                         }
                     }
                     //杀
-                    if((int)card_inf[executor->card[sel]].type <= 0x02)
+                    if((int)card_inf[executor->card[sel]].type == SHA || (int)card_inf[executor->card[sel]].type == HUOSHA
+                       || (int)card_inf[executor->card[sel]].type == LEISHA)
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -136,11 +139,7 @@ void Playcard(player_t *executor)
                             int tar = SelectTarget(allowtar, executor->targets);
                             if(tar)
                             {
-                                for(int i = 0; i <= 3; i++)
-                                {
-                                    if(tar & (1 << i)) Execard(executor, &player[i], executor->card[sel]);
-                                }
-
+                                Execard(executor, tar, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
@@ -185,8 +184,9 @@ void Playcard(player_t *executor)
 //执行一张牌的效果
 ///此定义中未涉及"视为使用"或将多张当做一张使用
 ///type为执行牌的类型,若未转化牌则为默认值-1
-void Execard(player_t *executor, player_t *recipient, int id, int type)
+void Execard(player_t *executor, int target, int id, int type)
 {
+    delay_fps(5);
     type = (type == -1) ? (int)card_inf[id].type : type;
     //装备牌
     if( type >= 0x10 && type < 0x90)
@@ -219,17 +219,27 @@ void Execard(player_t *executor, player_t *recipient, int id, int type)
         int basdamage = 1;
         if(executor->spirits == 1)
         {
-            basdamage ++;
+            basdamage++;
             executor->spirits = 2;
         }
         //回合内计算次数
         if(game.active == executor->id) executor->nowslash++;
 
-        printf("%s对%s使用", general_inf[executor->general].name,  general_inf[recipient->general].name);
+        printf("%s对", general_inf[executor->general].name);
+        int printed = 0;
+        for(int i = 1; i <= 3; i++)
+            if(target & (1 << (executor->id + i) % 4))
+            {
+                if(printed++) printf(",");
+                printf("%s", general_inf[player[(executor->id + i) % 4].general].name);
+            }
+        printf("使用");
         Printcard(id);
         printf("\n");
         Putcard(id);
-        if(!AskShan(recipient, 0))  Damage(executor, recipient, basdamage, (damage_e)card_inf[id].type, 1);
+        for(int i = 1; i <= 3; i++)
+            if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0) )
+                Damage(executor, &player[(executor->id + i) % 4], basdamage, (damage_e)card_inf[id].type, 1);
     }
     //非濒死使用桃
     if((type_e)type == TAO)
@@ -240,6 +250,16 @@ void Execard(player_t *executor, player_t *recipient, int id, int type)
 
         Recover(executor, 1);
     }
+    //非濒死使用酒
+    if((type_e)type == JIU)
+    {
+        printf("%s使用", general_inf[executor->general].name);
+        Printcard(id);
+        printf("\n");
+
+        executor->spirits = 1;
+    }
+    DrawGui();
 }
 
 //从牌堆顶摸牌
@@ -1349,11 +1369,12 @@ int AskWuxie(int start, int card)
     return res % 2;
 }
 
-//询问闪
-///返回值为是否出闪,add为触发原因
+//询问一张牌
+///返回值为是否出type对应类型牌,add为触发原因
 ///add=0表示被杀指定(无论属性)
-int AskShan(player_t *recipient, int add)
+int Askcard(player_t *recipient, type_e type, int add)
 {
+    delay_fps(5);
     if(recipient->controller == HUMAN)
     {
         int sel = -1;
@@ -1372,9 +1393,9 @@ int AskShan(player_t *recipient, int add)
             setfont(30, 0, "仿宋", gui.selector);
             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
-            //高亮[闪]
+            //高亮
             for(int i = 0; i <= 7; i++)
-                if(card_inf[recipient->card[game.page * 8 + i]].type == SHAN)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                if(card_inf[recipient->card[game.page * 8 + i]].type == type)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
             if(sel != -1)
             {
                 LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
@@ -1427,7 +1448,7 @@ int AskShan(player_t *recipient, int add)
     }
     else
     {
-        int sel = AnswerAi(recipient, SHAN);
+        int sel = AnswerAi(recipient, type);
         if(sel != -1)
         {
 

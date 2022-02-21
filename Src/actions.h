@@ -15,7 +15,7 @@ void PileInit(void);
 void Shuffle(void);
 
 void Playcard(player_t *executor);
-void Execard(player_t *executor, player_t *recipient, int id, int type = -1);
+void Execard(player_t *executor, int target, int id, int type = -1);
 void Drawcard(player_t *player, int amount);
 int Throwcard(player_t *executor, player_t *player, int amount, int area = 1, int mode = 127, int add = 0);
 int Showcard(player_t *executor, player_t *player, int amount, int cancel = 0, int add = 0);
@@ -30,5 +30,5 @@ void Death(player_t *player);
 void VictoryJudge(void);
 
 int AskWuxie(int start, int card);
-int AskShan(player_t *recipient, int add);
+int Askcard(player_t *recipient, type_e type, int add);
 #endif // ACTIONS_H_INCLUDED
