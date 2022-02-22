@@ -103,12 +103,12 @@ void Playcard(player_t *executor)
 
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                             {
+                                if( !( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ) card_inf[executor->card[sel]].owner = -1;
                                 Execard(executor, 1 << executor->id, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
-
                                 IndexAlign(executor->card, executor->cardamount, 160);
-                                break;
+                                goto Circ;
                             }
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
                         }
@@ -131,13 +131,14 @@ void Playcard(player_t *executor)
                                 distance += player[(executor->id + i) % 4].equips[3] != -1;
                                 distance -= executor->equips[3] != -1;
                                 //比较攻击范围
-                                int range = executor->equips[0] != -1 ? executor->equips[0] >> 4 : 1;
+                                int range = executor->equips[0] != -1 ? (int)card_inf[executor->equips[0]].type >> 4 : 1;
                                 if(distance > range) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
                             int tar = SelectTarget(allowtar, executor->targets);
                             if(tar)
                             {
+                                card_inf[executor->card[sel]].owner = -1;
                                 Execard(executor, tar, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
@@ -154,6 +155,7 @@ void Playcard(player_t *executor)
                             int tar = SelectTarget(15 ^ (1 << game.humanid), 1);
                             if(tar)
                             {
+                                card_inf[executor->card[sel]].owner = -1;
                                 Execard(executor, tar, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
@@ -179,6 +181,7 @@ void Playcard(player_t *executor)
                             int tar = SelectTarget(allowtar, executor->targets);
                             if(tar)
                             {
+                                card_inf[executor->card[sel]].owner = -1;
                                 Execard(executor, tar, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
@@ -210,12 +213,52 @@ void Playcard(player_t *executor)
                             int tar = SelectTarget(allowtar, executor->targets);
                             if(tar)
                             {
+                                card_inf[executor->card[sel]].owner = -1;
                                 Execard(executor, tar, executor->card[sel]);
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
                             }
                             goto Circ;
+                        }
+                    }
+                    //群体锦囊,如万箭,南蛮,桃园,五谷
+                    if(card_inf[executor->card[sel]].type == WANJIAN || card_inf[executor->card[sel]].type == NANMAN ||
+                        card_inf[executor->card[sel]].type == TAOYUAN || card_inf[executor->card[sel]].type == WUGU)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            while (mousemsg()) msg = getmouse();
+                            mousepos(&mouse_x, &mouse_y);
+
+                            char str[121] = "";
+                            if(card_inf[executor->card[sel]].type == WANJIAN) strcpy(str, "使用万箭齐发");
+                            if(card_inf[executor->card[sel]].type == NANMAN) strcpy(str, "使用南蛮入侵");
+                            if(card_inf[executor->card[sel]].type == TAOYUAN) strcpy(str, "使用桃园结义");
+                            if(card_inf[executor->card[sel]].type == WUGU) strcpy(str, "使用五谷丰登");
+
+                            outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
+
+                            LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+                            LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+                            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+                            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+                            {
+                                int tar;
+                                if(card_inf[executor->card[sel]].type == WANJIAN || card_inf[executor->card[sel]].type == NANMAN) tar = 15 ^ (1 << executor->id);
+                                if(card_inf[executor->card[sel]].type == TAOYUAN || card_inf[executor->card[sel]].type == WUGU) tar = 15;
+
+                                card_inf[executor->card[sel]].owner = -1;
+                                Execard(executor, tar, executor->card[sel]);
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                break;
+                            }
+                            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
                         }
                     }
                 }
@@ -237,7 +280,7 @@ void Playcard(player_t *executor)
                 return;
             }
 
-            //选择牌后点"取消"直接break会连续触发按钮,导致出牌阶段结束,Circ语句仅在"取消"键
+            //使用goto而非break退出循环,防止选择牌后点"取消"会连续触发按钮导致出牌阶段结束,以及"空气杀"的bug
             if(0) Circ: delay_fps(2);
 
             DrawGui();
@@ -369,6 +412,50 @@ void Execard(player_t *executor, int target, int id, int type)
                     }
                     if((type_e)type == GUOCHAI) Throwcard(executor, &player[(executor->id + i) % 4], 1);
                     if((type_e)type == SHUNQIAN) Getcard(executor, &player[(executor->id + i) % 4], 1);
+                }
+            }
+        }
+        //群体锦囊
+        if((type_e)type == WANJIAN || (type_e)type == NANMAN || (type_e)type == TAOYUAN || (type_e)type == WUGU)
+        {
+            cleardevice(gui.selector);
+            DrawGui();
+
+            printf("%s使用", general_inf[executor->general].name);
+            Printcard(id);
+            printf("\n");
+            Putcard(id);
+
+            if((type_e)type == WANJIAN)
+            {
+                for(int i = 1; i <= 3; i++)
+                {
+                    if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
+                        Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                }
+            }
+            if((type_e)type == NANMAN)
+            {
+                for(int i = 1; i <= 3; i++)
+                {
+                    if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
+                        Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                }
+            }
+            if((type_e)type == TAOYUAN)
+            {
+                for(int i = 0; i <= 3; i++)
+                {
+                    if(target & (1 << (executor->id + i) % 4)) Recover(&player[(executor->id + i) % 4], 1);
+                }
+            }
+            if((type_e)type == WUGU)
+            {
+                for(int i = 0; i <= 3; i++)
+                {
+                    if(target & (1 << (executor->id + i) % 4))
+                        //TODO
+                        ;
                 }
             }
         }
@@ -1312,7 +1399,7 @@ void Recover(player_t *recipient, int amount)
     if(recipient->maxhealth - recipient->health < amount) amount = recipient->maxhealth - recipient->health;
     recipient->health += amount;
     recipient->maxcard += amount;
-    printf("%s恢复%d点体力,体力值为%d", general_inf[recipient->general].name, amount, recipient->health);
+    printf("%s恢复%d点体力,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
 }
 
 //玩家手动选定目标
@@ -1487,12 +1574,14 @@ int AskWuxie(int start, int card)
 ///返回值为是否出type对应类型牌,add为触发原因
 /** add的值
  * 0: 被杀指定(无论属性)
- * 0x90(144): 被决斗指定
+ * 0x90: 被决斗指定
+ * 0x93: 万箭齐发目标
+ * 0x94: 南蛮入侵目标
  */
 
 int Askcard(player_t *recipient, type_e type, int add)
 {
-    delay_fps(5);
+    delay_fps(3);
     if(recipient->controller == HUMAN)
     {
         int sel = -1;
@@ -1508,6 +1597,9 @@ int Askcard(player_t *recipient, type_e type, int add)
             char str[121] = "";
             if(add == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
             if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
+            if(add == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
+            if(add == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
+
             setcolor(WHITE, gui.selector);
             setfont(30, 0, "仿宋", gui.selector);
             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
