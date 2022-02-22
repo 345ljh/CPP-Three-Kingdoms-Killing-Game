@@ -90,7 +90,7 @@ void Playcard(player_t *executor)
                             while (mousemsg()) msg = getmouse();
                             mousepos(&mouse_x, &mouse_y);
 
-                            char str[31] = "";
+                            char str[121] = "";
                             if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
                             if(card_inf[executor->card[sel]].type == TAO) strcpy(str, "使用桃回复1点体力");
                             if(card_inf[executor->card[sel]].type == JIU) strcpy(str, "使用酒，本阶段下一张杀的伤害+1");
@@ -114,8 +114,7 @@ void Playcard(player_t *executor)
                         }
                     }
                     //杀
-                    if((int)card_inf[executor->card[sel]].type == SHA || (int)card_inf[executor->card[sel]].type == HUOSHA
-                       || (int)card_inf[executor->card[sel]].type == LEISHA)
+                    if(card_inf[executor->card[sel]].type == SHA || card_inf[executor->card[sel]].type == HUOSHA || card_inf[executor->card[sel]].type == LEISHA)
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -134,6 +133,78 @@ void Playcard(player_t *executor)
                                 //比较攻击范围
                                 int range = executor->equips[0] != -1 ? executor->equips[0] >> 4 : 1;
                                 if(distance > range) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            }
+
+                            int tar = SelectTarget(allowtar, executor->targets);
+                            if(tar)
+                            {
+                                Execard(executor, tar, executor->card[sel]);
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                            }
+                            goto Circ;
+                        }
+                    }
+                    //决斗
+                    if(card_inf[executor->card[sel]].type == JUEDOU)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            int tar = SelectTarget(15 ^ (1 << game.humanid), 1);
+                            if(tar)
+                            {
+                                Execard(executor, tar, executor->card[sel]);
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                            }
+                            goto Circ;
+                        }
+                    }
+                    //过拆
+                    if(card_inf[executor->card[sel]].type == GUOCHAI)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            //计算合法目标
+                            int allowtar = 15 ^ (1 << executor->id);
+                            for(int i = 1; i <= 3; i++)
+                            {
+                                //判断目标区域是否无牌,其中判定区只需检测下标=0是否为空即可
+                                if(!player[(executor->id + i) % 4].cardamount && !ArrayOccupied(player[(executor->id + i) % 4].equips, 4) && !player[(executor->id + i) % 4].judges[0][0])
+                                    allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            }
+
+                            int tar = SelectTarget(allowtar, executor->targets);
+                            if(tar)
+                            {
+                                Execard(executor, tar, executor->card[sel]);
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                            }
+                            goto Circ;
+                        }
+                    }
+                    //顺牵
+                    if(card_inf[executor->card[sel]].type == SHUNQIAN)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            //计算合法目标
+                            int allowtar = 15 ^ (1 << executor->id);
+                            for(int i = 1; i <= 3; i++)
+                            {
+                                //判断目标区域是否无牌,其中判定区只需检测下标=0是否为空即可
+                                if(!player[(executor->id + i) % 4].cardamount && !ArrayOccupied(player[(executor->id + i) % 4].equips, 4) && !player[(executor->id + i) % 4].judges[0][0])
+                                    allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+
+                                //距离计算
+                                int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller) ? 2 : 1;
+                                distance += player[(executor->id + i) % 4].equips[3] != -1;
+                                distance -= executor->equips[3] != -1;
+                                if(distance > 1) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
                             int tar = SelectTarget(allowtar, executor->targets);
@@ -258,6 +329,49 @@ void Execard(player_t *executor, int target, int id, int type)
         printf("\n");
 
         executor->spirits = 1;
+    }
+    //普通锦囊
+    if(type >= 0x90 && type < 0xA0)
+    {
+        //单体锦囊,如决斗,过河拆桥,顺手牵羊
+        if((type_e)type == JUEDOU || (type_e)type == GUOCHAI || (type_e)type == SHUNQIAN)
+        {
+            cleardevice(gui.selector);
+            DrawGui();
+
+            printf("%s对", general_inf[executor->general].name);
+            int printed = 0;
+            for(int i = 1; i <= 3; i++)
+                if(target & (1 << (executor->id + i) % 4))
+                {
+                    if(printed++) printf(",");
+                    printf("%s", general_inf[player[(executor->id + i) % 4].general].name);
+                }
+            printf("使用");
+            Printcard(id);
+            printf("\n");
+            Putcard(id);
+
+            for(int i = 1; i <= 3; i++)
+            {
+                if(target & (1 << (executor->id + i) % 4))
+                {
+                    if((type_e)type == JUEDOU)
+                    {
+                        int turn = -1;  //为偶目标出杀,为奇使用者出杀
+                        do
+                        {
+                            turn++;
+                        }
+                        while(Askcard( (turn % 2 ? executor : &player[(executor->id + i) % 4]), SHA, 0x90));
+                        if(turn % 2) Damage(&player[(executor->id + i) % 4], executor, 1, COMMON);
+                        else Damage(executor, &player[(executor->id + i) % 4], 1, COMMON);
+                    }
+                    if((type_e)type == GUOCHAI) Throwcard(executor, &player[(executor->id + i) % 4], 1);
+                    if((type_e)type == SHUNQIAN) Getcard(executor, &player[(executor->id + i) % 4], 1);
+                }
+            }
+        }
     }
     DrawGui();
 }
@@ -1371,7 +1485,11 @@ int AskWuxie(int start, int card)
 
 //询问一张牌
 ///返回值为是否出type对应类型牌,add为触发原因
-///add=0表示被杀指定(无论属性)
+/** add的值
+ * 0: 被杀指定(无论属性)
+ * 0x90(144): 被决斗指定
+ */
+
 int Askcard(player_t *recipient, type_e type, int add)
 {
     delay_fps(5);
@@ -1389,13 +1507,28 @@ int Askcard(player_t *recipient, type_e type, int add)
             //提示
             char str[121] = "";
             if(add == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
+            if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
             setcolor(WHITE, gui.selector);
             setfont(30, 0, "仿宋", gui.selector);
             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
             //高亮
             for(int i = 0; i <= 7; i++)
-                if(card_inf[recipient->card[game.page * 8 + i]].type == type)  LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+            {
+                if(type == SHA)
+                {
+                    if( (game.page * 8 + i < recipient->cardamount) &&
+                       (card_inf[recipient->card[game.page * 8 + i]].type == SHA || card_inf[recipient->card[game.page * 8 + i]].type == HUOSHA ||
+                       card_inf[recipient->card[game.page * 8 + i]].type == LEISHA) )
+                        LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                }
+                else
+                {
+                    if( (game.page * 8 + i < recipient->cardamount) && card_inf[recipient->card[game.page * 8 + i]].type == type)
+                        LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+                }
+            }
+
             if(sel != -1)
             {
                 LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
@@ -1409,17 +1542,24 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
             {
                 int tosel = (mouse_x - 150) / 100;
-                if(card_inf[recipient->card[game.page * 8 + tosel]].type == SHAN) sel = game.page * 8 + tosel;
+                if(type == SHA)
+                {
+                    if( (game.page * 8 + tosel < recipient->cardamount) &&
+                       (card_inf[recipient->card[game.page * 8 + tosel]].type == SHA || card_inf[recipient->card[game.page * 8 + tosel]].type == HUOSHA ||
+                       card_inf[recipient->card[game.page * 8 + tosel]].type == LEISHA) )  sel = game.page * 8 + tosel;
+                }
+                else
+                {
+                    if((game.page * 8 + tosel < recipient->cardamount) && card_inf[recipient->card[game.page * 8 + tosel]].type == type) sel = game.page * 8 + tosel;
+                }
             }
 
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
-                if(add == 0)
-                {
-                    printf("%s使用", general_inf[recipient->general].name);
-                    Printcard(recipient->card[sel]);
-                    printf("\n");
-                }
+                if(add == 0) printf("%s使用", general_inf[recipient->general].name);
+                if(add == 0x90) printf("%s打出", general_inf[recipient->general].name);
+                Printcard(recipient->card[sel]);
+                printf("\n");
 
                 Putcard(recipient->card[sel]);
                 card_inf[recipient->card[sel]].owner = -1;

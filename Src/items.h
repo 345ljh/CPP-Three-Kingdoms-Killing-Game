@@ -21,7 +21,7 @@ typedef enum
     CHITU = 0x70, DAWAN, ZIXIN,
     //+1马
     JUEYING = 0x80, FEIDIAN, DILU, HUALIU,
-    //基本锦囊:决斗,过拆,顺牵,万箭,南蛮,桃园,无中,五谷,无懈,火攻,铁锁,借刀
+    //普通锦囊:决斗,过拆,顺牵,万箭,南蛮,桃园,无中,五谷,无懈,火攻,铁锁,借刀
     JUEDOU = 0x90, GUOCHAI, SHUNQIAN, WANJIAN, NANMAN, TAOYUAN, WUZHONG, WUGU,
     WUXIE, HUOGONG, TIESUO, JIEDAO,
     //延时锦囊:乐,兵,闪电
