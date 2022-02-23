@@ -265,3 +265,131 @@ int AnswerAi(player_t *recipient, type_e type)
         if(amount) return buf[rand() % amount];
         else return -1;
 }
+
+//五谷AI
+int WuguAi(player_t* recipient, int* buf, int len)
+{
+    int *state = NULL;
+    state = (int*)calloc(len, sizeof(int));
+
+    //分别计算剩余牌的权重
+    for(int i = 0; i <= len - 1; i++)
+    {
+        if(buf[i] == -1) state[i] = 100;
+        if(card_inf[buf[i]].type == SHA || card_inf[buf[i]].type == HUOSHA || card_inf[buf[i]].type == LEISHA)
+        {
+            if(game.active == recipient->id) state[i] = 3;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == SHAN)
+        {
+            if(game.active == recipient->id) state[i] = 2;
+            else state[i] = 1;
+        }
+        if(card_inf[buf[i]].type == TAO)
+        {
+            state[i] = 0;
+        }
+        if(card_inf[buf[i]].type == JIU)
+        {
+            if(recipient->health == 1) state[i] = 0;
+            else state[i] = 1;
+        }
+        if(card_inf[buf[i]].type == JUEDOU)
+        {
+            if(game.active == recipient->id) state[i] = 3;
+            else state[i] = 3;
+        }
+        if(card_inf[buf[i]].type == GUOCHAI)
+        {
+            if(game.active == recipient->id) state[i] = 2;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == SHUNQIAN)
+        {
+            if(game.active == recipient->id) state[i] = 2;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == WANJIAN)
+        {
+            if(game.active == recipient->id &&
+               (player[3 - recipient->id].health > 1 || player[(recipient->id + 2) % 4].health == 1 || player[(recipient->id + 2) % 4].health == 1)) state[i] = 2;
+            else state[i] = 3;
+        }
+        if(card_inf[buf[i]].type == NANMAN)
+        {
+            if(game.active == recipient->id &&
+               (player[3 - recipient->id].health > 1 || player[(recipient->id + 2) % 4].health == 1 || player[(recipient->id + 2) % 4].health == 1)) state[i] = 2;
+            else state[i] = 3;
+        }
+        if(card_inf[buf[i]].type == TAOYUAN)
+        {
+            if(game.active == recipient->id &&
+               (recipient->health < recipient->maxhealth && player[3 - recipient->id].health < player[3 - recipient->id].maxhealth)) state[i] = 2;
+            else state[i] = 4;
+        }
+        if(card_inf[buf[i]].type == WUZHONG)
+        {
+            if(game.active == recipient->id) state[i] = 0;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == WUGU)
+        {
+            if(game.active == recipient->id) state[i] = 4;
+            else state[i] = 5;
+        }
+        if(card_inf[buf[i]].type == WUXIE)
+        {
+            if(game.active == recipient->id) state[i] = 1;
+            else state[i] = 1;
+        }
+        if(card_inf[buf[i]].type == HUOGONG)
+        {
+            if(game.active == recipient->id && recipient->cardamount >= 3) state[i] = 3;
+            else state[i] = 3;
+        }
+        if(card_inf[buf[i]].type == TIESUO)
+        {
+            state[i] = 4;
+        }
+        if(card_inf[buf[i]].type == JIEDAO)
+        {
+            if(game.active == recipient->id && (player[(recipient->id + 2) % 4].equips[0] != -1 || player[(recipient->id + 3) % 4].equips[0] != -1)) state[i] = 2;
+            else state[i] = 4;
+        }
+        if(card_inf[buf[i]].type == LE)
+        {
+            if(game.active == recipient->id) state[i] = 1;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == BING)
+        {
+            if(game.active == recipient->id) state[i] = 1;
+            else state[i] = 2;
+        }
+        if(card_inf[buf[i]].type == SHANDIAN)
+        {
+            if(game.active == recipient->id) state[i] = 5;
+            else state[i] = 5;
+        }
+        if( (int)card_inf[buf[i]].type >= 0x10 && (int)card_inf[buf[i]].type <= 0x60)
+        {
+            if(game.active == recipient->id) state[i] = 2;
+            else state[i] = 4;
+        }
+        if( (int)card_inf[buf[i]].type >= 0x60 && (int)card_inf[buf[i]].type <= 0x70)
+        {
+            if(game.active == recipient->id) state[i] = 1;
+            else state[i] = 2;
+        }
+        if( (int)card_inf[buf[i]].type >= 0x70 && (int)card_inf[buf[i]].type <= 0x90)
+        {
+            if(game.active == recipient->id) state[i] = 1;
+            else state[i] = 3;
+        }
+    }
+
+    int res = 0;
+    for(int i = 1; i <= len - 1; i++) if(state[i] < state[res]) res = i;
+    return res;
+}

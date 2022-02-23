@@ -302,11 +302,13 @@ void Playcard(player_t *executor)
 void Execard(player_t *executor, int target, int id, int type)
 {
     delay_fps(5);
+    cleardevice(gui.selector);
+    DrawGui();
     type = (type == -1) ? (int)card_inf[id].type : type;
-    //装备牌
-    if( type >= 0x10 && type < 0x90)
-    {
 
+    //装备牌
+    if(type >= 0x10 && type < 0x90)
+    {
         int index = type < 0x60 ? 0 : (type >> 4) - 5;
 
         //原有装备
@@ -327,9 +329,6 @@ void Execard(player_t *executor, int target, int id, int type)
     //杀
     if(type == SHA || type == HUOSHA || type == LEISHA)
     {
-        cleardevice(gui.selector);
-        DrawGui();
-
         //[酒]效果
         int basdamage = 1;
         if(executor->spirits == 1)
@@ -419,9 +418,6 @@ void Execard(player_t *executor, int target, int id, int type)
         //群体锦囊
         if((type_e)type == WANJIAN || (type_e)type == NANMAN || (type_e)type == TAOYUAN || (type_e)type == WUGU)
         {
-            cleardevice(gui.selector);
-            DrawGui();
-
             printf("%s使用", general_inf[executor->general].name);
             Printcard(id);
             printf("\n");
@@ -453,6 +449,7 @@ void Execard(player_t *executor, int target, int id, int type)
             }
             if((type_e)type == WUGU)
             {
+
                 int *totake = NULL;
                 int live = 0;
                 for(int i = 0; i <= 3; i++) live += player[i].controller != DEAD;
@@ -466,12 +463,57 @@ void Execard(player_t *executor, int target, int id, int type)
                     game.card[i] = -1;
                     IndexAlign(game.card, game.nowpile, 160);
                 }
+
+                //选牌界面
+                setfillcolor(EGERGB(83, 30, 0), gui.selector);
+                bar(595 - 45 * live, 220, 605 + 45 * live, 380, gui.selector);
+
+                setcolor(EGERGB(249, 189, 34), gui.selector);
+                setfont(20, 0, "隶书", gui.selector);
+                outtextxy(560, 220, (char*)"五谷丰登", gui.selector);
+
+                for(int i = 0; i <= live - 1; i++)
+                    Pastecard(605 - 45 * live + 90 * i, 250, totake[i], gui.selector);
+
+                putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
                 for(int i = 0; i <= 3; i++)
                 {
                     if(target & (1 << (executor->id + i) % 4))
-                        //TODO
-                        ;
+                    {
+                        int sel;
+
+                        //选牌
+                        if(player[(executor->id + i) % 4].controller == HUMAN)
+                        {
+                            for(; is_run(); delay_fps(10))
+                            {
+                                if(msg.is_down() && mouse_x >= 595 - 45 * live && mouse_x <= 605 + 45 * live && mouse_y >= 250 && mouse_y <= 370)
+                                {
+                                    sel = (mouse_x - (595 - 45 * live)) / 90;
+                                    if(totake[sel] != -1) break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            sel = WuguAi(&player[(executor->id + i) % 4], totake, live);
+                        }
+
+                        //获得所选牌
+                        player[(executor->id + i) % 4].card[player[(executor->id + i) % 4].cardamount] = totake[sel];
+                        player[(executor->id + i) % 4].cardamount++;
+                        card_inf[totake[sel]].owner = (executor->id + i) % 4;
+
+                        printf("%s获得", general_inf[player[(executor->id + i) % 4].general].name);
+                        Printcard(totake[sel]);
+                        printf("\n");
+
+                        totake[sel] = -1;
+                    }
                 }
+
+                free(totake);
             }
         }
     }
