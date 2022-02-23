@@ -33,12 +33,13 @@ void Shuffle(void)
     cleardevice(gui.throwcard);
 
     //统计弃牌堆内牌的数量
-    for(int i = 0; i <= 150; i++)
+    for(int i = 0; i <= 160; i++)
     {
         if(card_inf[i].owner == -1) pilecards++;
     }
 
-    for(int i = 0; i <= pilecards - 1; i++)
+    //将洗过的牌接在牌堆后
+    for(int i = game.nowpile; i <= pilecards - 1; i++)
     {
         pointer = rand() % 160;
         while(card_inf[pointer].owner != -1) ++pointer %= 160;
@@ -46,7 +47,7 @@ void Shuffle(void)
         card_inf[pointer].owner = -2;
     }
 
-    game.nowpile = pilecards;
+    game.nowpile += pilecards;
 }
 
 //出牌阶段
@@ -206,7 +207,7 @@ void Playcard(player_t *executor)
                                 //距离计算
                                 int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller) ? 2 : 1;
                                 distance += player[(executor->id + i) % 4].equips[3] != -1;
-                                distance -= executor->equips[3] != -1;
+                                distance -= executor->equips[2] != -1;
                                 if(distance > 1) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
@@ -446,11 +447,25 @@ void Execard(player_t *executor, int target, int id, int type)
             {
                 for(int i = 0; i <= 3; i++)
                 {
+                    if(player[(executor->id + i) % 4].health >= player[(executor->id + i) % 4].maxhealth) continue;
                     if(target & (1 << (executor->id + i) % 4)) Recover(&player[(executor->id + i) % 4], 1);
                 }
             }
             if((type_e)type == WUGU)
             {
+                int *totake = NULL;
+                int live = 0;
+                for(int i = 0; i <= 3; i++) live += player[i].controller != DEAD;
+                totake = (int*)calloc(live, sizeof(int));
+
+                //展示牌堆顶等同于现存人数的牌
+                if(game.nowpile <= live) Shuffle();
+                for(int i = 0; i <= 3; i++)
+                {
+                    totake[i] = game.card[i];
+                    game.card[i] = -1;
+                    IndexAlign(game.card, game.nowpile, 160);
+                }
                 for(int i = 0; i <= 3; i++)
                 {
                     if(target & (1 << (executor->id + i) % 4))
@@ -466,22 +481,23 @@ void Execard(player_t *executor, int target, int id, int type)
 //从牌堆顶摸牌
 void Drawcard(player_t *recipient, int amount)
 {
+    if(game.nowpile <= amount) Shuffle();
+
+    printf("%s从牌堆获得", general_inf[recipient->general].name);
     for(int i = 1; i <= amount; i++)
     {
-        if(!game.nowpile) Shuffle();
         card_inf[game.card[0]].owner = recipient->id;
         recipient->card[recipient->cardamount] = game.card[0];
         recipient->cardamount++;
+
+        if(recipient->controller == HUMAN) Printcard(game.card[0]);
+
         game.nowpile--;
-
-        for(int j = 0; j <= game.nowpile - 1; j++)
-        {
-            game.card[j] = game.card[j + 1];
-        }
-        game.card[game.nowpile] = -1;
+        game.card[0] = -1;
+        IndexAlign(game.card, game.nowpile, 160);
     }
-
-    /* skills here */
+    if(recipient->controller == AI) printf("%d张牌", amount);
+    printf("\n");
 }
 
 //弃牌,其中executor为弃牌者,recipient为被弃牌者
@@ -1282,7 +1298,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
 ///返回值为卡牌id
 int Judging(player_t *recipient)
 {
-    if(!game.nowpile) Shuffle();
+    if(game.nowpile <= 1) Shuffle();
 
     //将牌堆顶一张牌用于判定
     int res = game.card[0];
