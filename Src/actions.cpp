@@ -105,10 +105,11 @@ void Playcard(player_t *executor)
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                             {
                                 if( !( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ) card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, 1 << executor->id, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, 1 << executor->id, temp);
                                 goto Circ;
                             }
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
@@ -140,10 +141,11 @@ void Playcard(player_t *executor)
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, tar, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
                             }
                             goto Circ;
                         }
@@ -157,10 +159,11 @@ void Playcard(player_t *executor)
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, tar, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
                             }
                             goto Circ;
                         }
@@ -183,10 +186,11 @@ void Playcard(player_t *executor)
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, tar, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
                             }
                             goto Circ;
                         }
@@ -215,10 +219,11 @@ void Playcard(player_t *executor)
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, tar, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
                             }
                             goto Circ;
                         }
@@ -252,11 +257,11 @@ void Playcard(player_t *executor)
                                 if(card_inf[executor->card[sel]].type == TAOYUAN || card_inf[executor->card[sel]].type == WUGU) tar = 15;
 
                                 card_inf[executor->card[sel]].owner = -1;
-                                Execard(executor, tar, executor->card[sel]);
+                                int temp = executor->card[sel];
                                 executor->card[sel] = -1;
                                 executor->cardamount--;
-
                                 IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
                                 break;
                             }
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;

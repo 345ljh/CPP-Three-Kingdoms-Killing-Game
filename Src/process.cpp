@@ -230,6 +230,16 @@ void GameStart(void)
 
 void GameRun(void)
 {
+    //从牌堆获得特定id的牌,用于测试
+    int get = 47;
+    player[game.humanid].card[4] = get;
+    for(int i = 0; i <= 159; i++) if(game.card[i] == get)
+    {
+        game.card[i] = -1;
+        card_inf[get].owner = game.humanid;
+        player[game.humanid].cardamount++;
+    }
+
     ///Remember to DrawGui after EVERY change!!!
     while(1)
     {
