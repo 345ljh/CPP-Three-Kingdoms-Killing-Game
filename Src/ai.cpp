@@ -275,7 +275,11 @@ int WuguAi(player_t* recipient, int* buf, int len)
     //分别计算剩余牌的权重
     for(int i = 0; i <= len - 1; i++)
     {
-        if(buf[i] == -1) state[i] = 100;
+        if(buf[i] == -1)
+        {
+            state[i] = 100;
+            continue;
+        }
         if(card_inf[buf[i]].type == SHA || card_inf[buf[i]].type == HUOSHA || card_inf[buf[i]].type == LEISHA)
         {
             if(game.active == recipient->id) state[i] = 3;
@@ -303,12 +307,12 @@ int WuguAi(player_t* recipient, int* buf, int len)
         if(card_inf[buf[i]].type == GUOCHAI)
         {
             if(game.active == recipient->id) state[i] = 2;
-            else state[i] = 2;
+            else state[i] = 1;
         }
         if(card_inf[buf[i]].type == SHUNQIAN)
         {
             if(game.active == recipient->id) state[i] = 2;
-            else state[i] = 2;
+            else state[i] = 1;
         }
         if(card_inf[buf[i]].type == WANJIAN)
         {
@@ -331,7 +335,7 @@ int WuguAi(player_t* recipient, int* buf, int len)
         if(card_inf[buf[i]].type == WUZHONG)
         {
             if(game.active == recipient->id) state[i] = 0;
-            else state[i] = 2;
+            else state[i] = 1;
         }
         if(card_inf[buf[i]].type == WUGU)
         {
@@ -341,7 +345,7 @@ int WuguAi(player_t* recipient, int* buf, int len)
         if(card_inf[buf[i]].type == WUXIE)
         {
             if(game.active == recipient->id) state[i] = 1;
-            else state[i] = 1;
+            else state[i] = 2;
         }
         if(card_inf[buf[i]].type == HUOGONG)
         {

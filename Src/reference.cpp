@@ -31,6 +31,9 @@ if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse
     if(recipient->cardamount > (game.page + 1) * 8) game.page++;
 }
 
+//获取鼠标位置,进行按键的for循环需要加上
+while (mousemsg()) msg = getmouse();
+mousepos(&mouse_x, &mouse_y);
 /*----------------------贴图相关----------------------*/
 //确定与取消键
 LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);

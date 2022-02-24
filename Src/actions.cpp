@@ -84,7 +84,8 @@ void Playcard(player_t *executor)
                     //出牌阶段一般只能指定自己的牌
                     if(( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ||  //装备
                        (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) ||  //桃
-                       (card_inf[executor->card[sel]].type == JIU && executor->spirits == 0) )  //酒
+                       (card_inf[executor->card[sel]].type == JIU && executor->spirits == 0) ||  //酒
+                       (card_inf[executor->card[sel]].type == WUZHONG) )  //无中生有
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -95,6 +96,7 @@ void Playcard(player_t *executor)
                             if((int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) strcpy(str, Link((char*)"装备", card_inf[executor->card[sel]].name));
                             if(card_inf[executor->card[sel]].type == TAO) strcpy(str, "使用桃回复1点体力");
                             if(card_inf[executor->card[sel]].type == JIU) strcpy(str, "使用酒，本阶段下一张杀的伤害+1");
+                            if(card_inf[executor->card[sel]].type == WUZHONG) strcpy(str, "使用无中生有");
                             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
                             LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
@@ -182,7 +184,7 @@ void Playcard(player_t *executor)
                                     allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
-                            int tar = SelectTarget(allowtar, executor->targets);
+                            int tar = SelectTarget(allowtar, 1);
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
@@ -215,7 +217,7 @@ void Playcard(player_t *executor)
                                 if(distance > 1) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
-                            int tar = SelectTarget(allowtar, executor->targets);
+                            int tar = SelectTarget(allowtar, 1);
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
@@ -225,6 +227,48 @@ void Playcard(player_t *executor)
                                 IndexAlign(executor->card, executor->cardamount, 160);
                                 Execard(executor, tar, temp);
                             }
+                            goto Circ;
+                        }
+                    }
+                    //火攻
+                    if(card_inf[executor->card[sel]].type == HUOGONG)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+
+                            //判断目标是否有手牌
+                            int allowtar = 15;
+                            for(int i = 0; i <= 3; i++) if(!player[i].cardamount) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            int tar = SelectTarget(allowtar, 1);
+                            if(tar)
+                            {
+                                card_inf[executor->card[sel]].owner = -1;
+                                int temp = executor->card[sel];
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
+                            }
+                            goto Circ;
+                        }
+                    }
+                    //铁索
+                    if(card_inf[executor->card[sel]].type == TIESUO)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+
+                            //判断目标是否有手牌
+                            int allowtar = 15;
+                            int tar = SelectTarget(allowtar, 2, 0xA0);
+
+                            card_inf[executor->card[sel]].owner = -1;
+                            int temp = executor->card[sel];
+                            executor->card[sel] = -1;
+                            executor->cardamount--;
+                            IndexAlign(executor->card, executor->cardamount, 160);
+                            Execard(executor, tar, temp);
+
                             goto Circ;
                         }
                     }
@@ -381,8 +425,8 @@ void Execard(player_t *executor, int target, int id, int type)
     //普通锦囊
     if(type >= 0x90 && type < 0xA0)
     {
-        //单体锦囊,如决斗,过河拆桥,顺手牵羊
-        if((type_e)type == JUEDOU || (type_e)type == GUOCHAI || (type_e)type == SHUNQIAN)
+        //单体锦囊,如决斗,过河拆桥,顺手牵羊,火攻
+        if((type_e)type == JUEDOU || (type_e)type == GUOCHAI || (type_e)type == SHUNQIAN || (type_e)type == HUOGONG)
         {
             cleardevice(gui.selector);
             DrawGui();
@@ -400,7 +444,7 @@ void Execard(player_t *executor, int target, int id, int type)
             printf("\n");
             Putcard(id);
 
-            for(int i = 1; i <= 3; i++)
+            for(int i = 0; i <= 3; i++)
             {
                 if(target & (1 << (executor->id + i) % 4))
                 {
@@ -417,7 +461,50 @@ void Execard(player_t *executor, int target, int id, int type)
                     }
                     if((type_e)type == GUOCHAI) Throwcard(executor, &player[(executor->id + i) % 4], 1);
                     if((type_e)type == SHUNQIAN) Getcard(executor, &player[(executor->id + i) % 4], 1);
+                    if((type_e)type == HUOGONG)
+                    {
+                        if(player[(executor->id + i) % 4].cardamount == 0) continue;
+                        int suit = Showcard(&player[(executor->id + i) % 4], &player[(executor->id + i) % 4], 1, 0, 0x99);
+                        if(Throwcard(executor, executor, 1, 1, 0b11110000 | (1 << suit), 0x99)) Damage(executor, &player[(executor->id + i) % 4], 1, FIRE, 1);
+                    }
                 }
+            }
+        }
+        //铁索连环
+        if((type_e)type == TIESUO)
+        {
+            if(target)
+            {
+                printf("%s对", general_inf[executor->general].name);
+                int printed = 0;
+                for(int i = 1; i <= 3; i++)
+                    if(target & (1 << (executor->id + i) % 4))
+                    {
+                        if(printed++) printf(",");
+                        printf("%s", general_inf[player[(executor->id + i) % 4].general].name);
+                    }
+                printf("使用");
+                Printcard(id);
+                printf("\n");
+                Putcard(id);
+
+                for(int i = 0; i <= 3; i++)
+                {
+                    if(target & (1 << (executor->id + i) % 4))
+                    {
+                        ++player[(executor->id + i) % 4].chained %= 2;
+                        if(player[(executor->id + i) % 4].chained) printf("%s的武将牌横置\n", general_inf[player[(executor->id + i) % 4].general].name);
+                        else printf("%s的武将牌重置\n", general_inf[player[(executor->id + i) % 4].general].name);
+                    }
+                }
+            }
+            else
+            {
+                printf("%s重铸", general_inf[executor->general].name);
+                Printcard(id);
+                printf("\n");
+                Putcard(id);
+                Drawcard(executor, 1);
             }
         }
         //群体锦囊
@@ -477,22 +564,31 @@ void Execard(player_t *executor, int target, int id, int type)
                 setfont(20, 0, "隶书", gui.selector);
                 outtextxy(560, 220, (char*)"五谷丰登", gui.selector);
 
+                printf("五谷丰登展示%d张牌", live);
                 for(int i = 0; i <= live - 1; i++)
+                {
                     Pastecard(605 - 45 * live + 90 * i, 250, totake[i], gui.selector);
-
-                putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+                    Printcard(totake[i]);
+                }
+                printf("\n");
 
                 for(int i = 0; i <= 3; i++)
                 {
+                    DrawGui();
+                    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
                     if(target & (1 << (executor->id + i) % 4))
                     {
-                        int sel;
+                        delay_fps(1.2);
+                        int sel = -1;
 
                         //选牌
                         if(player[(executor->id + i) % 4].controller == HUMAN)
                         {
                             for(; is_run(); delay_fps(10))
                             {
+                                while (mousemsg()) msg = getmouse();
+                                mousepos(&mouse_x, &mouse_y);
+
                                 if(msg.is_down() && mouse_x >= 595 - 45 * live && mouse_x <= 605 + 45 * live && mouse_y >= 250 && mouse_y <= 370)
                                 {
                                     sel = (mouse_x - (595 - 45 * live)) / 90;
@@ -506,20 +602,48 @@ void Execard(player_t *executor, int target, int id, int type)
                         }
 
                         //获得所选牌
-                        player[(executor->id + i) % 4].card[player[(executor->id + i) % 4].cardamount] = totake[sel];
-                        player[(executor->id + i) % 4].cardamount++;
-                        card_inf[totake[sel]].owner = (executor->id + i) % 4;
-
                         printf("%s获得", general_inf[player[(executor->id + i) % 4].general].name);
                         Printcard(totake[sel]);
                         printf("\n");
 
+                        player[(executor->id + i) % 4].card[player[(executor->id + i) % 4].cardamount] = totake[sel];
+                        player[(executor->id + i) % 4].cardamount++;
+                        card_inf[totake[sel]].owner = (executor->id + i) % 4;
+
+                        setcolor(RED, gui.selector);
+                        line(605 - 45 * live + 90 * sel, 250, 695 - 45 * live + 90 * sel, 370, gui.selector);
+                        line(605 - 45 * live + 90 * sel, 370, 695 - 45 * live + 90 * sel, 250, gui.selector);
                         totake[sel] = -1;
                     }
                 }
 
+                //将剩余牌弃置
+                if(ArrayOccupied(totake, 4))
+                {
+                    printf("五谷丰登弃置");
+                    for(int i = 0; i <= 3; i++)
+                    {
+                        if(totake[i] != -1)
+                        {
+                            card_inf[totake[i]].owner = -1;
+                            Putcard(totake[i]);
+                            Printcard(totake[i]);
+                        }
+                    }
+                    printf("\n");
+                }
+
                 free(totake);
             }
+        }
+        //无中生有
+        if((type_e)type == WUZHONG)
+        {
+            printf("%s使用", general_inf[executor->general].name);
+            Printcard(id);
+            printf("\n");
+
+            Drawcard(executor, 2);
         }
     }
     DrawGui();
@@ -554,7 +678,11 @@ void Drawcard(player_t *recipient, int amount)
 ///cancel=1时可点击取消,此时返回值为0,amount为最大弃牌数
 ///cancel=0时无法取消,且当区域内牌不足时则全弃
 ///mode当且仅当executor与recipient为同一角色时生效
-///add为附加变量,如[贯石斧]触发或技能等,默认值为0
+/** add的值
+ * 0: 默认
+ * 0x99: 火攻使用者
+ */
+
 int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int mode, int add)
 {
     //玩家操作弃牌
@@ -604,9 +732,20 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 cleardevice(gui.selector);
 
                 //弃牌数提示
+                char str[121] = "";
+                if(add == 0) strcpy(str, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"));
+                if(add == 0x99)
+                {
+                    char suitstr[11] = "";
+                    if(suit == 1) strcpy(suitstr, "黑桃");
+                    else if(suit == 2) strcpy(suitstr, "梅花");
+                    else if(suit == 4) strcpy(suitstr, "红桃");
+                    else if(suit == 8) strcpy(suitstr, "方片");
+                    strcpy(str, Link( Link((char*)"弃置一张", suitstr), (char*)"牌，造成1点火焰伤害"));
+                }
                 setcolor(WHITE, gui.selector);
                 setfont(30, 0, "仿宋", gui.selector);
-                outtextxy(550, 415, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"), gui.selector);
+                outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
                 //全部绘制为未选定状态
                 if(area & 1) for(int i = 0; i <= 7; i++)
@@ -755,7 +894,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 //确定键
                 if( (cancel || ArrayOccupied(tothrow, amount) == amount) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
-                    printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
+                    if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
                     for(int i = 0; i <= amount - 1; i++)
                     {
                         if(tothrow[i] != -1)
@@ -965,7 +1104,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 if(accord < amount) amount = accord;
             }
 
-            printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
+            if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
 
             for(int times = 0; times <= amount - 1; times++)
             {
@@ -1008,6 +1147,10 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
     return 0;//avoid of warning
 }
 
+/** add的值
+ * 0: 默认
+ * 0x99: 火攻使用者
+ */
 //展示自己手牌
 int Showcard(player_t *executor, player_t *recipient, int amount, int cancel, int add)
 {
@@ -1147,18 +1290,20 @@ int Showcard(player_t *executor, player_t *recipient, int amount, int cancel, in
     outtextxy(600 - strlen(topic) * 5, 200, topic, gui.selector);
 
     printf("%s展示%d张手牌", general_inf[recipient->general].name, amount);
-
     for(int i = 0; i <= amount - 1; i++)
     {
         Pastecard( (amount <= 8 ? 600 - 40 * amount + 80 * i : 270 + 240.0 * i / (amount - 1) ), 240, recipient->card[toshow[i]], gui.selector);
         Printcard(recipient->card[toshow[i]]);
     }
+    printf("\n");
 
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
     delay_ms(0);
     putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
     delay_fps(0.6);
-    return amount;
+    if(add == 0) return amount;
+    if(add == 0x99) return card_inf[recipient->card[toshow[0]]].suit;
+    return 0;
 }
 
 //获得其他角色牌
@@ -1448,10 +1593,16 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
         if(linkstart && recipient->chained && (type == FIRE || type == THUNDER) )
         {
             recipient->chained = 0;
+            printf("%s的武将牌重置", general_inf[recipient->general].name);
             DrawGui();
 
             for(int i = 1; i <= 3; i++)
-                if(player[(recipient->id + i) % 4].chained) Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
+                if(player[(recipient->id + i) % 4].chained)
+                {
+                    Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
+                    recipient->chained = 0;
+                    printf("%s的武将牌重置", general_inf[player[(recipient->id + i) % 4].general].name);
+                }
         }
     }
 }
@@ -1465,6 +1616,10 @@ void Recover(player_t *recipient, int amount)
     printf("%s恢复%d点体力,体力值为%d\n", general_inf[recipient->general].name, amount, recipient->health);
 }
 
+/** add的值
+ * 0: 默认
+ * 0xA0: 铁索
+ */
 //玩家手动选定目标
 ///allowed为可选目标,与返回值一样为0~15的整数,0~3位分别对应一至四号位
 ///maxtarget为最大目标数
@@ -1477,11 +1632,12 @@ int SelectTarget(int allowed, int maxtarget, int add)
         while (mousemsg()) msg = getmouse();
         mousepos(&mouse_x, &mouse_y);
 
-        //cleardevice(gui.selector);
-
+        char str[121] = "";
         setcolor(WHITE, gui.selector);
         setfont(30, 0, "仿宋", gui.selector);
-        outtextxy(480, 415, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标"), gui.selector);
+        if(add == 0) strcpy(str, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标"));
+        if(add == 0xA0) strcpy(str, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标或不选以重铸"));
+        outtextxy(480, 415, str, gui.selector);
 
         //绘制选定情况
         for(int i = 0; i <= 3; i++)
@@ -1490,7 +1646,7 @@ int SelectTarget(int allowed, int maxtarget, int add)
                                             sel & (1 << i) ? EGERGB(255, 57, 57) : EGERGB(255, 215, 77), gui.selector);
 
         LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
-        if(sel) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+        if(sel || add == 0xA0) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
 
         putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 
@@ -1511,7 +1667,7 @@ int SelectTarget(int allowed, int maxtarget, int add)
         }
 
         //确定
-        if(sel && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+        if( (sel || add == 0xA0) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
         {
             return sel;
         }
