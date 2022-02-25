@@ -130,10 +130,10 @@ void Playcard(player_t *executor)
                             for(int i = 1; i <= 3; i++)
                             {
                                 //对位且两侧有间隔时基础距离为2,否则为1
-                                int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller) ? 2 : 1;
+                                int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller != DEAD) ? 2 : 1;
                                 //+1与-1马的计算
                                 distance += player[(executor->id + i) % 4].equips[3] != -1;
-                                distance -= executor->equips[3] != -1;
+                                distance -= executor->equips[2] != -1;
                                 //比较攻击范围
                                 int range = executor->equips[0] != -1 ? (int)card_inf[executor->equips[0]].type >> 4 : 1;
                                 if(distance > range) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
@@ -260,7 +260,7 @@ void Playcard(player_t *executor)
 
                             //判断目标是否有手牌
                             int allowtar = 15;
-                            int tar = SelectTarget(allowtar, 2, 0xA0);
+                            int tar = SelectTarget(allowtar, 2, 0x9A);
 
                             card_inf[executor->card[sel]].owner = -1;
                             int temp = executor->card[sel];
@@ -308,6 +308,50 @@ void Playcard(player_t *executor)
                                 Execard(executor, tar, temp);
                                 break;
                             }
+                            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
+                        }
+                    }
+                    //借刀
+                    if(card_inf[executor->card[sel]].type == JIEDAO)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            //选择出杀目标
+                            int allowtar1 = 15 ^ (1 << game.humanid);
+
+                            //判断是否有武器
+                            for(int i = 0; i <= 3; i++) if(!player[i].equips[0]) allowtar1 &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            int tar1 = SelectTarget(allowtar1, 1, 0x9B);  //TODO;
+
+                            if(tar1)
+                            {
+                                //选择被杀目标
+                                int allowtar2 = 15 ^ tar1;
+                                for(int i = 1; i <= 3; i++)
+                                {
+                                    //对位且两侧有间隔时基础距离为2,否则为1
+                                    int distance = (i == 2 && player[( (int)(log(tar1) / log(2)) + 1) % 4].controller != DEAD && player[( (int)(log(tar1) / log(2)) + 3) % 4].controller != DEAD) ? 2 : 1;
+                                    //+1与-1马的计算
+                                    distance += player[( (int)(log(tar1) / log(2)) + i) % 4].equips[3] != -1;
+                                    distance -= player[ (int)(log(tar1) / log(2))].equips[2] != -1;
+                                    //比较攻击范围
+                                    int range = player[ (int)(log(tar1) / log(2))].equips[0] != -1 ? (int)card_inf[player[ (int)(log(tar1) / log(2))].equips[0]].type >> 4 : 1;
+                                    if(distance > range) allowtar2 &= (15 ^ (1 << (( (int)(log(tar1) / log(2)) + i) % 4)));
+                                }
+
+                                int tar2 = SelectTarget(allowtar2, 1, 0x9C);
+                                if(tar2)
+                                {
+                                    card_inf[executor->card[sel]].owner = -1;
+                                    int temp = executor->card[sel];
+                                    executor->card[sel] = -1;
+                                    executor->cardamount--;
+                                    IndexAlign(executor->card, executor->cardamount, 160);
+                                    Execard(executor, (tar2 << 4) + tar1, temp);  //低4位为目标1,高4位为目标2
+                                    break;
+                                }
+                            }
+
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
                         }
                     }
@@ -505,6 +549,31 @@ void Execard(player_t *executor, int target, int id, int type)
                 printf("\n");
                 Putcard(id);
                 Drawcard(executor, 1);
+            }
+        }
+        //借刀杀人
+        if((type_e)type == JIEDAO)
+        {
+            int tar1 = (int)(log(target % 16) / log(2));
+            int tar2 = (int)(log(target >> 4) / log(2));
+
+            printf("%s对%s使用", general_inf[executor->general].name, general_inf[player[tar1].general].name);
+            Printcard(id);
+            printf(",杀的目标是%s\n", general_inf[player[tar2].general].name);
+            Putcard(id);
+
+            int ans = Askcard(&player[tar1], SHA, 0x9B | (tar2 << 8));
+            if(ans != -1) Execard(&player[tar1], 1 << tar2, ans);
+            else
+            {
+                printf("%s获得%s的", general_inf[executor->general].name, general_inf[player[tar1].general].name);
+                Printcard(player[tar1].equips[0]);
+                printf("\n");
+
+                card_inf[player[tar1].equips[0]].owner = executor->id;
+                executor->card[executor->cardamount] = player[tar1].equips[0];
+                executor->cardamount++;
+                player[tar1].equips[0] = -1;
             }
         }
         //群体锦囊
@@ -1618,7 +1687,9 @@ void Recover(player_t *recipient, int amount)
 
 /** add的值
  * 0: 默认
- * 0xA0: 铁索
+ * 0x9A: 铁索
+ * 0x9B: 借刀杀人选择出杀者
+ * 0x9C: 借刀杀人选择杀的目标
  */
 //玩家手动选定目标
 ///allowed为可选目标,与返回值一样为0~15的整数,0~3位分别对应一至四号位
@@ -1636,8 +1707,10 @@ int SelectTarget(int allowed, int maxtarget, int add)
         setcolor(WHITE, gui.selector);
         setfont(30, 0, "仿宋", gui.selector);
         if(add == 0) strcpy(str, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标"));
-        if(add == 0xA0) strcpy(str, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标或不选以重铸"));
-        outtextxy(480, 415, str, gui.selector);
+        if(add == 0x9A) strcpy(str, Link( Link( (char*)"选择至多", Myitoa(maxtarget) ), (char*)"个目标或不选以重铸"));
+        if(add == 0x9B) strcpy(str, (char*)"选择一名有武器的角色");
+        if(add == 0x9C) strcpy(str, (char*)"选择使用杀的目标");
+        outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
         //绘制选定情况
         for(int i = 0; i <= 3; i++)
@@ -1646,7 +1719,7 @@ int SelectTarget(int allowed, int maxtarget, int add)
                                             sel & (1 << i) ? EGERGB(255, 57, 57) : EGERGB(255, 215, 77), gui.selector);
 
         LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
-        if(sel || add == 0xA0) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+        if(sel || add == 0x9A) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
 
         putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
 
@@ -1667,8 +1740,19 @@ int SelectTarget(int allowed, int maxtarget, int add)
         }
 
         //确定
-        if( (sel || add == 0xA0) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+        if( (sel || add == 0x9A) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
         {
+            if(add == 0x9B)
+            {
+                //清楚第一次选择目标的框,同时将选择目标标绿
+                setfillcolor(BLACK, gui.selector);
+                bar(0, 0, 1200, 450, gui.selector);
+                DrawGui();
+                int selindex = log(sel) / log(2);
+                LineRect(pos[(4 - game.humanid + selindex) % 4 * 2], pos[(4 - game.humanid + selindex) % 4 * 2 + 1] - 20,
+                                            pos[(4 - game.humanid + selindex) % 4 * 2] + 130, pos[(4 - game.humanid + selindex) % 4 * 2 + 1] + 170,
+                                            GREEN, gui.selector);
+            }
             return sel;
         }
     }
@@ -1796,6 +1880,7 @@ int AskWuxie(int start, int card)
  * 0x90: 被决斗指定
  * 0x93: 万箭齐发目标
  * 0x94: 南蛮入侵目标
+ * 低8位0x9B: 借刀杀人出杀(此时高2位为杀的目标)
  */
 
 int Askcard(player_t *recipient, type_e type, int add)
@@ -1818,6 +1903,7 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
             if(add == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
             if(add == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
+            if(add % 0x100 == 0x9B) strcpy(str, Link( Link( (char*)"成为借刀杀人的目标，请对",  general_inf[player[add >> 8].general].name), (char*)"使用杀"));
 
             setcolor(WHITE, gui.selector);
             setfont(30, 0, "仿宋", gui.selector);
@@ -1868,22 +1954,27 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
                 if(add == 0) printf("%s使用", general_inf[recipient->general].name);
-                if(add == 0x90) printf("%s打出", general_inf[recipient->general].name);
-                Printcard(recipient->card[sel]);
-                printf("\n");
+                if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
+                if(add % 0x100 != 0x9B)
+                {
+                    printf("\n");
+                    Putcard(recipient->card[sel]);
+                }
 
-                Putcard(recipient->card[sel]);
+                int temp = recipient->card[sel];
                 card_inf[recipient->card[sel]].owner = -1;
                 recipient->card[sel] = -1;
                 recipient->cardamount--;
                 IndexAlign(recipient->card, recipient->cardamount, 160);
-                return 1;
+                if(add % 0x100 == 0x9B) return temp;
+                else return 1;
             }
 
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
             {
                 DrawGui();
-                return 0;
+                if(add % 0x100 == 0x9B) return -1;
+                else return 0;
             }
 
             //翻页
@@ -1903,19 +1994,27 @@ int Askcard(player_t *recipient, type_e type, int add)
         if(sel != -1)
         {
 
-            printf("%s使用", general_inf[recipient->general].name);
-            Printcard(recipient->card[sel]);
-            printf("\n");
+            if(add == 0) printf("%s使用", general_inf[recipient->general].name);
+            if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
+            if(add % 0x100 != 0x9B)
+            {
+                printf("\n");
+                Putcard(recipient->card[sel]);
+            }
 
-
-            Putcard(recipient->card[sel]);
+            int temp = recipient->card[sel];
             card_inf[recipient->card[sel]].owner = -1;
             recipient->card[sel] = -1;
             recipient->cardamount--;
             IndexAlign(recipient->card, recipient->cardamount, 160);
-            return 1;
+            if(add % 0x100 == 0x9B) return temp;
+            else return 1;
         }
-        else return 0;
+        else
+        {
+            if(add % 0x100 == 0x9B) return -1;
+            else return 0;
+        }
     }
     return 0;
 }

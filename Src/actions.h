@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <graphics.h>
+#include <math.h>
 
 void PileInit(void);
 void Shuffle(void);
