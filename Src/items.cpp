@@ -16,7 +16,7 @@ card_t card_inf[160] =
     {7, SPADE, SHA, "杀", -2}, {7, SPADE, NANMAN, "南蛮入侵", -2}, {7, SPADE, LEISHA, "雷杀", -2},
     {8, SPADE, SHA, "杀", -2}, {8, SPADE, SHA, "杀", -2}, {8, SPADE, LEISHA, "雷杀", -2},
     {9, SPADE, SHA, "杀", -2}, {9, SPADE, SHA, "杀", -2}, {9, SPADE, JIU, "酒", -2},
-    {10, SPADE, SHA, "杀", -2}, {10, SPADE, SHA, "杀", -2}, {10, SPADE, JUEDOU, "决斗", -2},
+    {10, SPADE, SHA, "杀", -2}, {10, SPADE, SHA, "杀", -2}, {10, SPADE, BING, "兵粮寸断", -2},
     {11, SPADE, SHUNQIAN, "顺手牵羊", -2}, {11, SPADE, WUXIE, "无懈可击", -2}, {11, SPADE, TIESUO, "铁索连环", -2},
     {12, SPADE, GUOCHAI, "过河拆桥", -2}, {12, SPADE, ZHANGBA, "丈八蛇矛", -2}, {12, SPADE, TIESUO, "铁索连环", -2},
     {13, SPADE, NANMAN, "南蛮入侵", -2}, {13, SPADE, DAWAN, "大宛", -2}, {13, SPADE, WUXIE, "无懈可击", -2},

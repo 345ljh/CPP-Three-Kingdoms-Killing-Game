@@ -85,7 +85,8 @@ void Playcard(player_t *executor)
                     if(( (int)card_inf[executor->card[sel]].type >= 0x10 && (int)card_inf[executor->card[sel]].type < 0x90) ||  //装备
                        (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) ||  //桃
                        (card_inf[executor->card[sel]].type == JIU && executor->spirits == 0) ||  //酒
-                       (card_inf[executor->card[sel]].type == WUZHONG) )  //无中生有
+                       (card_inf[executor->card[sel]].type == WUZHONG) ||  //无中生有
+                       (card_inf[executor->card[sel]].type == SHANDIAN) )  //闪电
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -97,6 +98,7 @@ void Playcard(player_t *executor)
                             if(card_inf[executor->card[sel]].type == TAO) strcpy(str, "使用桃回复1点体力");
                             if(card_inf[executor->card[sel]].type == JIU) strcpy(str, "使用酒，本阶段下一张杀的伤害+1");
                             if(card_inf[executor->card[sel]].type == WUZHONG) strcpy(str, "使用无中生有");
+                            if(card_inf[executor->card[sel]].type == SHANDIAN) strcpy(str, "使用闪电");
                             outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
 
                             LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
@@ -353,6 +355,53 @@ void Playcard(player_t *executor)
                             }
 
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
+                        }
+                    }
+                    //乐不思蜀
+                    if(card_inf[executor->card[sel]].type == LE)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            int tar = SelectTarget(15 ^ (1 << game.humanid), 1);
+                            if(tar)
+                            {
+                                card_inf[executor->card[sel]].owner = -1;
+                                int temp = executor->card[sel];
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
+                            }
+                            goto Circ;
+                        }
+                    }
+                    //兵粮寸断
+                    if(card_inf[executor->card[sel]].type == BING)
+                    {
+                        for(; is_run(); delay_fps(10))
+                        {
+                            //计算合法目标
+                            int allowtar = 15 ^ (1 << executor->id);
+                            for(int i = 1; i <= 3; i++)
+                            {
+                                //距离计算
+                                int distance = (i == 2 && player[(executor->id + 1) % 4].controller != DEAD && player[(executor->id + 3) % 4].controller) ? 2 : 1;
+                                distance += player[(executor->id + i) % 4].equips[3] != -1;
+                                distance -= executor->equips[2] != -1;
+                                if(distance > 1) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            }
+
+                            int tar = SelectTarget(allowtar, 1);
+                            if(tar)
+                            {
+                                card_inf[executor->card[sel]].owner = -1;
+                                int temp = executor->card[sel];
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
+                            }
+                            goto Circ;
                         }
                     }
                 }
@@ -732,6 +781,31 @@ void Execard(player_t *executor, int target, int id, int type)
                 Drawcard(executor, 2);
             }
         }
+    }
+    //乐不思蜀,兵粮寸断
+    if((type_e)type == LE || (type_e)type == BING)
+    {
+        int tar = (int)(log(target % 16) / log(2));
+        printf("%s对%s使用", general_inf[executor->general].name, general_inf[player[(int)(log(target % 16) / log(2))].general].name);
+        Printcard(id);
+        printf("\n");
+
+        int judgearea[3];
+        for(int i = 0; i <= 2; i++) judgearea[i] = player[tar].judges[i][0];
+        player[tar].judges[ArrayOccupied(judgearea, 3)][0] = id;
+        player[tar].judges[ArrayOccupied(judgearea, 3)][1] = (int)card_inf[id].type;
+    }
+    //闪电
+    if((type_e)type == SHANDIAN)
+    {
+        printf("%s使用", general_inf[executor->general].name);
+        Printcard(id);
+        printf("\n");
+
+        int judgearea[3];
+        for(int i = 0; i <= 2; i++) judgearea[i] = executor->judges[i][0];
+        executor->judges[ArrayOccupied(judgearea, 3)][0] = id;
+        executor->judges[ArrayOccupied(judgearea, 3)][1] = (int)card_inf[id].type;
     }
     DrawGui();
 }
