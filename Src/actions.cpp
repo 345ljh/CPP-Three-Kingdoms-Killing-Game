@@ -306,7 +306,7 @@ void Playcard(player_t *executor)
                                 executor->cardamount--;
                                 IndexAlign(executor->card, executor->cardamount, 160);
                                 Execard(executor, tar, temp);
-                                break;
+                                goto Circ;
                             }
                             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) goto Circ;
                         }
@@ -320,7 +320,7 @@ void Playcard(player_t *executor)
                             int allowtar1 = 15 ^ (1 << game.humanid);
 
                             //判断是否有武器
-                            for(int i = 0; i <= 3; i++) if(!player[i].equips[0]) allowtar1 &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            for(int i = 1; i <= 3; i++) if(player[i].equips[0] == -1) allowtar1 &= (15 ^ (1 << ((executor->id + i) % 4)));
                             int tar1 = SelectTarget(allowtar1, 1, 0x9B);  //TODO;
 
                             if(tar1)
@@ -422,7 +422,7 @@ void Execard(player_t *executor, int target, int id, int type)
     //杀
     if(type == SHA || type == HUOSHA || type == LEISHA)
     {
-        //[酒]效果
+        //酒效果
         int basdamage = 1;
         if(executor->spirits == 1)
         {
@@ -490,7 +490,7 @@ void Execard(player_t *executor, int target, int id, int type)
 
             for(int i = 0; i <= 3; i++)
             {
-                if(target & (1 << (executor->id + i) % 4))
+                if( (target & (1 << (executor->id + i) % 4)) && !AskWuxie(executor->id, (executor->id + i) % 4) )
                 {
                     if((type_e)type == JUEDOU)
                     {
@@ -534,7 +534,7 @@ void Execard(player_t *executor, int target, int id, int type)
 
                 for(int i = 0; i <= 3; i++)
                 {
-                    if(target & (1 << (executor->id + i) % 4))
+                    if( (target & (1 << (executor->id + i) % 4)) && !AskWuxie(executor->id, (executor->id + i) % 4))
                     {
                         ++player[(executor->id + i) % 4].chained %= 2;
                         if(player[(executor->id + i) % 4].chained) printf("%s的武将牌横置\n", general_inf[player[(executor->id + i) % 4].general].name);
@@ -562,18 +562,21 @@ void Execard(player_t *executor, int target, int id, int type)
             printf(",杀的目标是%s\n", general_inf[player[tar2].general].name);
             Putcard(id);
 
-            int ans = Askcard(&player[tar1], SHA, 0x9B | (tar2 << 8));
-            if(ans != -1) Execard(&player[tar1], 1 << tar2, ans);
-            else
+            if(!AskWuxie(executor->id, tar1))
             {
-                printf("%s获得%s的", general_inf[executor->general].name, general_inf[player[tar1].general].name);
-                Printcard(player[tar1].equips[0]);
-                printf("\n");
+                int ans = Askcard(&player[tar1], SHA, 0x9B | (tar2 << 8));
+                if(ans != -1) Execard(&player[tar1], 1 << tar2, ans);
+                else
+                {
+                    printf("%s获得%s的", general_inf[executor->general].name, general_inf[player[tar1].general].name);
+                    Printcard(player[tar1].equips[0]);
+                    printf("\n");
 
-                card_inf[player[tar1].equips[0]].owner = executor->id;
-                executor->card[executor->cardamount] = player[tar1].equips[0];
-                executor->cardamount++;
-                player[tar1].equips[0] = -1;
+                    card_inf[player[tar1].equips[0]].owner = executor->id;
+                    executor->card[executor->cardamount] = player[tar1].equips[0];
+                    executor->cardamount++;
+                    player[tar1].equips[0] = -1;
+                }
             }
         }
         //群体锦囊
@@ -588,7 +591,7 @@ void Execard(player_t *executor, int target, int id, int type)
             {
                 for(int i = 1; i <= 3; i++)
                 {
-                    if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
+                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
                         Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
                 }
             }
@@ -596,7 +599,7 @@ void Execard(player_t *executor, int target, int id, int type)
             {
                 for(int i = 1; i <= 3; i++)
                 {
-                    if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
+                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
                         Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
                 }
             }
@@ -605,7 +608,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 for(int i = 0; i <= 3; i++)
                 {
                     if(player[(executor->id + i) % 4].health >= player[(executor->id + i) % 4].maxhealth) continue;
-                    if(target & (1 << (executor->id + i) % 4)) Recover(&player[(executor->id + i) % 4], 1);
+                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4)) Recover(&player[(executor->id + i) % 4], 1);
                 }
             }
             if((type_e)type == WUGU)
@@ -626,17 +629,21 @@ void Execard(player_t *executor, int target, int id, int type)
                 }
 
                 //选牌界面
-                setfillcolor(EGERGB(83, 30, 0), gui.selector);
-                bar(595 - 45 * live, 220, 605 + 45 * live, 380, gui.selector);
+                PIMAGE wugu = newimage();
+                getimage(wugu, 0, 0, 1200, 600);
 
-                setcolor(EGERGB(249, 189, 34), gui.selector);
-                setfont(20, 0, "隶书", gui.selector);
-                outtextxy(560, 220, (char*)"五谷丰登", gui.selector);
+                setfillcolor(EGERGB(83, 30, 0),wugu);
+                bar(595 - 45 * live, 220, 605 + 45 * live, 380, wugu);
+
+                setcolor(EGERGB(249, 189, 34), wugu);
+                setfont(20, 0, "隶书", wugu);
+                setbkmode(TRANSPARENT, wugu);
+                outtextxy(560, 220, (char*)"五谷丰登", wugu);
 
                 printf("五谷丰登展示%d张牌", live);
                 for(int i = 0; i <= live - 1; i++)
                 {
-                    Pastecard(605 - 45 * live + 90 * i, 250, totake[i], gui.selector);
+                    Pastecard(605 - 45 * live + 90 * i, 250, totake[i], wugu);
                     Printcard(totake[i]);
                 }
                 printf("\n");
@@ -644,10 +651,9 @@ void Execard(player_t *executor, int target, int id, int type)
                 for(int i = 0; i <= 3; i++)
                 {
                     DrawGui();
-                    putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
-                    if(target & (1 << (executor->id + i) % 4))
+                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4))
                     {
-                        delay_fps(1.2);
+                        putimage_transparent(NULL, wugu, 0, 0, BLACK);
                         int sel = -1;
 
                         //选牌
@@ -669,7 +675,7 @@ void Execard(player_t *executor, int target, int id, int type)
                         {
                             sel = WuguAi(&player[(executor->id + i) % 4], totake, live);
                         }
-
+                        delay_fps(1);
                         //获得所选牌
                         printf("%s获得", general_inf[player[(executor->id + i) % 4].general].name);
                         Printcard(totake[sel]);
@@ -679,10 +685,19 @@ void Execard(player_t *executor, int target, int id, int type)
                         player[(executor->id + i) % 4].cardamount++;
                         card_inf[totake[sel]].owner = (executor->id + i) % 4;
 
-                        setcolor(RED, gui.selector);
-                        line(605 - 45 * live + 90 * sel, 250, 695 - 45 * live + 90 * sel, 370, gui.selector);
-                        line(605 - 45 * live + 90 * sel, 370, 695 - 45 * live + 90 * sel, 250, gui.selector);
+                        setcolor(EGERGB(255, 215, 77), wugu);
+                        line(605 - 45 * live + 90 * sel, 250, 685 - 45 * live + 90 * sel, 370, wugu);
+                        line(605 - 45 * live + 90 * sel, 370, 685 - 45 * live + 90 * sel, 250, wugu);
                         totake[sel] = -1;
+
+                        putimage_transparent(NULL, wugu, 0, 0, BLACK);
+                        delay_ms(0);
+                        putimage_transparent(NULL, wugu, 0, 0, BLACK);
+                        delay_fps(0.5);
+
+                        setcolor(EGERGB(255, 57, 57), wugu);
+                        line(605 - 45 * live + 90 * sel, 250, 685 - 45 * live + 90 * sel, 370, wugu);
+                        line(605 - 45 * live + 90 * sel, 370, 685 - 45 * live + 90 * sel, 250, wugu);
                     }
                 }
 
@@ -708,11 +723,14 @@ void Execard(player_t *executor, int target, int id, int type)
         //无中生有
         if((type_e)type == WUZHONG)
         {
-            printf("%s使用", general_inf[executor->general].name);
-            Printcard(id);
-            printf("\n");
+            if(!AskWuxie(executor->id, executor->id % 4))
+            {
+                printf("%s使用", general_inf[executor->general].name);
+                Printcard(id);
+                printf("\n");
 
-            Drawcard(executor, 2);
+                Drawcard(executor, 2);
+            }
         }
     }
     DrawGui();
@@ -1838,28 +1856,18 @@ void VictoryJudge(void)
 }
 
 //无懈响应
-///start为第一次询问无懈时开始的角色id,card为锦囊id,用于提示信息
+///start为第一次询问无懈时开始的角色id,add为锦囊牌的目标(0~3)
 ///返回值0=此牌仍有效,1=被无懈抵消
-int AskWuxie(int start, int card)
+int AskWuxie(int start, int add)
 {
     int res = 0;
     int ans = 0;
-
     do
     {
         ans = 0;
-
         for(int i = 0; i <= 3; i++)
         {
-            if(player[start + i].controller == HUMAN)
-            {
-                /* use here */
-            }
-            else if(player[start + i].controller == AI)
-            {
-                /* use here */
-            }
-
+            ans = Askcard(&player[(start + i) % 4], WUXIE, res ? 0x9898 : 0x98 | add << 8);
             if(ans)
             {
                 (start += i) %= 4;  //下一次询问从此次使用者开始
@@ -1869,7 +1877,6 @@ int AskWuxie(int start, int card)
         }
     }
     while(ans);
-
     return res % 2;
 }
 
@@ -1880,6 +1887,7 @@ int AskWuxie(int start, int card)
  * 0x90: 被决斗指定
  * 0x93: 万箭齐发目标
  * 0x94: 南蛮入侵目标
+ * 0x98: 无懈
  * 低8位0x9B: 借刀杀人出杀(此时高2位为杀的目标)
  */
 
@@ -1903,6 +1911,11 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
             if(add == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
             if(add == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
+            if(add % 0x100 == 0x98)
+            {
+                if(add >> 8 == 0x98) strcpy(str, (char*)"是否使用无懈可击抵消无懈可击");
+                else strcpy(str, Link( Link( (char*)"是否使用无懈可击抵消对", general_inf[player[add >> 8].general].name), (char*)"的效果"));
+            }
             if(add % 0x100 == 0x9B) strcpy(str, Link( Link( (char*)"成为借刀杀人的目标，请对",  general_inf[player[add >> 8].general].name), (char*)"使用杀"));
 
             setcolor(WHITE, gui.selector);
@@ -1953,10 +1966,11 @@ int Askcard(player_t *recipient, type_e type, int add)
 
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
-                if(add == 0) printf("%s使用", general_inf[recipient->general].name);
+                if(add == 0 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
                 if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
                 if(add % 0x100 != 0x9B)
                 {
+                    Printcard(recipient->card[sel]);
                     printf("\n");
                     Putcard(recipient->card[sel]);
                 }
@@ -1994,10 +2008,11 @@ int Askcard(player_t *recipient, type_e type, int add)
         if(sel != -1)
         {
 
-            if(add == 0) printf("%s使用", general_inf[recipient->general].name);
+            if(add == 0 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
             if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
             if(add % 0x100 != 0x9B)
             {
+                Printcard(recipient->card[sel]);
                 printf("\n");
                 Putcard(recipient->card[sel]);
             }

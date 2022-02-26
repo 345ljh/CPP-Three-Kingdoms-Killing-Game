@@ -30,6 +30,6 @@ void Neardeath(player_t *player);
 void Death(player_t *player);
 void VictoryJudge(void);
 
-int AskWuxie(int start, int card);
+int AskWuxie(int start, int add);
 int Askcard(player_t *recipient, type_e type, int add);
 #endif // ACTIONS_H_INCLUDED
