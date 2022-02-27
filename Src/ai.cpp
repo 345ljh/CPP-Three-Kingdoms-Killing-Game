@@ -8,7 +8,8 @@
 #include "ai.h"
 
 //弃牌AI
-void ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
+///返回值用于白银狮子效果
+int ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
 {
     int maxstate = -1;
     int len = 1;
@@ -68,7 +69,10 @@ void ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
                     tothrow[len - 1] = recipient->judges[i][0] | 0x200;
                 }
             }
+
     int sel = rand() % len;
+    int baiyin = 0;  //白银狮子效果
+
     switch(sel >> 16)
     {
     case 0:
@@ -86,6 +90,7 @@ void ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
         card_inf[recipient->equips[sel & 0xFF]].owner = -1;
         Putcard(recipient->equips[sel & 0xFF]);
         Printcard(recipient->equips[sel & 0xFF]);
+        if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
         recipient->equips[sel & 0xFF] = -1;
         break;
     }
@@ -106,12 +111,14 @@ void ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
         break;
     }
     }
+    printf("\n");
     free(tothrow);
+    return baiyin;
 }
 
 
 //获得牌AI
-void GetAi(player_t *executor, player_t* recipient, int* state, int area)
+int GetAi(player_t *executor, player_t* recipient, int* state, int area)
 {
     int maxstate = -1;
     int len = 1;
@@ -171,6 +178,8 @@ void GetAi(player_t *executor, player_t* recipient, int* state, int area)
     }
 
     int sel = rand() % len;
+    int baiyin = 0;
+
     switch(sel >> 16)
     {
     case 0:
@@ -191,9 +200,8 @@ void GetAi(player_t *executor, player_t* recipient, int* state, int area)
         executor->cardamount++;
         executor->card[executor->cardamount - 1] = recipient->equips[sel & 0xFF];
         card_inf[recipient->equips[sel & 0xFF]].owner = executor->id;
-
         if(executor->controller == HUMAN || recipient->controller == HUMAN) Printcard(recipient->equips[sel & 0xFF]);
-
+        if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
         recipient->equips[sel & 0xFF] = -1;
         break;
     }
@@ -218,6 +226,7 @@ void GetAi(player_t *executor, player_t* recipient, int* state, int area)
     }
     }
     free(tothrow);
+    return baiyin;
 }
 
 //弃牌权重比对,返回值较大者优先弃置

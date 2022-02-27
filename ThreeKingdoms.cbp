@@ -60,6 +60,8 @@
 		<Unit filename="Src/process.cpp" />
 		<Unit filename="Src/process.h" />
 		<Unit filename="Src/reference.cpp" />
+		<Unit filename="Src/skill.cpp" />
+		<Unit filename="Src/skill.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

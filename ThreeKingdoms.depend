@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1645529734 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
+1645974865 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\main.cpp
 	"graphics.h"
 	"items.h"
 	"gui.h"
 	"actions.h"
 	"process.h"
 
-1645509586 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
+1645974865 c:\users\ljh\desktop\unfinished\threekingdoms\src\items.h
 	<stdio.h>
 
 1645891347 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
@@ -95,14 +95,19 @@
 1645956328 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\app.cpp
 	"app.h"
 
-1645939086 c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.h
+1645976776 c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.h
 	"items.h"
 	"app.h"
 
-1645939086 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.cpp
+1645976776 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.cpp
 	"ai.h"
 
 1645253495 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\icon.rc
 
 1645856986 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\reference.cpp
+
+1645974404 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\skill.cpp
+	"skill.h"
+
+1645974865 c:\users\ljh\desktop\unfinished\threekingdoms\src\skill.h
 

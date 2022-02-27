@@ -474,6 +474,7 @@ void Execard(player_t *executor, int target, int id, int type)
         {
             card_inf[executor->equips[index]].owner = -1;
             Putcard(executor->equips[index]);
+            if(index == 1 && (type_e)executor->equips[index] == BAIYIN) Recover(executor, 1);  //白银狮子效果
             executor->equips[index] = -1;
         }
 
@@ -509,9 +510,29 @@ void Execard(player_t *executor, int target, int id, int type)
         Printcard(id);
         printf("\n");
         Putcard(id);
+
         for(int i = 1; i <= 3; i++)
-            if(target & (1 << (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0) )
+        {
+            if(target & (1 << (executor->id + i) % 4) )
+            {
+                //仁王盾效果
+                if( (type_e)player[(executor->id + i) % 4].equips[1] == RENWANG && (int)card_inf[id].suit >> 1 == 0)
+                {
+                    printf("%s发动了\"仁王盾\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                    continue;
+                }
+                //藤甲效果
+                if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA && card_inf[id].type == SHA)
+                {
+                    printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                    continue;
+                }
+                //询问闪
+                if(Askcard(&player[(executor->id + i) % 4], SHAN, 0)) continue;
+                //造成伤害
                 Damage(executor, &player[(executor->id + i) % 4], basdamage, (damage_e)card_inf[id].type, 1);
+            }
+        }
     }
     //非濒死使用桃
     if((type_e)type == TAO)
@@ -656,16 +677,34 @@ void Execard(player_t *executor, int target, int id, int type)
             {
                 for(int i = 1; i <= 3; i++)
                 {
-                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
-                        Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                    if(target & (1 << (executor->id + i) % 4))
+                    {
+                        //藤甲效果
+                        if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA)
+                        {
+                            printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                            continue;
+                        }
+                        if(!AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
+                            Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                    }
                 }
             }
             if((type_e)type == NANMAN)
             {
                 for(int i = 1; i <= 3; i++)
                 {
-                    if(target & (1 << (executor->id + i) % 4) && !AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
-                        Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                    if(target & (1 << (executor->id + i) % 4))
+                    {
+                        //藤甲效果
+                        if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA)
+                        {
+                            printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                            continue;
+                        }
+                        if(!AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
+                            Damage(executor, &player[(executor->id + i) % 4], 1, COMMON, 1);
+                    }
                 }
             }
             if((type_e)type == TAOYUAN)
@@ -1071,6 +1110,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 //确定键
                 if( (cancel || ArrayOccupied(tothrow, amount) == amount) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
+                    int baiyin = 0;  //白银狮子效果
                     if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
                     for(int i = 0; i <= amount - 1; i++)
                     {
@@ -1091,6 +1131,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                                 card_inf[recipient->equips[tothrow[i] & 0xFF]].owner = -1;
                                 Putcard(recipient->equips[tothrow[i] & 0xFF]);
                                 Printcard(recipient->equips[tothrow[i] & 0xFF]);
+                                if( (type_e)recipient->equips[tothrow[i] & 0xFF] == BAIYIN)  baiyin = 1;
                                 recipient->equips[tothrow[i] & 0xFF] = -1;
                                 break;
                             }
@@ -1113,6 +1154,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                             }
                     }
                     printf("\n");
+                    //白银狮子效果
+                    if(baiyin) Recover(recipient, 1);
                     //修改手牌下标
                     IndexAlign(recipient->card, recipient->cardamount, 160);
                     DrawGui();
@@ -1214,7 +1257,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
                         Printcard(recipient->equips[tothrow]);
                         printf("\n");
-
+                        if( (type_e)recipient->equips[tothrow] == BAIYIN)  Recover(recipient, 1);  //白银狮子效果
                         recipient->equips[tothrow] = -1;
                         break;
                     }
@@ -1283,18 +1326,19 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
 
             if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
 
+            int baiyin = 0;
             for(int times = 0; times <= amount - 1; times++)
             {
                 //使用优先级判断弃牌
                 int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
-                ThrowAi(recipient, state, area, suit, type);
+                baiyin = ThrowAi(recipient, state, area, suit, type);
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
-
             printf("\n");
+            if(baiyin) Recover(recipient, 1);
             return amount;
         }
 
@@ -1309,15 +1353,17 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
 
             printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
 
+            int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                ThrowAi(recipient, state, area);
+                baiyin = ThrowAi(recipient, state, area);
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
             printf("\n");
+            if(baiyin) Recover(recipient, 1);
             return amount;
         }
     }
@@ -1585,6 +1631,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                         Printcard(recipient->equips[tothrow]);
                         printf("\n");
 
+                        if( (type_e)recipient->equips[tothrow] == BAIYIN) Recover(recipient, 1);  //白银狮子效果
                         card_inf[recipient->equips[tothrow]].owner = executor->id;
                         recipient->equips[tothrow] = -1;
 
@@ -1636,9 +1683,11 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
             else memcpy(state, statetemp[1], sizeof(state));
 
             printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
+
+            int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                GetAi(executor, recipient, state, area);
+                baiyin = GetAi(executor, recipient, state, area);
 
                 //提前结束情形
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
@@ -1652,6 +1701,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
 
             if(executor->controller != HUMAN && recipient->controller != HUMAN) printf("%d张牌", amount);
             printf("\n");
+            if(baiyin) Recover(recipient, 1);  //白银狮子效果
             return amount;
         }
     }
@@ -1730,6 +1780,13 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
 
     if(amount > 0)
     {
+        //白银狮子效果
+        if( (type_e)recipient->equips[1] == BAIYIN && type != LOSS && amount > 1)
+        {
+            amount = 1;
+            printf("%s发动了\"白银狮子\"\n", general_inf[recipient->general].name);
+        }
+
         recipient->health -= amount;
         recipient->maxcard -= amount;  //手牌上限一般随体力变化
         DrawGui();
