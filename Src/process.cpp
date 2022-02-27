@@ -185,7 +185,7 @@ void GameStart(void)
         player[i].id = i;
 
         player[i].maxhealth = general_inf[player[i].general].maxhealth;
-        player[i].health = player[i].maxhealth;
+        player[i].health = 1;
         player[i].maxcard = player[i].health;
         player[i].cardamount = 0;
 
@@ -232,7 +232,7 @@ void GameRun(void)
 {
     //从牌堆获得特定id的牌,用于测试
     {
-        int get = 1;
+        int get = 37;
         for(int i = 0; i <= 159; i++) if(game.card[i] == get)
             {
                 player[game.humanid].card[player[game.humanid].cardamount] = get;
@@ -242,7 +242,7 @@ void GameRun(void)
             }
     }
     {
-        int get = 76;
+        int get = 45;
         for(int i = 0; i <= 159; i++) if(game.card[i] == get)
             {
                 player[game.humanid].card[player[game.humanid].cardamount] = get;

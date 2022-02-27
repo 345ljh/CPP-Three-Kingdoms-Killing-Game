@@ -244,17 +244,18 @@ int StateCompareAi(int state[13], int id)
 //出牌响应AI
 ///返回值为手牌中的位置,若没有符合条件的牌则返回-1
 ///若type为SHA则3种类型的杀均可响应
-int AnswerAi(player_t *recipient, type_e type)
+int AnswerAi(player_t *recipient, type_e type, int add)
 {
         int *buf = NULL;
         int amount = 0;
         buf = (int*)calloc(0, sizeof(int));
 
-        //判断手牌中是否有闪,若有则随机出一张
+        //判断手牌中是否有对应类型,若有则随机出一张
         for(int i = 0; i <= recipient->cardamount - 1; i++)
         {
             if( (type == SHA && (card_inf[recipient->card[i]].type == SHA || card_inf[recipient->card[i]].type == HUOSHA || card_inf[recipient->card[i]].type == LEISHA)) ||
-               card_inf[recipient->card[i]].type == type)
+                card_inf[recipient->card[i]].type == type ||
+                add == 2 && card_inf[recipient->card[i]].type == JIU)
                {
                    int *ptemp = buf;
                    buf = (int*)realloc(ptemp, ++amount * sizeof(int));

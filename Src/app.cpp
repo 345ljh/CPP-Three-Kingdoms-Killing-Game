@@ -134,7 +134,7 @@ void Putcard(int id)
 
     Pastecard(0, 0, id, temp);
     Rect(0, 0, 80, 120, EGERGB(1, 1, 1), temp);
-    putimage_rotate(gui.throwcard, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 3.1415);
+    putimage_rotate(gui.throwcard, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 6.2832);
     delimage(temp);
 }
 

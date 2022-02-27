@@ -462,6 +462,7 @@ void Execard(player_t *executor, int target, int id, int type)
     cleardevice(gui.selector);
     DrawGui();
     type = (type == -1) ? (int)card_inf[id].type : type;
+    for(int i = 0; i <= 3; i++) if(player[i].controller == DEAD) target &= 15 ^ (1 << i);
 
     //装备牌
     if(type >= 0x10 && type < 0x90)
@@ -1805,6 +1806,9 @@ int SelectTarget(int allowed, int maxtarget, int add)
 {
     int sel = 0;
 
+    //除去死亡目标
+    for(int i = 0; i <= 3; i++) if(player[i].controller == DEAD) allowed &= 15 ^ (1 << i);
+
     for(; is_run(); delay_fps(10))
     {
         while (mousemsg()) msg = getmouse();
@@ -1869,26 +1873,42 @@ int SelectTarget(int allowed, int maxtarget, int add)
 //濒死结算
 void Neardeath(player_t *recipient)
 {
-    /* skills here */
-    for(int i = 0; i <= 4 - 1; i++)
+    for(int i = 0; i <= 3; i++)
     {
+        int use = 0;
         do
         {
-            /*  ask recipient that id = (recipient.id + i) % 4 for a peach */
+            use = Askcard(&player[(recipient->id + i) % 4], TAO, 2 | (recipient->id << 8) );
+            if(use) Recover(recipient, 1);
             if(recipient->health > 0) return;
-        }
-        while(0/* used a peach */);
+        }while(use);
     }
 
-    if(recipient->health < 0) Death(recipient);
+    if(recipient->health <= 0) Death(recipient);
 }
 
 //死亡结算
 void Death(player_t *recipient)
 {
-    recipient->controller = DEAD;
-    /* VictoryJudge(); */
+    //武将牌上显示阵亡
+    PIMAGE temp[2] = {newimage(), newimage()};
+    getimage(temp[0], (char*)".\\Textures\\States\\dead.png");
+    getimage(temp[1], 0, 0, 1200, 600);
+    setbkmode(TRANSPARENT, temp[0]);
+    cleardevice(temp[1]);
+    putimage_rotate(temp[1], temp[0], pos[(recipient->id + 4 - game.humanid) % 4 * 2] + 65, pos[(recipient->id + 4 - game.humanid) % 4 * 2 + 1] + 85, 0.5, 0.5, 3.1415 / 12);
+    putimage_transparent(gui.general, temp[1], 0, 0, BLACK);
+    delimage(temp[0]);
+    delimage(temp[1]);
 
+    //修改状态并输出
+    recipient->controller = DEAD;
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
+    printf("%s死亡\n", general_inf[recipient->general].name);
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+    VictoryJudge();
+
+    //弃置所有牌
     for(int i = 0; i <= recipient->cardamount - 1; i++)
     {
         card_inf[recipient->card[i]].owner = -1;
@@ -1913,6 +1933,7 @@ void Death(player_t *recipient)
         }
     }
 
+    //清除数据
     memset(recipient->card, 0xFF, sizeof(recipient->card));
     memset(recipient->equips, 0xFF, sizeof(recipient->equips));
     memset(recipient->judges, 0xFF, sizeof(recipient->judges));
@@ -1927,6 +1948,7 @@ void Death(player_t *recipient)
     recipient->limit = 0;
     recipient->awaken = 0;
 
+    if(player[3 - recipient->id].controller != DEAD) Drawcard(&player[3 - recipient->id], 1);
 }
 
 //胜利条件判定
@@ -1934,13 +1956,37 @@ void VictoryJudge(void)
 {
     if(player[0].controller == DEAD && player[3].controller == DEAD)  //1号与4号均死亡
     {
-        if(game.humanid != 0 && game.humanid != 3)  /* victory */;  //1号与4号均为电脑
-        else /* failed */;
+        if(game.humanid != 0 && game.humanid != 3)  //1号与4号均为电脑
+        {
+            cleardevice(gui.selector);
+            PasteImage((char*)".\\Textures\\victory.png", 0, 0, gui.selector, TRANSPARENT, BLACK);
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+            getch();
+        }
+        else
+        {
+            cleardevice(gui.selector);
+            PasteImage((char*)".\\Textures\\fail.png", 0, 0, gui.selector, TRANSPARENT, BLACK);
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+            getch();
+        }
     }
     else if( player[1].controller == DEAD && player[2].controller == DEAD)
     {
-        if(game.humanid != 1 && game.humanid != 2)  /* victory */;
-        else /* failed */;
+        if(game.humanid != 1 && game.humanid != 2)  //1号与4号均为电脑
+        {
+            cleardevice(gui.selector);
+            PasteImage((char*)".\\Textures\\victory.png", 0, 0, gui.selector, TRANSPARENT, BLACK);
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+            getch();
+        }
+        else
+        {
+            cleardevice(gui.selector);
+            PasteImage((char*)".\\Textures\\fail.png", 0, 0, gui.selector, TRANSPARENT, BLACK);
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+            getch();
+        }
     }
 }
 
@@ -1973,6 +2019,7 @@ int AskWuxie(int start, int add)
 ///返回值为是否出type对应类型牌,add为触发原因
 /** add的值
  * 0: 被杀指定(无论属性)
+ * 低8位2: 濒死求桃(高8位为濒死角色)
  * 0x90: 被决斗指定
  * 0x93: 万箭齐发目标
  * 0x94: 南蛮入侵目标
@@ -1997,6 +2044,7 @@ int Askcard(player_t *recipient, type_e type, int add)
             //提示
             char str[121] = "";
             if(add == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
+            if(add % 0x100 == 2) strcpy(str, Link(general_inf[player[add >> 8].general].name, (char*)"濒死,使用桃使其回复体力"));
             if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
             if(add == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
             if(add == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
@@ -2023,7 +2071,9 @@ int Askcard(player_t *recipient, type_e type, int add)
                 }
                 else
                 {
-                    if( (game.page * 8 + i < recipient->cardamount) && card_inf[recipient->card[game.page * 8 + i]].type == type)
+                    if((game.page * 8 + i < recipient->cardamount) &&
+                       ( (card_inf[recipient->card[game.page * 8 + i]].type == type) ||   // 类型相同
+                       (add % 0x100 == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + i]].type == JIU) ) )
                         LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
                 }
             }
@@ -2049,13 +2099,16 @@ int Askcard(player_t *recipient, type_e type, int add)
                 }
                 else
                 {
-                    if((game.page * 8 + tosel < recipient->cardamount) && card_inf[recipient->card[game.page * 8 + tosel]].type == type) sel = game.page * 8 + tosel;
+                    if((game.page * 8 + tosel < recipient->cardamount) &&
+                       ( (card_inf[recipient->card[game.page * 8 + tosel]].type == type) ||   // 类型相同
+                       (add % 0x100 == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + tosel]].type == JIU) ) ) //自己濒死使用酒
+                        sel = game.page * 8 + tosel;
                 }
             }
 
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
-                if(add == 0 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
+                if(add == 0 || add % 0x100 == 2 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
                 if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
                 if(add % 0x100 != 0x9B)
                 {
@@ -2093,11 +2146,11 @@ int Askcard(player_t *recipient, type_e type, int add)
     }
     else
     {
-        int sel = AnswerAi(recipient, type);
+        int sel = AnswerAi(recipient, type, (add % 0x100 == 2 && add >> 8 == recipient->id) ? 2 : 0);
         if(sel != -1)
         {
 
-            if(add == 0 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
+            if(add == 0 || add % 0x100 == 2 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
             if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
             if(add % 0x100 != 0x9B)
             {
