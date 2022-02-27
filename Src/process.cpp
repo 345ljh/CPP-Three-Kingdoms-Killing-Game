@@ -234,22 +234,22 @@ void GameRun(void)
     {
         int get = 1;
         for(int i = 0; i <= 159; i++) if(game.card[i] == get)
-        {
-            player[game.humanid].card[player[game.humanid].cardamount] = get;
-            game.card[i] = -1;
-            card_inf[get].owner = game.humanid;
-            player[game.humanid].cardamount++;
-        }
+            {
+                player[game.humanid].card[player[game.humanid].cardamount] = get;
+                game.card[i] = -1;
+                card_inf[get].owner = game.humanid;
+                player[game.humanid].cardamount++;
+            }
     }
     {
-        int get = 30;
+        int get = 76;
         for(int i = 0; i <= 159; i++) if(game.card[i] == get)
-        {
-            player[game.humanid].card[player[game.humanid].cardamount] = get;
-            game.card[i] = -1;
-            card_inf[get].owner = game.humanid;
-            player[game.humanid].cardamount++;
-        }
+            {
+                player[game.humanid].card[player[game.humanid].cardamount] = get;
+                game.card[i] = -1;
+                card_inf[get].owner = game.humanid;
+                player[game.humanid].cardamount++;
+            }
     }
 
     ///Remember to DrawGui after EVERY change!!!
@@ -284,25 +284,58 @@ void GameRun(void)
 
                 for(int i = 2; i >= 0; i--) //从后向前判定
                 {
-                    if(player[game.active].judges[i][1] != -1 && !AskWuxie(game.active, player[game.active].judges[i][1]))
+                    if(player[game.active].judges[i][1] != -1)
                     {
                         switch ((type_e)player[game.active].judges[i][1])
                         {
                         case LE:
                         {
-                            if(card_inf[Judging(&player[game.active])].suit != HEART) skip |= 2;
+                            if(!AskWuxie(game.active, game.active) && card_inf[Judging(&player[game.active])].suit != HEART)
+                            {
+                                skip |= 2;
+                                printf("%s的乐不思蜀生效\n", general_inf[player[game.active].general].name);
+                            }
+                            else printf("%s的乐不思蜀失效", general_inf[player[game.active].general].name);
                             break;
                         }
                         case BING:
                         {
-                            if(card_inf[Judging(&player[game.active])].suit != CLUB) skip |= 1;
+                            if(!AskWuxie(game.active, game.active) && card_inf[Judging(&player[game.active])].suit != CLUB)
+                            {
+                                skip |= 1;
+                                printf("%s的兵粮寸断生效\n", general_inf[player[game.active].general].name);
+                            }
+                            else printf("%s的兵粮寸断失效\n", general_inf[player[game.active].general].name);
                             break;
                         }
                         case SHANDIAN:
                         {
-                            if(card_inf[Judging(&player[game.active])].suit == SPADE &&
-                                    card_inf[Judging(&player[game.active])].num >= 2 && card_inf[Judging(&player[game.active])].num <= 9)
-                                Damage(NULL, &player[game.active], 3, THUNDER);
+                            if(!AskWuxie(game.active, game.active))
+                            {
+                                int res = Judging(&player[game.active]);
+                                if(card_inf[res].suit == SPADE && card_inf[res].num >= 2 && card_inf[res].num <= 9)
+                                {
+                                    Damage(NULL, &player[game.active], 3, THUNDER);
+                                    printf("%s的闪电生效\n", general_inf[player[game.active].general].name);
+                                    break;
+                                }
+                                else printf("%s的闪电失效\n", general_inf[player[game.active].general].name);
+                            }
+
+                            //选择合适的下家,若无合适下家(如场上仅有2人且都有闪电)则不转移
+                            int next = 1;
+                            while(next < 4 &&
+                                  (player[(game.active + next) % 4].controller == DEAD ||
+                                   (type_e)player[(game.active + next) % 4].judges[0][1] == SHANDIAN ||
+                                   (type_e)player[(game.active + next) % 4].judges[1][1] == SHANDIAN ||
+                                   (type_e)player[(game.active + next) % 4].judges[2][1] == SHANDIAN) )
+                                next++;
+
+                            //转移闪电
+                            int judgearea[3];
+                            for(int i = 0; i <= 2; i++) judgearea[i] = player[(game.active + next) % 4].judges[i][0];
+                            player[(game.active + next) % 4].judges[ArrayOccupied(judgearea, 3)][0] = player[game.active].judges[i][0];
+                            player[(game.active + next) % 4].judges[ArrayOccupied(judgearea, 3)][1] = SHANDIAN;
                             break;
                         }
                         default:

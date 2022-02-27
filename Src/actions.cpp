@@ -86,7 +86,7 @@ void Playcard(player_t *executor)
                        (card_inf[executor->card[sel]].type == TAO && executor->health < executor->maxhealth) ||  //桃
                        (card_inf[executor->card[sel]].type == JIU && executor->spirits == 0) ||  //酒
                        (card_inf[executor->card[sel]].type == WUZHONG) ||  //无中生有
-                       (card_inf[executor->card[sel]].type == SHANDIAN) )  //闪电
+                       (card_inf[executor->card[sel]].type == SHANDIAN && (type_e)executor->judges[0][1] != SHANDIAN && (type_e)executor->judges[1][1] != SHANDIAN && (type_e)executor->judges[2][1] != SHANDIAN) )  //闪电
                     {
                         for(; is_run(); delay_fps(10))
                         {
@@ -362,7 +362,17 @@ void Playcard(player_t *executor)
                     {
                         for(; is_run(); delay_fps(10))
                         {
-                            int tar = SelectTarget(15 ^ (1 << game.humanid), 1);
+                            //计算合法目标
+                            int allowtar = 15 ^ (1 << executor->id);
+                            for(int i = 1; i <= 3; i++)
+                            {
+                                //判定区已有乐不思蜀
+                                if( (type_e)player[(executor->id + 1) % 4].judges[0][1] == LE || (type_e)player[(executor->id + 1) % 4].judges[1][1] == LE ||
+                                   (type_e)player[(executor->id + 1) % 4].judges[2][1] == LE)
+                                    allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+                            }
+
+                            int tar = SelectTarget(allowtar, 1);
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
@@ -389,6 +399,11 @@ void Playcard(player_t *executor)
                                 distance += player[(executor->id + i) % 4].equips[3] != -1;
                                 distance -= executor->equips[2] != -1;
                                 if(distance > 1) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
+
+                                //判定区已有兵粮寸断
+                                if( (type_e)player[(executor->id + 1) % 4].judges[0][1] == BING || (type_e)player[(executor->id + 1) % 4].judges[1][1] == BING ||
+                                        (type_e)player[(executor->id + 1) % 4].judges[2][1] == BING)
+                                    allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
                             int tar = SelectTarget(allowtar, 1);
@@ -552,8 +567,8 @@ void Execard(player_t *executor, int target, int id, int type)
                         if(turn % 2) Damage(&player[(executor->id + i) % 4], executor, 1, COMMON);
                         else Damage(executor, &player[(executor->id + i) % 4], 1, COMMON);
                     }
-                    if((type_e)type == GUOCHAI) Throwcard(executor, &player[(executor->id + i) % 4], 1);
-                    if((type_e)type == SHUNQIAN) Getcard(executor, &player[(executor->id + i) % 4], 1);
+                    if((type_e)type == GUOCHAI) Throwcard(executor, &player[(executor->id + i) % 4], 1, 7);
+                    if((type_e)type == SHUNQIAN) Getcard(executor, &player[(executor->id + i) % 4], 1, 7);
                     if((type_e)type == HUOGONG)
                     {
                         if(player[(executor->id + i) % 4].cardamount == 0) continue;
