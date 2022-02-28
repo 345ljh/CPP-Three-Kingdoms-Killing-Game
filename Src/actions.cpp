@@ -1780,6 +1780,12 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
 
     if(amount > 0)
     {
+        //藤甲效果
+        if( (type_e)recipient->equips[1] == TENGJIA && type == FIRE)
+        {
+            amount++;
+            printf("%s发动了\"藤甲\"\n", general_inf[recipient->general].name);
+        }
         //白银狮子效果
         if( (type_e)recipient->equips[1] == BAIYIN && type != LOSS && amount > 1)
         {
@@ -2087,6 +2093,10 @@ int AskWuxie(int start, int add)
 int Askcard(player_t *recipient, type_e type, int add)
 {
     delay_fps(3);
+    //八卦阵效果
+    if(type == SHAN && (type_e)recipient->equips[1] == BAGUA)
+        if(Bagua(recipient)) return 1;
+
     if(recipient->controller == HUMAN)
     {
         int sel = -1;

@@ -185,7 +185,7 @@ void GameStart(void)
         player[i].id = i;
 
         player[i].maxhealth = general_inf[player[i].general].maxhealth;
-        player[i].health = 1;
+        player[i].health = player[i].maxhealth;
         player[i].maxcard = player[i].health;
         player[i].cardamount = 0;
 

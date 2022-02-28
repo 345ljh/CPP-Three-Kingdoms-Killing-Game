@@ -9,6 +9,13 @@
 弹出界面 EGERGB(83, 30, 0)
 
 /*----------------------常用按键----------------------*/
+//框架
+for(; is_run(); delay_fps(10))
+{
+    while (mousemsg()) msg = getmouse();
+    mousepos(&mouse_x, &mouse_y);
+}
+
 //确定键
 if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
 {

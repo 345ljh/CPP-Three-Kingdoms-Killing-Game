@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "app.h"
 #include "ai.h"
+#include "skill.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -25,11 +26,11 @@ int Judging(player_t *player);
 void Damage(player_t *executor, player_t *player, int amount, damage_e type, int linkstart = 1);
 void Recover(player_t *player, int amount);
 int SelectTarget(int allowed, int maxtarget, int add = 0);
+int AskWuxie(int start, int add);
+int Askcard(player_t *recipient, type_e type, int add);
 
 void Neardeath(player_t *player);
 void Death(player_t *player);
 void VictoryJudge(void);
 
-int AskWuxie(int start, int add);
-int Askcard(player_t *recipient, type_e type, int add);
 #endif // ACTIONS_H_INCLUDED
