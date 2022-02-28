@@ -232,7 +232,7 @@ void GameRun(void)
 {
     //从牌堆获得特定id的牌,用于测试
     {
-        int get = 37;
+        int get = 3;
         for(int i = 0; i <= 159; i++) if(game.card[i] == get)
             {
                 player[game.humanid].card[player[game.humanid].cardamount] = get;

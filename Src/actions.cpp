@@ -124,8 +124,8 @@ void Playcard(player_t *executor)
                     {
                         for(; is_run(); delay_fps(10))
                         {
-                            //判断次数限制
-                            if(executor->slashlimit && executor->equips[0] != ZHUGE && executor->nowslash >= executor->maxslash) goto Circ;
+                            //判断诸葛连弩与次数限制
+                            if(executor->slashlimit && (type_e)card_inf[executor->equips[0]].type != ZHUGE && executor->nowslash >= executor->maxslash) goto Circ;
 
                             //计算合法目标
                             int allowtar = 15 ^ (1 << executor->id);  //除去自己
@@ -511,24 +511,35 @@ void Execard(player_t *executor, int target, int id, int type)
         printf("\n");
         Putcard(id);
 
+        //青釭剑
+        int qinggang = (type_e)card_inf[executor->equips[0]].type == QINGGANG;
+        if(qinggang) printf("%s发动了\"青釭剑\"\n", general_inf[executor->general].name);
+
         for(int i = 1; i <= 3; i++)
         {
             if(target & (1 << (executor->id + i) % 4) )
             {
+                //雌雄双股剑效果
+                if( (type_e)card_inf[executor->equips[0]].type == CIXIONG && general_inf[executor->general].gender != general_inf[player[(executor->id + i) % 4].general].gender)
+                    Cixiong(executor, &player[(executor->id + i) % 4]);
                 //仁王盾效果
-                if( (type_e)player[(executor->id + i) % 4].equips[1] == RENWANG && (int)card_inf[id].suit >> 1 == 0)
+                if( !qinggang && (type_e)player[(executor->id + i) % 4].equips[1] == RENWANG && (int)card_inf[id].suit >> 1 == 0)
                 {
                     printf("%s发动了\"仁王盾\"\n", general_inf[player[(executor->id + i) % 4].general].name);
                     continue;
                 }
                 //藤甲效果
-                if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA && card_inf[id].type == SHA)
+                if( !qinggang && (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA && card_inf[id].type == SHA)
                 {
                     printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
                     continue;
                 }
+                //古锭刀效果
+                if( (type_e)card_inf[executor->equips[0]].type == GUDING && player[(executor->id + i) % 4].cardamount == 0) basdamage++;
                 //询问闪
-                if(Askcard(&player[(executor->id + i) % 4], SHAN, 0)) continue;
+                if(Askcard(&player[(executor->id + i) % 4], SHAN, 0 | qinggang << 8)) continue;
+                //寒冰剑效果
+                if((type_e)card_inf[executor->equips[0]].type == HANBING && Hanbing(executor, &player[(executor->id + i) % 4])) continue;
                 //造成伤害
                 Damage(executor, &player[(executor->id + i) % 4], basdamage, (damage_e)card_inf[id].type, 1);
             }
@@ -1781,13 +1792,13 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
     if(amount > 0)
     {
         //藤甲效果
-        if( (type_e)recipient->equips[1] == TENGJIA && type == FIRE)
+        if( (type_e)card_inf[recipient->equips[1]].type == TENGJIA && type == FIRE)
         {
             amount++;
             printf("%s发动了\"藤甲\"\n", general_inf[recipient->general].name);
         }
         //白银狮子效果
-        if( (type_e)recipient->equips[1] == BAIYIN && type != LOSS && amount > 1)
+        if( (type_e)card_inf[recipient->equips[1]].type == BAIYIN && type != LOSS && amount > 1)
         {
             amount = 1;
             printf("%s发动了\"白银狮子\"\n", general_inf[recipient->general].name);
@@ -2080,21 +2091,23 @@ int AskWuxie(int start, int add)
 
 //询问一张牌
 ///返回值为是否出type对应类型牌,add为触发原因
-/** add的值
- * 0: 被杀指定(无论属性)
- * 低8位2: 濒死求桃(高8位为濒死角色)
+/** add低8位
+ * 0: 被杀指定(无论属性,高1位=1为青釭剑)
+ * 2: 濒死求桃(高8位为濒死角色)
  * 0x90: 被决斗指定
  * 0x93: 万箭齐发目标
  * 0x94: 南蛮入侵目标
  * 0x98: 无懈
- * 低8位0x9B: 借刀杀人出杀(此时高2位为杀的目标)
+ * 0x9B: 借刀杀人出杀(高2位为杀的目标)
  */
 
 int Askcard(player_t *recipient, type_e type, int add)
 {
     delay_fps(3);
+    //附加参数低8位表示触发的类型
+    int message = add % 0x100;
     //八卦阵效果
-    if(type == SHAN && (type_e)recipient->equips[1] == BAGUA)
+    if(type == SHAN && (type_e)card_inf[recipient->equips[1]].type == BAGUA && add != 0x100)
         if(Bagua(recipient)) return 1;
 
     if(recipient->controller == HUMAN)
@@ -2110,17 +2123,17 @@ int Askcard(player_t *recipient, type_e type, int add)
 
             //提示
             char str[121] = "";
-            if(add == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
-            if(add % 0x100 == 2) strcpy(str, Link(general_inf[player[add >> 8].general].name, (char*)"濒死,使用桃使其回复体力"));
-            if(add == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
-            if(add == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
-            if(add == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
-            if(add % 0x100 == 0x98)
+            if(message == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
+            if(message == 2) strcpy(str, Link(general_inf[player[add >> 8].general].name, (char*)"濒死,使用桃使其回复体力"));
+            if(message == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
+            if(message == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
+            if(message == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
+            if(message == 0x98)
             {
                 if(add >> 8 == 0x98) strcpy(str, (char*)"是否使用无懈可击抵消无懈可击");
                 else strcpy(str, Link( Link( (char*)"是否使用无懈可击抵消对", general_inf[player[add >> 8].general].name), (char*)"的效果"));
             }
-            if(add % 0x100 == 0x9B) strcpy(str, Link( Link( (char*)"成为借刀杀人的目标，请对",  general_inf[player[add >> 8].general].name), (char*)"使用杀"));
+            if(message == 0x9B) strcpy(str, Link( Link( (char*)"成为借刀杀人的目标，请对",  general_inf[player[add >> 8].general].name), (char*)"使用杀"));
 
             setcolor(WHITE, gui.selector);
             setfont(30, 0, "仿宋", gui.selector);
@@ -2140,7 +2153,7 @@ int Askcard(player_t *recipient, type_e type, int add)
                 {
                     if((game.page * 8 + i < recipient->cardamount) &&
                        ( (card_inf[recipient->card[game.page * 8 + i]].type == type) ||   // 类型相同
-                       (add % 0x100 == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + i]].type == JIU) ) )
+                       (message == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + i]].type == JIU) ) )
                         LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
                 }
             }
@@ -2168,16 +2181,16 @@ int Askcard(player_t *recipient, type_e type, int add)
                 {
                     if((game.page * 8 + tosel < recipient->cardamount) &&
                        ( (card_inf[recipient->card[game.page * 8 + tosel]].type == type) ||   // 类型相同
-                       (add % 0x100 == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + tosel]].type == JIU) ) ) //自己濒死使用酒
+                       (message == 2 && add >> 8 == recipient->id && card_inf[recipient->card[game.page * 8 + tosel]].type == JIU) ) ) //自己濒死使用酒
                         sel = game.page * 8 + tosel;
                 }
             }
 
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
-                if(add == 0 || add % 0x100 == 2 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
-                if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
-                if(add % 0x100 != 0x9B)
+                if(message == 0 || message == 2 || message == 0x98) printf("%s使用", general_inf[recipient->general].name);
+                if(message == 0x90 || message == 0x93 || message == 0x94) printf("%s打出", general_inf[recipient->general].name);
+                if(message != 0x9B)
                 {
                     Printcard(recipient->card[sel]);
                     printf("\n");
@@ -2189,14 +2202,14 @@ int Askcard(player_t *recipient, type_e type, int add)
                 recipient->card[sel] = -1;
                 recipient->cardamount--;
                 IndexAlign(recipient->card, recipient->cardamount, 160);
-                if(add % 0x100 == 0x9B) return temp;
+                if(message == 0x9B) return temp;
                 else return 1;
             }
 
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
             {
                 DrawGui();
-                if(add % 0x100 == 0x9B) return -1;
+                if(message == 0x9B) return -1;
                 else return 0;
             }
 
@@ -2213,13 +2226,13 @@ int Askcard(player_t *recipient, type_e type, int add)
     }
     else
     {
-        int sel = AnswerAi(recipient, type, (add % 0x100 == 2 && add >> 8 == recipient->id) ? 2 : 0);
+        int sel = AnswerAi(recipient, type, (message == 2 && add >> 8 == recipient->id) ? 2 : 0);
         if(sel != -1)
         {
 
-            if(add == 0 || add % 0x100 == 2 || add % 0x100 == 0x98) printf("%s使用", general_inf[recipient->general].name);
-            if(add == 0x90 || add == 0x93 || add == 0x94) printf("%s打出", general_inf[recipient->general].name);
-            if(add % 0x100 != 0x9B)
+            if(message == 0 || message == 2 || message == 0x98) printf("%s使用", general_inf[recipient->general].name);
+            if(message == 0x90 || message == 0x93 || message == 0x94) printf("%s打出", general_inf[recipient->general].name);
+            if(message != 0x9B)
             {
                 Printcard(recipient->card[sel]);
                 printf("\n");
@@ -2231,12 +2244,12 @@ int Askcard(player_t *recipient, type_e type, int add)
             recipient->card[sel] = -1;
             recipient->cardamount--;
             IndexAlign(recipient->card, recipient->cardamount, 160);
-            if(add % 0x100 == 0x9B) return temp;
+            if(message == 0x9B) return temp;
             else return 1;
         }
         else
         {
-            if(add % 0x100 == 0x9B) return -1;
+            if(message == 0x9B) return -1;
             else return 0;
         }
     }
