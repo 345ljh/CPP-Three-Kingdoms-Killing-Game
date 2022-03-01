@@ -4,6 +4,8 @@
  */
 
 #include "actions.h"
+jmp_buf Circ;
+jmp_buf Dam;
 
 //牌堆初始化
 void PileInit(void)
@@ -421,6 +423,12 @@ void Playcard(player_t *executor)
                     }
                 }
             }
+            //丈八蛇矛
+            if( (type_e)card_inf[executor->equips[0]].type == ZHANGBA && msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 487.5)
+            {
+                 if(executor->slashlimit && executor->nowslash >= executor->maxslash) goto Circ;
+                 Zhangba(executor);
+            }
 
             //翻页
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
@@ -440,6 +448,7 @@ void Playcard(player_t *executor)
 
             //使用goto而非break退出循环,防止选择牌后点"取消"会连续触发按钮导致出牌阶段结束,以及"空气杀"的bug
             if(0) Circ: delay_fps(2);
+            setjmp(Circ);
 
             DrawGui();
             putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
@@ -1880,6 +1889,7 @@ void Recover(player_t *recipient, int amount)
 
 /** add的值
  * 0: 默认
+ * 0x32: 丈八蛇矛
  * 0x9A: 铁索
  * 0x9B: 借刀杀人选择出杀者
  * 0x9C: 借刀杀人选择杀的目标

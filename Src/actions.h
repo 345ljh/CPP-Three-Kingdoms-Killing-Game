@@ -12,6 +12,10 @@
 #include <malloc.h>
 #include <graphics.h>
 #include <math.h>
+#include <setjmp.h>
+
+extern jmp_buf Circ;
+extern jmp_buf Dam;
 
 void PileInit(void);
 void Shuffle(void);
