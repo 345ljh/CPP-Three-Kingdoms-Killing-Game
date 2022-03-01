@@ -537,7 +537,13 @@ void Execard(player_t *executor, int target, int id, int type)
                 //古锭刀效果
                 if( (type_e)card_inf[executor->equips[0]].type == GUDING && player[(executor->id + i) % 4].cardamount == 0) basdamage++;
                 //询问闪
-                if(Askcard(&player[(executor->id + i) % 4], SHAN, 0 | qinggang << 8)) continue;
+                if(Askcard(&player[(executor->id + i) % 4], SHAN, 0 | qinggang << 8))
+                {
+                    //青龙偃月刀
+                    if((type_e)card_inf[executor->equips[0]].type == QINGLONG) Qinglong(executor, &player[(executor->id + i) % 4]);
+                    //贯石斧
+                    if((type_e)card_inf[executor->equips[0]].type != GUANSHI || !Guanshi(executor)) continue;
+                }
                 //寒冰剑效果
                 if((type_e)card_inf[executor->equips[0]].type == HANBING && Hanbing(executor, &player[(executor->id + i) % 4])) continue;
                 //造成伤害
@@ -907,6 +913,7 @@ void Drawcard(player_t *recipient, int amount)
 ///mode当且仅当executor与recipient为同一角色时生效
 /** add的值
  * 0: 默认
+ * 0x30: 贯石斧
  * 0x99: 火攻使用者
  */
 
@@ -960,7 +967,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
 
                 //弃牌数提示
                 char str[121] = "";
-                if(add == 0) strcpy(str, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"));
+                if(add == 0 || add == 0x30) strcpy(str, Link( Link( Link( Link( (char*)"弃置", Myitoa(ArrayOccupied(tothrow, amount) )), (char*)"/"), MyitoaII(amount)), (char*)"张牌"));
                 if(add == 0x99)
                 {
                     char suitstr[11] = "";
@@ -979,7 +986,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         if(recipient->card[game.page * 8 + i] != -1 && (suit & (1 << (int)card_inf[recipient->card[game.page * 8 + i]].suit)) &&
                                 (type & (1 << TypeIdentify(card_inf[recipient->card[game.page * 8 + i]].type))) )
                             LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
-                if(area & 2) for(int i = 0; i <= 3; i++)
+                if(area & 2) for(int i = (add == 0x30); i <= 3; i++)
                         if(recipient->equips[i] != -1) LineRect(5, 453.75 + 37.5 * i, 145, 483.75 + 37.5 * i, EGERGB(255, 215, 77), gui.selector);
                 if(area & 4) for(int i = 0; i <= 2; i++)
                         if(recipient->judges[i][0] != -1) LineRect(20 * (i + 1), 430, 40 * (i + 1), 430, EGERGB(255, 215, 77), gui.selector);
@@ -996,7 +1003,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 }
 
                 //确定键
-                if((cancel && ArrayOccupied(tothrow, amount)) || ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+                if((cancel && ArrayOccupied(tothrow, amount) && !(add == 0x30 && ArrayOccupied(tothrow, amount) != 2)) ||
+                   ArrayOccupied(tothrow, amount) == amount) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
 
                 //取消键
                 if(cancel) LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
@@ -1040,7 +1048,8 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 if( (area & 2) && msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 600)
                 {
                     int sel = (int)( (mouse_y - 450) / 37.5);
-                    if(recipient->equips[sel] != -1)  //确定对应位置有装备
+
+                    if( (add != 0x30 || sel != 0) && recipient->equips[sel] != -1)  //确定对应位置有装备
                     {
                         int found = 0;
                         for(int i = 0; i <= amount - 1; i++)
@@ -1055,7 +1064,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         }
 
                         //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                        if(ArrayOccupied(tothrow, amount) <= amount)
+                        if(!found && ArrayOccupied(tothrow, amount) <= amount)
                         {
                             for(int i = 0; i <= amount - 1; i++)
                             {
@@ -1088,7 +1097,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                         }
 
                         //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
-                        if(ArrayOccupied(tothrow, amount) <= amount)
+                        if(!found && ArrayOccupied(tothrow, amount) <= amount)
                         {
                             for(int i = 0; i <= amount - 1; i++)
                             {
@@ -1119,7 +1128,9 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 }
 
                 //确定键
-                if( (cancel || ArrayOccupied(tothrow, amount) == amount) && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+                if( (cancel || ArrayOccupied(tothrow, amount) == amount) &&
+                   !(add == 0x30 && ArrayOccupied(tothrow, amount) != 2) &&  //贯石斧
+                   msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
                 {
                     int baiyin = 0;  //白银狮子效果
                     if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
@@ -1342,7 +1353,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
             {
                 //使用优先级判断弃牌
                 int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
-                baiyin = ThrowAi(recipient, state, area, suit, type);
+                baiyin = ThrowAi(recipient, state, area, suit, type, add);
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
@@ -2094,6 +2105,7 @@ int AskWuxie(int start, int add)
 /** add低8位
  * 0: 被杀指定(无论属性,高1位=1为青釭剑)
  * 2: 濒死求桃(高8位为濒死角色)
+ * 0x31: 青龙偃月刀继续使用杀
  * 0x90: 被决斗指定
  * 0x93: 万箭齐发目标
  * 0x94: 南蛮入侵目标
@@ -2125,6 +2137,7 @@ int Askcard(player_t *recipient, type_e type, int add)
             char str[121] = "";
             if(message == 0) strcpy(str, (char*)"成为杀的目标，请使用一张闪");
             if(message == 2) strcpy(str, Link(general_inf[player[add >> 8].general].name, (char*)"濒死,使用桃使其回复体力"));
+            if(message == 0x31) strcpy(str, (char*)"是否发动青龙偃月刀继续使用杀");
             if(message == 0x90) strcpy(str, (char*)"决斗中，请打出一张杀");
             if(message == 0x93) strcpy(str, (char*)"成为万箭齐发的目标，请打出一张闪");
             if(message == 0x94) strcpy(str, (char*)"成为南蛮入侵的目标，请打出一张杀");
@@ -2189,8 +2202,9 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
                 if(message == 0 || message == 2 || message == 0x98) printf("%s使用", general_inf[recipient->general].name);
+                if(message == 0x31) printf("%s发动了\"青龙偃月刀\"\n", general_inf[recipient->general].name);
                 if(message == 0x90 || message == 0x93 || message == 0x94) printf("%s打出", general_inf[recipient->general].name);
-                if(message != 0x9B)
+                if(message != 0x31 && message != 0x9B)  //下一步若执行Execard则不需要在此输出信息
                 {
                     Printcard(recipient->card[sel]);
                     printf("\n");
@@ -2202,14 +2216,14 @@ int Askcard(player_t *recipient, type_e type, int add)
                 recipient->card[sel] = -1;
                 recipient->cardamount--;
                 IndexAlign(recipient->card, recipient->cardamount, 160);
-                if(message == 0x9B) return temp;
+                if(message == 0x31 || message == 0x9B) return temp;
                 else return 1;
             }
 
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
             {
                 DrawGui();
-                if(message == 0x9B) return -1;
+                if(message == 0x31 || message == 0x9B) return -1;
                 else return 0;
             }
 
@@ -2232,7 +2246,8 @@ int Askcard(player_t *recipient, type_e type, int add)
 
             if(message == 0 || message == 2 || message == 0x98) printf("%s使用", general_inf[recipient->general].name);
             if(message == 0x90 || message == 0x93 || message == 0x94) printf("%s打出", general_inf[recipient->general].name);
-            if(message != 0x9B)
+            if(message == 0x31) printf("%s发动了\"青龙偃月刀\"\n", general_inf[recipient->general].name);
+            if(message != 0x31 && message != 0x9B)
             {
                 Printcard(recipient->card[sel]);
                 printf("\n");
@@ -2244,12 +2259,12 @@ int Askcard(player_t *recipient, type_e type, int add)
             recipient->card[sel] = -1;
             recipient->cardamount--;
             IndexAlign(recipient->card, recipient->cardamount, 160);
-            if(message == 0x9B) return temp;
+            if(message == 0x31 || message == 0x9B) return temp;
             else return 1;
         }
         else
         {
-            if(message == 0x9B) return -1;
+            if(message == 0x31 || message == 0x9B) return -1;
             else return 0;
         }
     }

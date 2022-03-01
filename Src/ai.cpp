@@ -9,7 +9,7 @@
 
 //弃牌AI
 ///返回值用于白银狮子效果
-int ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
+int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int add)
 {
     int maxstate = -1;
     int len = 1;
@@ -35,7 +35,7 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
                     tothrow[len - 1] = recipient->card[i];
                 }
             }
-    if(area & 2) for(int i = 0; i <= 3; i++)
+    if(area & 2) for(int i = (add == 0x30); i <= 3; i++)
             if ((recipient->equips[i] != -1) && suit & (1 << (int)card_inf[recipient->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type))))
             {
                 if(StateCompareAi(state, recipient->equips[i] | 0x100) > maxstate)
@@ -111,7 +111,6 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type)
         break;
     }
     }
-    printf("\n");
     free(tothrow);
     return baiyin;
 }
@@ -264,7 +263,7 @@ int AnswerAi(player_t *recipient, type_e type, int add)
         {
             if( (type == SHA && (card_inf[recipient->card[i]].type == SHA || card_inf[recipient->card[i]].type == HUOSHA || card_inf[recipient->card[i]].type == LEISHA)) ||
                 card_inf[recipient->card[i]].type == type ||
-                add == 2 && card_inf[recipient->card[i]].type == JIU)
+                (add == 2 && card_inf[recipient->card[i]].type == JIU) )
                {
                    int *ptemp = buf;
                    buf = (int*)realloc(ptemp, ++amount * sizeof(int));

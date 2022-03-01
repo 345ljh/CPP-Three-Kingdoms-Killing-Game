@@ -230,27 +230,9 @@ void GameStart(void)
 
 void GameRun(void)
 {
-    //从牌堆获得特定id的牌,用于测试
-    {
-        int get = 3;
-        for(int i = 0; i <= 159; i++) if(game.card[i] == get)
-            {
-                player[game.humanid].card[player[game.humanid].cardamount] = get;
-                game.card[i] = -1;
-                card_inf[get].owner = game.humanid;
-                player[game.humanid].cardamount++;
-            }
-    }
-    {
-        int get = 45;
-        for(int i = 0; i <= 159; i++) if(game.card[i] == get)
-            {
-                player[game.humanid].card[player[game.humanid].cardamount] = get;
-                game.card[i] = -1;
-                card_inf[get].owner = game.humanid;
-                player[game.humanid].cardamount++;
-            }
-    }
+    Tannang(&player[game.humanid], 133);
+    Tannang(&player[game.humanid], 4);
+    Tannang(&player[(game.humanid + 1) % 4], 123);
 
     ///Remember to DrawGui after EVERY change!!!
     while(1)
