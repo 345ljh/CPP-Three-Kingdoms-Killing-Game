@@ -230,8 +230,6 @@ void GameStart(void)
 
 void GameRun(void)
 {
-    Tannang(&player[game.humanid], 6);
-
     ///Remember to DrawGui after EVERY change!!!
     while(1)
     {

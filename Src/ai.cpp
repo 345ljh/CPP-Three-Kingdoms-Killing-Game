@@ -35,7 +35,7 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int a
                     tothrow[len - 1] = recipient->card[i];
                 }
             }
-    if(area & 2) for(int i = (add == 0x30); i <= 3; i++)
+    if(area & 2) for(int i = (add == 0x30) ? 1 : (add == 0x50 ? 2 : 0); i <= 3; i++)
             if ((recipient->equips[i] != -1) && suit & (1 << (int)card_inf[recipient->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type))))
             {
                 if(StateCompareAi(state, recipient->equips[i] | 0x100) > maxstate)

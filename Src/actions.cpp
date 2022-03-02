@@ -5,7 +5,6 @@
 
 #include "actions.h"
 jmp_buf Circ;
-jmp_buf Dam;
 
 //牌堆初始化
 void PileInit(void)
@@ -143,7 +142,9 @@ void Playcard(player_t *executor)
                                 if(distance > range) allowtar &= (15 ^ (1 << ((executor->id + i) % 4)));
                             }
 
-                            int tar = SelectTarget(allowtar, executor->targets);
+                            //方天画戟
+                            int fangtian = (type_e)card_inf[executor->equips[0]].type == FANGTIAN && executor->cardamount == 1;
+                            int tar = SelectTarget(allowtar, executor->targets + 2 * fangtian);
                             if(tar)
                             {
                                 card_inf[executor->card[sel]].owner = -1;
@@ -482,6 +483,9 @@ void Execard(player_t *executor, int target, int id, int type)
         if(executor->equips[index] != -1)
         {
             card_inf[executor->equips[index]].owner = -1;
+            printf("%s弃置", general_inf[executor->general].name);
+            Printcard(executor->equips[index]);
+            printf("\n");
             Putcard(executor->equips[index]);
             if(index == 1 && (type_e)executor->equips[index] == BAIYIN) Recover(executor, 1);  //白银狮子效果
             executor->equips[index] = -1;
@@ -523,6 +527,8 @@ void Execard(player_t *executor, int target, int id, int type)
         //青釭剑
         int qinggang = (type_e)card_inf[executor->equips[0]].type == QINGGANG;
         if(qinggang) printf("%s发动了\"青釭剑\"\n", general_inf[executor->general].name);
+        //朱雀羽扇效果
+        if( (type_e)card_inf[executor->equips[0]].type == ZHUQUE && type == SHA && Zhuque(executor)) type = HUOSHA;
 
         for(int i = 1; i <= 3; i++)
         {
@@ -532,13 +538,13 @@ void Execard(player_t *executor, int target, int id, int type)
                 if( (type_e)card_inf[executor->equips[0]].type == CIXIONG && general_inf[executor->general].gender != general_inf[player[(executor->id + i) % 4].general].gender)
                     Cixiong(executor, &player[(executor->id + i) % 4]);
                 //仁王盾效果
-                if( !qinggang && (type_e)player[(executor->id + i) % 4].equips[1] == RENWANG && (int)card_inf[id].suit >> 1 == 0)
+                if( !qinggang && (type_e)card_inf[player[(executor->id + i) % 4].equips[1]].type == RENWANG && (int)card_inf[id].suit >> 1 == 0)
                 {
                     printf("%s发动了\"仁王盾\"\n", general_inf[player[(executor->id + i) % 4].general].name);
                     continue;
                 }
                 //藤甲效果
-                if( !qinggang && (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA && card_inf[id].type == SHA)
+                if( !qinggang && (type_e)card_inf[player[(executor->id + i) % 4].equips[1]].type == TENGJIA && type == SHA)
                 {
                     printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
                     continue;
@@ -555,8 +561,10 @@ void Execard(player_t *executor, int target, int id, int type)
                 }
                 //寒冰剑效果
                 if((type_e)card_inf[executor->equips[0]].type == HANBING && Hanbing(executor, &player[(executor->id + i) % 4])) continue;
+                //麒麟弓
+                if((type_e)card_inf[executor->equips[0]].type == QILIN && (player[(executor->id + i) % 4].equips[2] != -1 || player[(executor->id + i) % 4].equips[3] != -1))  Qilin(executor, &player[(executor->id + i) % 4]);
                 //造成伤害
-                Damage(executor, &player[(executor->id + i) % 4], basdamage, (damage_e)card_inf[id].type, 1);
+                Damage(executor, &player[(executor->id + i) % 4], basdamage, (damage_e)type, 1);
             }
         }
     }
@@ -761,7 +769,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 //选牌界面
                 PIMAGE wugu = newimage();
                 getimage(wugu, 0, 0, 1200, 600);
-
+                cleardevice(wugu);
                 setfillcolor(EGERGB(83, 30, 0),wugu);
                 bar(595 - 45 * live, 220, 605 + 45 * live, 380, wugu);
 
@@ -923,6 +931,7 @@ void Drawcard(player_t *recipient, int amount)
 /** add的值
  * 0: 默认
  * 0x30: 贯石斧
+ * 0x50: 麒麟弓
  * 0x99: 火攻使用者
  */
 
@@ -1232,6 +1241,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 {
                     Rect(425 + 90 * i, 305, 505 + 90 * i, 425, area & 2 ? EGERGB(190, 183, 68) : LIGHTGRAY, gui.selector);
                     outtextxy(453 + 90 * i, 359, str + 5 * i, gui.selector);
+                    if(add == 0x50 && add < 2) continue;
                     if( (area & 2) && recipient->equips[i] != -1)
                     {
                         Pastecard(425 + 90 * i, 305, recipient->equips[i], gui.selector);
@@ -1282,6 +1292,9 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                     if( (area & 2) && msg.is_down() && mouse_x >= 425 && mouse_x <= 775 && mouse_y >= 305 && mouse_y <= 425)
                     {
                         tothrow = (mouse_x - 420) / 90;
+
+                        if(add == 0x50 && tothrow < 2) continue;
+
                         card_inf[recipient->equips[tothrow]].owner = -1;
                         Putcard(recipient->equips[tothrow]);
 
@@ -1346,7 +1359,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 if(area | 1) for(int i = 0; i <= recipient->cardamount - 1; i++)
                         if(suit & (1 << (int)card_inf[recipient->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->card[i]].type)))) accord++;
 
-                if(area | 2) for(int i = 0; i <= 3; i++)
+                if(area | 2) for(int i = (add == 0x30); i <= 3; i++)
                         if(recipient->equips[i] != -1 && suit & (1 << (int)card_inf[recipient->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type)))) accord++;
 
                 if(area | 4) for(int i = 0; i <= 2; i++)
@@ -1387,7 +1400,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
             int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                baiyin = ThrowAi(recipient, state, area);
+                baiyin = ThrowAi(recipient, state, area, 15, 7, add);
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
