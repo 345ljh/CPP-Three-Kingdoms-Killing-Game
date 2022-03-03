@@ -144,6 +144,8 @@ void GameGuiInit(void)
 //游戏过程中重绘信息
 void DrawGui(void)
 {
+    if (bgm.GetPlayStatus() == MUSIC_MODE_STOP) bgm.Play(0);
+
     cleardevice(gui.frame);
     cleardevice(gui.playercard);
 

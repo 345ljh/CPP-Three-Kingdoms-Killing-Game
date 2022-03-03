@@ -10,6 +10,8 @@ void ProgramStart(void)
 {
     setcaption("三国杀 ThreeKingdomsKilling-CPP");
     srand(time(NULL));
+    bgm.OpenFile(".\\Music\\bgm.mp3");
+    bgm.Play(0);
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
     printf("——————此界面用于记录牌局信息，请勿关闭——————\n");
     initgraph(1200, 600);

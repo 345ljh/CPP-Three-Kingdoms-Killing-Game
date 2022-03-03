@@ -2,6 +2,7 @@
 #define ITEMS_H_INCLUDED
 
 #include <stdio.h>
+#include "graphics.h"
 
 #define GENERALS 5 //当前已加入武将数量
 
@@ -128,5 +129,5 @@ extern game_t game;
 extern general_t general_inf[GENERALS];
 extern card_t card_inf[160];
 extern player_t player[4];
-extern FILE *fp;
+extern MUSIC bgm;
 #endif // ITEMS_H_INCLUDED
