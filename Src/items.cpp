@@ -76,5 +76,3 @@ general_t general_inf[GENERALS] =
 
 game_t game;
 player_t player[4];
-
-MUSIC bgm;

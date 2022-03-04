@@ -34,7 +34,7 @@ void Shuffle(void)
     cleardevice(gui.throwcard);
 
     //统计弃牌堆内牌的数量
-    for(int i = 0; i <= 160; i++)
+    for(int i = 0; i <= 159; i++)
     {
         if(card_inf[i].owner == -1) pilecards++;
     }
@@ -147,6 +147,16 @@ void Playcard(player_t *executor)
                             int tar = SelectTarget(allowtar, executor->targets + 2 * fangtian);
                             if(tar)
                             {
+                                if(fangtian)
+                                {
+                                    printf("%s发动了\"方天画戟\"\n", general_inf[executor->general].name);
+                                    PlayMusic((char*)".\\Music\\Equip\\64.mp3");
+                                }
+                                if(executor->slashlimit && (type_e)card_inf[executor->equips[0]].type == ZHUGE && executor->nowslash >= executor->maxslash)
+                                {
+                                    printf("%s发动了\"诸葛连弩\"\n", general_inf[executor->general].name);
+                                    PlayMusic((char*)".\\Music\\Equip\\16.mp3");
+                                }
                                 card_inf[executor->card[sel]].owner = -1;
                                 int temp = executor->card[sel];
                                 executor->card[sel] = -1;
@@ -262,17 +272,18 @@ void Playcard(player_t *executor)
                     {
                         for(; is_run(); delay_fps(10))
                         {
-
-                            //判断目标是否有手牌
                             int allowtar = 15;
                             int tar = SelectTarget(allowtar, 2, 0x9A);
 
-                            card_inf[executor->card[sel]].owner = -1;
-                            int temp = executor->card[sel];
-                            executor->card[sel] = -1;
-                            executor->cardamount--;
-                            IndexAlign(executor->card, executor->cardamount, 160);
-                            Execard(executor, tar, temp);
+                            if(tar != -1)
+                            {
+                                card_inf[executor->card[sel]].owner = -1;
+                                int temp = executor->card[sel];
+                                executor->card[sel] = -1;
+                                executor->cardamount--;
+                                IndexAlign(executor->card, executor->cardamount, 160);
+                                Execard(executor, tar, temp);
+                            }
 
                             goto Circ;
                         }
@@ -471,7 +482,19 @@ void Execard(player_t *executor, int target, int id, int type)
     delay_fps(5);
     cleardevice(gui.selector);
     DrawGui();
-    type = (type == -1) ? (int)card_inf[id].type : type;
+    if(type == -1)
+    {
+        type = (int)card_inf[id].type;
+        //语音
+        char musicpath[121] = ".\\Music\\";
+        if(TypeIdentify( (type_e)type) == 1)  strcat(musicpath, Link( Link( (char*)"State\\equip", Myitoa(type < 0x60 ? 0 : (type >> 4) - 5) ), (char*)".mp3"));
+        else
+        {
+            if(general_inf[executor->general].gender == MALE) strcat(musicpath, Link( Link( (char*)"Malecard\\", Myitoa(type) ), (char*)".mp3"));
+            else if(general_inf[executor->general].gender == FEMALE) strcat(musicpath, Link( Link( (char*)"Femalecard\\", Myitoa(type) ), (char*)".mp3"));
+        }
+        PlayMusic(musicpath);
+    }
     for(int i = 0; i <= 3; i++) if(player[i].controller == DEAD) target &= 15 ^ (1 << i);
 
     //装备牌
@@ -526,7 +549,11 @@ void Execard(player_t *executor, int target, int id, int type)
 
         //青釭剑
         int qinggang = (type_e)card_inf[executor->equips[0]].type == QINGGANG;
-        if(qinggang) printf("%s发动了\"青釭剑\"\n", general_inf[executor->general].name);
+        if(qinggang)
+        {
+            printf("%s发动了\"青釭剑\"\n", general_inf[executor->general].name);
+            PlayMusic((char*)".\\.\\Music\\Equip\\32.mp3");
+        }
         //朱雀羽扇效果
         if( (type_e)card_inf[executor->equips[0]].type == ZHUQUE && type == SHA && Zhuque(executor)) type = HUOSHA;
 
@@ -541,6 +568,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 if( !qinggang && (type_e)card_inf[player[(executor->id + i) % 4].equips[1]].type == RENWANG && (int)card_inf[id].suit >> 1 == 0)
                 {
                     printf("%s发动了\"仁王盾\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                    PlayMusic((char*)".\\Music\\Equip\\9.mp3");
                     continue;
                 }
                 //藤甲效果
@@ -659,6 +687,7 @@ void Execard(player_t *executor, int target, int id, int type)
                         ++player[(executor->id + i) % 4].chained %= 2;
                         if(player[(executor->id + i) % 4].chained) printf("%s的武将牌横置\n", general_inf[player[(executor->id + i) % 4].general].name);
                         else printf("%s的武将牌重置\n", general_inf[player[(executor->id + i) % 4].general].name);
+                        PlayMusic((char*)".\\Music\\State\\chain.mp3");
                     }
                 }
             }
@@ -717,6 +746,7 @@ void Execard(player_t *executor, int target, int id, int type)
                         if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA)
                         {
                             printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                            PlayMusic((char*)".\\Music\\Equip\\98.mp3");
                             continue;
                         }
                         if(!AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHAN, 0x93) )
@@ -734,6 +764,7 @@ void Execard(player_t *executor, int target, int id, int type)
                         if( (type_e)player[(executor->id + i) % 4].equips[1] == TENGJIA)
                         {
                             printf("%s发动了\"藤甲\"\n", general_inf[player[(executor->id + i) % 4].general].name);
+                            PlayMusic((char*)".\\Music\\Equip\\98.mp3");
                             continue;
                         }
                         if(!AskWuxie(executor->id, (executor->id + i) % 4) && !Askcard(&player[(executor->id + i) % 4], SHA, 0x94) )
@@ -1829,16 +1860,21 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
         {
             amount++;
             printf("%s发动了\"藤甲\"\n", general_inf[recipient->general].name);
+            PlayMusic((char*)".\\Music\\Equip\\100.mp3");
         }
         //白银狮子效果
         if( (type_e)card_inf[recipient->equips[1]].type == BAIYIN && type != LOSS && amount > 1)
         {
             amount = 1;
             printf("%s发动了\"白银狮子\"\n", general_inf[recipient->general].name);
+            PlayMusic((char*)".\\Music\\Equip\\99.mp3");
         }
 
         recipient->health -= amount;
         recipient->maxcard -= amount;  //手牌上限一般随体力变化
+        char musicpath[121] = ".\\Music\\";
+        strcat(musicpath, Link( Link( (char*)"State\\damage", Myitoa(type) ), (char*)".mp3"));
+        PlayMusic(musicpath);
         DrawGui();
 
         switch(type)
@@ -1955,7 +1991,8 @@ int SelectTarget(int allowed, int maxtarget, int add)
         //取消
         if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
         {
-            return 0;
+            if(add == 0x9A) return -1;
+            else return 0;
         }
 
         //确定
@@ -2138,7 +2175,6 @@ int AskWuxie(int start, int add)
 
 int Askcard(player_t *recipient, type_e type, int add)
 {
-    delay_fps(3);
     //附加参数低8位表示触发的类型
     int message = add % 0x100;
     //八卦阵效果
@@ -2225,10 +2261,19 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(sel != -1 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
                 if(message == 0 || message == 2 || message == 0x98) printf("%s使用", general_inf[recipient->general].name);
-                if(message == 0x31) printf("%s发动了\"青龙偃月刀\"\n", general_inf[recipient->general].name);
+                if(message == 0x31)
+                {
+                    printf("%s发动了\"青龙偃月刀\"\n", general_inf[recipient->general].name);
+                    PlayMusic((char*)".\\Music\\Equip\\49.mp3");
+                }
                 if(message == 0x90 || message == 0x93 || message == 0x94) printf("%s打出", general_inf[recipient->general].name);
                 if(message != 0x31 && message != 0x9B)  //下一步若执行Execard则不需要在此输出信息
                 {
+                    char musicpath[121] = ".\\Music\\";
+                    if(general_inf[recipient->general].gender == MALE) strcat(musicpath, Link( Link( (char*)"Malecard\\", Myitoa(type) ), (char*)".mp3"));
+                    else if(general_inf[recipient->general].gender == FEMALE) strcat(musicpath, Link( Link( (char*)"Femalecard\\", Myitoa(type) ), (char*)".mp3"));
+                    PlayMusic(musicpath);
+
                     Printcard(recipient->card[sel]);
                     printf("\n");
                     Putcard(recipient->card[sel]);
@@ -2263,6 +2308,10 @@ int Askcard(player_t *recipient, type_e type, int add)
     }
     else
     {
+        DrawGui();
+        delay_ms(0);
+        DrawGui();
+        delay_fps(1);
         int sel = AnswerAi(recipient, type, (message == 2 && add >> 8 == recipient->id) ? 2 : 0);
         if(sel != -1)
         {
@@ -2272,6 +2321,11 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(message == 0x31) printf("%s发动了\"青龙偃月刀\"\n", general_inf[recipient->general].name);
             if(message != 0x31 && message != 0x9B)
             {
+                char musicpath[121] = ".\\Music\\";
+                if(general_inf[recipient->general].gender == MALE) strcat(musicpath, Link( Link( (char*)"Malecard\\", Myitoa(type) ), (char*)".mp3"));
+                else if(general_inf[recipient->general].gender == FEMALE) strcat(musicpath, Link( Link( (char*)"Femalecard\\", Myitoa(type) ), (char*)".mp3"));
+                PlayMusic(musicpath);
+
                 Printcard(recipient->card[sel]);
                 printf("\n");
                 Putcard(recipient->card[sel]);

@@ -39,7 +39,8 @@ int Bagua(player_t *recipient)
         return 0;
     }
 
-    printf("%s发动了\"八卦阵\"\n", general_inf[recipient->general].name);
+    printf((char*)"%s发动了\"八卦阵\"\n", general_inf[recipient->general].name);
+    PlayMusic((char*)".\\Music\\Equip\\97.mp3");
 
     if( (int)card_inf[Judging(recipient)].suit >> 1 == 1)
     {
@@ -85,6 +86,7 @@ void Cixiong(player_t* executor, player_t* recipient)
     }
 
     printf("%s发动了\"雌雄双股剑\"\n", general_inf[executor->general].name);
+    PlayMusic((char*)".\\Music\\Equip\\33.mp3");
 
     int ans = 0;
     if(recipient->controller == HUMAN)
@@ -154,6 +156,7 @@ int Hanbing(player_t* executor, player_t* recipient)
     }
 
     printf("%s发动了\"寒冰剑\"\n", general_inf[executor->general].name);
+    PlayMusic((char*)".\\Music\\Equip\\35.mp3");
     Throwcard(executor, recipient, 2, 3);
     return 1;
 }
@@ -200,6 +203,7 @@ int Guanshi(player_t* executor)
     if(Throwcard(executor, executor, 2, 3, 255, 0x30) == 2)
     {
         printf("%s发动了\"贯石斧\"\n", general_inf[executor->general].name);
+        PlayMusic((char*)".\\Music\\Equip\\48.mp3");
         return 1;
     }
     return 0;
@@ -340,6 +344,7 @@ void Zhangba(player_t* executor)
                             printf("%s", general_inf[player[(executor->id + i) % 4].general].name);
                         }
                     printf("\n");
+                    PlayMusic((char*)".\\Music\\Equip\\50.mp3");
 
                     //执行杀的效果
                     int basdamage = 1;
@@ -414,6 +419,7 @@ int Zhuque(player_t* executor)
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
             {
                 printf("%s发动了\"朱雀羽扇\"\n", general_inf[executor->general].name);
+                PlayMusic((char*)".\\Music\\Equip\\65.mp3");
                 return 1;
             }
             if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565) return 0;

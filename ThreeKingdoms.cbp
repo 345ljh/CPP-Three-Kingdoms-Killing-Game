@@ -36,6 +36,15 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="libgraphics64.a" />
+					<Add library="libgdi32.a" />
+					<Add library="libimm32.a" />
+					<Add library="libmsimg32.a" />
+					<Add library="libole32.a" />
+					<Add library="liboleaut32.a" />
+					<Add library="libwinmm.a" />
+					<Add library="libuuid.a" />
+					<Add library="libgdiplus.a" />
 				</Linker>
 			</Target>
 		</Build>
@@ -57,6 +66,8 @@
 		<Unit filename="Src/items.cpp" />
 		<Unit filename="Src/items.h" />
 		<Unit filename="Src/main.cpp" />
+		<Unit filename="Src/music.cpp" />
+		<Unit filename="Src/music.h" />
 		<Unit filename="Src/process.cpp" />
 		<Unit filename="Src/process.h" />
 		<Unit filename="Src/reference.cpp" />

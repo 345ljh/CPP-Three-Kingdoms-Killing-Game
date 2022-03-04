@@ -6,10 +6,11 @@
 #include"app.h"
 
 //分段取值函数,用于牌的类别
+///0=基本,1装备,2=锦囊
 int TypeIdentify(type_e type)
 {
     if((int)type < 0x10) return 0;
-    else if((int)type >= 0xA0) return 2;
+    else if((int)type >= 0x90) return 2;
     else return 1;
 }
 
