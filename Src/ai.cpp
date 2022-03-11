@@ -115,6 +115,292 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int a
     return baiyin;
 }
 
+//对自己弃牌AI
+///此函数仅用于一张牌的计算,返回值为牌在区域中的id
+///通过计算卡牌的可能收益(不考虑牌在手中未使用的收益),选择收益最小的一张弃置
+int ThrowAiSelf(player_t *recipient, int area, int suit, int type, int add)
+{
+    int id = 0;  //卡牌在玩家区域的id
+    double minprofit = 99;  //当前最小收益
+    player_t &teammate = player[3 - recipient->id];
+    player_t enemy[2] = {player[(2 + recipient->id) % 4], player[(5 - recipient->id) % 4]};
+
+    if(area | 1)
+    {
+        for(int i = 0; i <= recipient->cardamount - 1; i++)
+        {
+            double profit = 99;
+            if(recipient->card[i] != -1 && suit & (1 << (int)card_inf[recipient->card[i]].suit) && type & (1 << TypeIdentify(card_inf[recipient->card[i]].type) ))
+            {
+                //根据类别执行分析
+                if(card_inf[recipient->card[i]].type == SHA || card_inf[recipient->card[i]].type == LEISHA || card_inf[recipient->card[i]].type == HUOSHA)
+                {
+                    double temp[2] = {0, 0};
+                    for(int j = 0; j <= 1; j++)
+                    {
+                        //可用性计算,此步骤后temp为基础伤害*2
+                        if(enemy[j].controller == DEAD) continue;
+                        if(card_inf[enemy[j].equips[1]].type == RENWANG && card_inf[i].suit >> 1 == 0 && card_inf[recipient->equips[0]].type != QINGGANG)
+                        {
+                            temp[j] = 0;
+                            continue;
+                        }
+                        if(card_inf[enemy[j].equips[1]].type == TENGJIA)
+                        {
+                            if(card_inf[recipient->equips[0]].type == ZHUQUE || card_inf[recipient->card[i]].type == HUOSHA) temp[j] = 4;
+                            else if(card_inf[recipient->equips[0]].type == QINGGANG || card_inf[recipient->card[i]].type == LEISHA) temp[j] = 2;
+                            else
+                            {
+                                temp[j] = 0;
+                                continue;
+                            }
+                        }
+                        //距离,其中enemy[0]处于对位
+                        int distance = (j == 0 && player[(enemy[0].id + 1) % 4].controller != DEAD && player[(enemy[0].id + 3) % 4].controller != DEAD) ? 2 : 1;
+                        //+1与-1马的计算
+                        distance += enemy[j].equips[3] != -1;
+                        distance -= recipient->equips[2] != -1;
+                        //比较攻击范围
+                        int range = recipient->equips[0] != -1 ? (int)card_inf[recipient->equips[0]].type >> 4 : 1;
+                        if(distance > range)
+                        {
+                            temp[j] = 0;
+                            continue;
+                        }
+                        //根据对方手牌计算有闪的期望,牌堆中闪共24张(15%)
+                        ///此步后temp = p(有闪) + temp * (1 - p(有闪))
+                        double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                        if(p > 1) p = 1;
+                        temp[j] = p + temp[j] * (1 - p);
+                        //回合外降低此部分收益
+                        if(game.active != recipient->id || game.period > 3) profit *= 0.7;
+                    }
+                    //用于响应决斗(3),南蛮入侵(3),借刀杀人(2)时视为1收益,当体力更低时提高(0.2每损失体力)权重
+                    for(int j = 0; j <= 1; j++)  temp[i] += 0.125 + (recipient->maxhealth - recipient->health) * 0.2;
+                    //取较大者为理论收益
+                    profit = temp[0] > temp[1] ? temp[0] : temp[1];
+                }
+                if(card_inf[recipient->card[i]].type == SHAN)
+                {
+                    //用于响应杀(44),万箭(1),当体力更低时提高(0.35每损失体力)权重
+                    profit = 0.5625 + (recipient->maxhealth - recipient->health) * 0.35;
+                    //回合外增加权重
+                    if(game.active != recipient->id || game.period > 3) profit += 1;
+                }
+                if(card_inf[recipient->card[i]].type == TAO)  profit = 2;
+                if(card_inf[recipient->card[i]].type == JIU)
+                {
+                    //回合内收益,算法与杀类似
+                    if(game.active == recipient->id && game.period <= 3)
+                    {
+                        double temp[2] = {0, 0};
+                        for(int j = 0; j <= 1; j++)
+                        {
+                            if(enemy[j].controller == DEAD) continue;
+                            double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                            if(p > 1) p = 1;
+                            temp[j] = p + 1.5 * (1 - p);
+                        }
+                        profit = (temp[0] > temp[1]) ? temp[0] : temp[1];
+                    }
+                    else profit = 0;
+                    //回合外收益,当体力不大于2时提高权重
+                    profit += recipient->health == 1 ? 1 : 0.5;
+                }
+                //计算装备,考虑当前该区域是否已装备
+                if(TypeIdentify(card_inf[recipient->card[i]].type) == 1)
+                {
+                    //回合内
+                    if(game.active == recipient->id && game.period <= 3)
+                    {
+                        if( (int)card_inf[recipient->card[i]].type >= 0x70 || card_inf[recipient->card[i]].type < 0x80)
+                        {
+                            if(recipient->equips[2] == -1) profit = 1.2;
+                            else profit = 0.4;
+                        }
+                        if( (int)card_inf[recipient->card[i]].type >= 0x80 || card_inf[recipient->card[i]].type < 0x90)
+                        {
+                            if(recipient->equips[2] == -1) profit = 1.3;
+                            else profit = 0.4;
+                        }
+                        if( (int)card_inf[recipient->card[i]].type >= 0x60 || card_inf[recipient->card[i]].type < 0x70)
+                        {
+                            if(card_inf[recipient->equips[1]].type == BAIYIN && recipient->health < recipient->maxhealth) profit = 1.9;
+                            else if(recipient->equips[1] == -1 || (card_inf[recipient->equips[1]].type == TENGJIA && card_inf[recipient->card[i]].type != TENGJIA)) profit = 1.5;
+                            else profit = 0.4;
+                        }
+                        if( (int)card_inf[recipient->card[i]].type >= 0x10 || card_inf[recipient->card[i]].type < 0x60)
+                        {
+                            if(recipient->equips[0] == -1) profit = 1.3;
+                            else profit = 0.4;
+                        }
+                    }
+                    else profit = 0.4;
+                }
+                //锦囊,当前代码不考虑回合内对方有无懈
+                if( (int)card_inf[recipient->card[i]].type >= 0x90 || card_inf[recipient->card[i]].type < 0xA0)
+                {
+                    if(card_inf[recipient->card[i]].type == WUXIE)
+                    {
+                        if(game.active == recipient->id && game.period <= 3) profit = 0.45 + (recipient->maxhealth - recipient->health) * 0.3;
+                        else profit = 0.5 + (recipient->maxhealth - recipient->health) * 0.35;
+                    }
+                    else
+                    {
+                        if(game.active == recipient->id && game.period <= 3)
+                        {
+                            if(card_inf[recipient->card[i]].type == JUEDOU)
+                            {
+                                double temp[2] = {0, 0};
+                                for(int j = 0; j <= 1; j++)
+                                {
+                                    if(enemy[j].controller == DEAD) continue;
+                                    temp[j] = (recipient->cardamount - 1 - enemy[j].cardamount) * 0.4;
+                                    if(temp[j] > 2) temp[j] = 2;
+                                    else if(temp[j] < -2) temp[j] = -2;
+                                }
+                                profit = (temp[0] > temp[1]) ? temp[0] : temp[1];
+                            }
+                            if(card_inf[recipient->card[i]].type == GUOCHAI)  profit = 1;
+                            if(card_inf[recipient->card[i]].type == SHUNQIAN)  profit = 1.5;
+                            if(card_inf[recipient->card[i]].type == WANJIAN)
+                            {
+                                profit = 0;
+                                //计算对敌方
+                                for(int j = 0; j <= 1; j++)
+                                {
+                                    if(enemy[j].controller == DEAD || card_inf[enemy[j].equips[1]].type == TENGJIA) continue;
+                                    double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                                    if(p > 1) p = 1;
+                                    profit += 2 - p;
+                                }
+                                //计算对队友
+                                if(teammate.controller != DEAD && card_inf[teammate.equips[1]].type != TENGJIA)
+                                {
+                                    double p = 0.15 * teammate.cardamount + 0.5 * card_inf[teammate.equips[1]].type == BAGUA;
+                                    if(p > 1) p = 1;
+                                    profit -= 2 - p;
+                                }
+                            }
+                            if(card_inf[recipient->card[i]].type == WANJIAN)
+                            {
+                                profit = 0;
+                                //计算对敌方
+                                for(int j = 0; j <= 1; i++)
+                                {
+                                    if(enemy[j].controller == DEAD || card_inf[enemy[j].equips[1]].type == TENGJIA) continue;
+                                    double p = 0.2 * enemy[j].cardamount;
+                                    if(p > 1) p = 1;
+                                    profit += 2 - p;
+                                }
+                                //计算对队友
+                                if(teammate.controller != DEAD && card_inf[teammate.equips[1]].type != TENGJIA)
+                                {
+                                    double p = 0.2 * teammate.cardamount;
+                                    if(p > 1) p = 1;
+                                    profit -= 2 - p;
+                                }
+                            }
+                            if(card_inf[recipient->card[i]].type == TAOYUAN)
+                            {
+                                profit = 0.1;  //增加初始权重
+                                for(int j = 0; j <= 1; j++)
+                                {
+                                    if(enemy[j].controller == DEAD) continue;
+                                    else profit -= (1 - (float)enemy[j].health / enemy[j].maxhealth) * 3;  //体力越低,回复1体力带来的收益权重越高
+                                }
+                                if(teammate.controller != DEAD)  profit += (1 - (float)teammate.health / teammate.maxhealth) * 3;
+                                if(recipient->controller != DEAD)  profit += (1 - (float)recipient->health / recipient->maxhealth) * 3;
+                            }
+                            if(card_inf[recipient->card[i]].type == WUZHONG)  profit = 2;
+                            if(card_inf[recipient->card[i]].type == WUGU)
+                            {
+                                profit = 0.1;
+                                for(int j = 0; j <= 1; j++)
+                                {
+                                    if(enemy[j].controller == DEAD) continue;
+                                    else profit -= 1.4 - ((enemy[j].id - recipient->id + 4) % 4) * 0.2;  //距离使用者越远,权重越低
+                                }
+                                if(teammate.controller != DEAD)  profit += 1.4 - ((teammate.id - recipient->id + 4) % 4) * 0.2;
+                                if(recipient->controller != DEAD)  profit += 1.4;
+                            }
+                            if(card_inf[recipient->card[i]].type == HUOGONG)
+                            {
+                                profit = 0;
+                                //计算手牌花色数
+                                int cardsuit[4] = {0, 0, 0, 0};
+                                for(int j = 0; j <= recipient->cardamount - 1; i++) if(j != i) cardsuit[(int)card_inf[recipient->card[j]].suit] = 1;
+                                for(int j = 0; j <= 3; j++) profit += cardsuit[j] * 0.5;
+                                if( card_inf[enemy[0].equips[1]].type == TENGJIA || card_inf[enemy[0].equips[2]].type == TENGJIA || (enemy[0].chained && enemy[1].chained) ) profit *= 2;
+                                profit += 0.1;
+                            }
+                            if(card_inf[recipient->card[i]].type == TIESUO) profit = 1;
+                            if(card_inf[recipient->card[i]].type == JIEDAO)
+                            {
+                                if(enemy[0].equips[0] == -1 && enemy[1].equips[0] == -1) profit = 0;
+                                else profit = 1;
+                            }
+                            if(card_inf[recipient->card[i]].type == LE)  profit = 3;
+                            if(card_inf[recipient->card[i]].type == BING) profit = 1.5;
+                            if(card_inf[recipient->card[i]].type == SHANDIAN)
+                            {
+                                profit = -0.4;
+                                if(teammate.controller != DEAD) profit -= 0.4;
+                                for(int j = 0; j <= 1; j++) if(enemy[j].controller != DEAD) profit += 0.4;
+                            }
+                        }
+                        else profit = 0.4;
+                    }
+                }
+            }
+            if(profit < minprofit)
+            {
+                minprofit = profit;
+                id = i;
+            }
+        }
+    }
+    if(area | 2)
+    {
+        double profit = 99;
+        for(int i = 0; i <= 3; i++)
+        {
+            if(recipient->equips[i] != -1 &&  suit & (1 << (int)card_inf[recipient->equips[i]].suit) && type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type) ))
+            {
+                profit = 2;
+            }
+            if(profit < minprofit)
+            {
+                minprofit = profit;
+                id = i | 0x100;
+            }
+        }
+    }
+    if(area | 4)
+    {
+        double profit = 99;
+        for(int i = 0; i <= 2; i++)
+        {
+            if(recipient->judges[i][0] != -1 &&  suit & (1 << (int)card_inf[recipient->judges[i][0]].suit) && type & (1 << TypeIdentify(card_inf[recipient->judges[i][0]].type) ))
+            {
+                if(card_inf[recipient->judges[i][0]].type == LE) profit = -3;
+                if(card_inf[recipient->judges[i][0]].type == BING) profit = -1.5;
+                if(card_inf[recipient->judges[i][0]].type == SHANDIAN)
+                {
+                    profit = -0.4;
+                    if(teammate.controller != DEAD) profit -= 0.4;
+                    for(int j = 0; j <= 1; j++) if(enemy[j].controller != DEAD) profit += 0.4;
+                }
+            }
+            if(profit < minprofit)
+            {
+                minprofit = profit;
+                id = i | 0x200;
+            }
+        }
+    }
+    return id;
+}
 
 //获得牌AI
 int GetAi(player_t *executor, player_t* recipient, int* state, int area)

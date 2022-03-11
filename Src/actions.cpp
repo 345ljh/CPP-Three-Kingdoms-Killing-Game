@@ -1402,15 +1402,50 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
             if(amount) printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
 
             int baiyin = 0;
-            for(int times = 0; times <= amount - 1; times++)
+            for(int i = 0; i <= amount - 1; i++)
             {
-                //使用优先级判断弃牌
-                int state[12] = {3, 1, 0, 2, 6, 6, 7, 5, 4, 2, 3, 2};
-                baiyin = ThrowAi(recipient, state, area, suit, type, add);
+                int tothrow = 0;
+                tothrow = ThrowAiSelf(recipient, area, suit, type, add);
 
-                if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
-                        (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
-                    return times;
+                switch(tothrow >> 8)
+                {
+                case 0:
+                    {
+                        Putcard(recipient->card[tothrow]);
+                        Printcard(recipient->card[tothrow]);
+                        card_inf[recipient->card[tothrow]].owner = -1;
+                        recipient->card[tothrow] = -1;
+                        recipient->cardamount--;
+                        IndexAlign(recipient->card, recipient->cardamount, 160);
+                        break;
+                    }
+                case 1:
+                    {
+                        Putcard(recipient->equips[tothrow | 0xFF]);
+                        Printcard(recipient->equips[tothrow | 0xFF]);
+                        if(card_inf[recipient->equips[tothrow | 0xFF]].type == BAIYIN) baiyin = 1;
+                        card_inf[recipient->equips[tothrow | 0xFF]].owner = -1;
+                        recipient->equips[tothrow | 0xFF] = -1;
+                        break;
+                    }
+                case 2:
+                    {
+                        Putcard(recipient->judges[tothrow | 0xFF][0]);
+                        Printcard(recipient->judges[tothrow | 0xFF][0]);
+                        card_inf[recipient->judges[tothrow | 0xFF][0]].owner = -1;
+                        recipient->judges[tothrow | 0xFF][0] = -1;
+                        recipient->judges[tothrow | 0xFF][1] = -1;
+
+                        for(int j = 0; j <= 1; j++)
+                        {
+                            int temp[3];
+                            for(int k = 0; k <= 2; k++) temp[k] = recipient->judges[k][j];
+                            IndexAlign(temp, ArrayOccupied(temp, 3), 3);
+                            for(int k = 0; k <= 2; k++) recipient->judges[k][j] = temp[k];
+                        }
+                        break;
+                    }
+                }
             }
             printf("\n");
             if(baiyin) Recover(recipient, 1);
@@ -1913,15 +1948,15 @@ void Damage(player_t *executor, player_t *recipient, int amount, damage_e type, 
         if(linkstart && recipient->chained && (type == FIRE || type == THUNDER) )
         {
             recipient->chained = 0;
-            printf("%s的武将牌重置", general_inf[recipient->general].name);
+            printf("%s的武将牌重置\n", general_inf[recipient->general].name);
             DrawGui();
 
             for(int i = 1; i <= 3; i++)
                 if(player[(recipient->id + i) % 4].chained)
                 {
                     Damage(executor, &player[(recipient->id + i) % 4], amount, type, 0);
-                    recipient->chained = 0;
-                    printf("%s的武将牌重置", general_inf[player[(recipient->id + i) % 4].general].name);
+                    player[(recipient->id + i) % 4].chained = 0;
+                    printf("%s的武将牌重置\n", general_inf[player[(recipient->id + i) % 4].general].name);
                 }
         }
     }
