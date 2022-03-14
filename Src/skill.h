@@ -10,6 +10,7 @@ int Hanbing(player_t* executor, player_t* recipient);
 void Qinglong(player_t* executor, player_t* recipient);
 int Guanshi(player_t* executor);
 void Zhangba(player_t* executor);
+int Zhangba_ans(player_t* executor);
 int Zhuque(player_t* executor);
 void Qilin(player_t* executor, player_t* recipient);
 

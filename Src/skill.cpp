@@ -394,6 +394,132 @@ void Zhangba(player_t* executor)
     return;
 }
 
+//丈八蛇矛-响应出杀
+int Zhangba_ans(player_t* executor)
+{
+    if(executor->controller == HUMAN)
+    {
+        int tothrow[2] = {-1, -1};
+
+        for(; is_run(); delay_fps(10))
+        {
+            while (mousemsg()) msg = getmouse();
+            mousepos(&mouse_x, &mouse_y);
+
+            DrawGui();
+            cleardevice(gui.selector);
+
+            char str[121] = "";
+            strcpy(str, (char*)"将2张牌当做杀使用或打出");
+            setcolor(WHITE, gui.selector);
+            setfont(30, 0, "仿宋", gui.selector);
+            outtextxy(600 - 7.5 * strlen(str), 415, str, gui.selector);
+            LineRect(5, 453.75, 145, 483.75, EGERGB(255, 57, 57), gui.selector);
+
+            //全部绘制为未选定状态
+            for(int i = 0; i <= 7; i++)
+            {
+                if(executor->card[game.page * 8 + i] != -1)
+                    LineRect(160 + 100 * i, 465, 240 + 100 * i, 585, EGERGB(255, 215, 77), gui.selector);
+            }
+
+            //绘制已选定状态
+            for(int i = 0; i <= 1; i++)
+            {
+                if(tothrow[i] != -1 && executor->card[tothrow[i]] != -1 && tothrow[i] >> 8 == 0 && game.page == tothrow[i] / 8)
+                    LineRect(160 + 100 * (tothrow[i] % 8), 465, 240 + 100 * (tothrow[i] % 8), 585, EGERGB(255, 57, 57), gui.selector);
+            }
+
+            //确定键
+            if(ArrayOccupied(tothrow, 2) == 2) LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
+
+            //取消键
+            LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+            //检测按键
+            if(msg.is_down() && mouse_x >= 150 && mouse_x <= 950 && mouse_y >= 450 && mouse_y <= 600)
+            {
+                int sel = (mouse_x - 150) / 100;
+                if(executor->cardamount > game.page * 8 + sel)
+                {
+                    int found = 0;
+                    for(int i = 0; i <= 1; i++)
+                    {
+                        //若已选中则取消
+                        if(tothrow[i] == game.page * 8 + sel)
+                        {
+                            tothrow[i] = -1;
+                            found++;
+                            break;
+                        }
+                    }
+
+                    //若未选中则选定,将tothrow中目前下标最小的-1改为该牌id
+                    if(!found && ArrayOccupied(tothrow, 2) <= 2)
+                    {
+                        for(int i = 0; i<= 1; i++)
+                        {
+                            if(tothrow[i] == -1)
+                            {
+                                tothrow[i] = game.page * 8 + sel;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //翻页
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 970 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(game.page > 0) game.page--;
+            }
+            if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
+            {
+                if(executor->cardamount > (game.page + 1) * 8) game.page++;
+            }
+
+            //取消键
+            if(msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 540 && mouse_y <= 565)
+            {
+                longjmp(Circ,1);
+            }
+
+            //确定键
+            if(ArrayOccupied(tothrow, 2) == 2 && msg.is_down() && mouse_x >= 960 && mouse_x <= 1050 && mouse_y >= 510 && mouse_y <= 535)
+            {
+                //输出信息与使用牌
+                printf("%s发动了\"丈八蛇矛\",将", general_inf[executor->general].name);
+                for(int i = 0; i <= 1; i++)
+                {
+                    card_inf[executor->card[tothrow[i]]].owner = -1;
+                    Putcard(executor->card[tothrow[i]]);
+                    Printcard(executor->card[tothrow[i]]);
+                    Putcard(executor->card[tothrow[i]]);
+                    executor->card[tothrow[i]] = -1;
+                    executor->cardamount--;
+                }
+                IndexAlign(executor->card, executor->cardamount, 160);
+                printf("当做杀\n");
+
+                PlayMusic((char*)".\\Music\\Equip\\50.mp3");
+                cleardevice(gui.selector);
+                DrawGui();
+                return 1;
+            }
+            putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
+
+        }
+    }
+    else
+    {
+        ;
+    }
+    return 0;
+}
+
 //朱雀羽扇
 int Zhuque(player_t* executor)
 {

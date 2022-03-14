@@ -2265,6 +2265,8 @@ int Askcard(player_t *recipient, type_e type, int add)
                 }
             }
 
+            if(type == SHA &&card_inf[recipient->equips[0]].type == ZHANGBA)  LineRect(0, 450, 150, 487.5, EGERGB(255, 215, 77), gui.selector);
+
             if(sel != -1)
             {
                 LineRect(160 + 100 * (sel % 8), 465, 240 + 100 * (sel % 8), 585, EGERGB(255, 57, 57), gui.selector);
@@ -2338,6 +2340,12 @@ int Askcard(player_t *recipient, type_e type, int add)
             if(msg.is_down() && mouse_x >= 985 && mouse_x <= 1000 && mouse_y >= 575 && mouse_y <= 595)
             {
                 if(recipient->cardamount > (game.page + 1) * 8) game.page++;
+            }
+
+            //丈八
+            if(card_inf[recipient->equips[0]].type == ZHANGBA && msg.is_down() && mouse_x >= 0 && mouse_x <= 150 && mouse_y >= 450 && mouse_y <= 487.5)
+            {
+                if(Zhangba_ans(recipient)) return 1;
             }
         }
     }

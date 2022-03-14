@@ -44,7 +44,7 @@ mousepos(&mouse_x, &mouse_y);
 /*----------------------贴图相关----------------------*/
 //确定与取消键
 LineRect(960, 510, 1050, 535, EGERGB(255, 215, 77), gui.selector);
-LineRect(960, 540, 1050, 565, EGERGB(255, 215, 77), gui.selector);
+LineRect(960, 540, 1050, 565, EGERGB(255, 57, 57), gui.selector);
 
 //覆盖选择框图层
 putimage_transparent(NULL, gui.selector, 0, 0, BLACK);
