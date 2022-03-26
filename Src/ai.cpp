@@ -514,6 +514,84 @@ int GetAi(player_t *executor, player_t* recipient, int* state, int area)
     return baiyin;
 }
 
+//出牌阶段AI
+///若为出牌,返回值低8位为牌在手牌区的id,8~11位为目标
+int PlayAi(player_t* executor)
+{
+    player_t &teammate = player[3 - executor->id];
+    player_t enemy[2] = {player[(2 + executor->id) % 4], player[(5 - executor->id) % 4]};
+
+    int card = 0xFF;  //所出牌的id,若弃牌则为0xFF
+    int target = 0;  //目标
+    float maxprofit = 0;  //当前最大收益
+    //判断出牌
+    ///此函数考虑牌留在手中用于响应,从而出牌造成的"负收益"
+    for(int i = 0; i <= executor->cardamount - 1; i++)
+    {
+        float nowprofit = 0;  //当前收益
+        int nowtarget = 0;  //当前目标
+        //三种杀
+        ///此AI暂不考虑对队友出杀以触发技能的操作
+        if( (int)card_inf[executor->card[i]].type == SHA || (int)card_inf[executor->card[i]].type == HUOSHA || (int)card_inf[executor->card[i]].type == LEISHA)
+        {
+            //次数限制
+            if(executor->slashlimit && (type_e)card_inf[executor->equips[0]].type != ZHUGE && executor->nowslash >= executor->maxslash) continue;
+
+            double temp[2];  //分别计算对两目标收益
+            for(int j = 0; j <= 1; j++)
+            {
+                temp[j] = -0.2 * ((enemy[0].controller != DEAD) + (enemy[1].controller != DEAD));  //保留收益,若无法使用,continue后结果<0,判定为不使用
+
+                //可用性判定
+                if(enemy[j].controller == DEAD) continue;
+                if(card_inf[enemy[j].equips[1]].type == RENWANG && card_inf[i].suit >> 1 == 0 && card_inf[executor->equips[0]].type != QINGGANG)  continue;
+                //距离,其中enemy[0]处于对位
+                int distance = (j == 0 && player[(enemy[0].id + 1) % 4].controller != DEAD && player[(enemy[0].id + 3) % 4].controller != DEAD) ? 2 : 1;
+                //+1与-1马的计算
+                distance += enemy[j].equips[3] != -1;
+                distance -= executor->equips[2] != -1;
+                //比较攻击范围
+                int range = executor->equips[0] != -1 ? (int)card_inf[executor->equips[0]].type >> 4 : 1;
+                if(distance > range)  continue;
+                //藤甲
+                if(card_inf[enemy[j].equips[1]].type == TENGJIA)
+                {
+                    if(card_inf[executor->equips[0]].type == ZHUQUE || card_inf[executor->card[i]].type == HUOSHA) temp[j] += 4;
+                    else if(card_inf[executor->equips[0]].type == QINGGANG || card_inf[executor->card[i]].type == LEISHA) temp[j] += 2;
+                    else continue;
+                }
+
+                //装备麒麟弓且目标有马
+                if(card_inf[enemy[j].equips[0]].type == QILIN && (enemy[j].equips[2] != -1 || enemy[j].equips[3] != -1)) temp[j] += 1.2;
+
+                //计算出闪期望
+                double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                if(p > 1) p = 1;
+                temp[j] = p + temp[j] * (1 - p);
+            }
+            //选择目标
+            if(executor->targets >= 2 && temp[0] > 0 && temp[1] > 0)  //选多个目标
+            {
+                nowtarget = (1 << enemy[0].id) | (1 << enemy[1].id);
+                nowprofit = temp[0] + temp[1];
+            }
+            else
+            {
+                nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+                nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+            }
+        }
+        if(nowprofit > maxprofit)
+        {
+            maxprofit = nowprofit;
+            card = i;
+            target = nowtarget;
+        }
+    }
+
+    return (target << 8) + card;
+}
+
 //弃牌权重比对,返回值较大者优先弃置
 ///state中元素按顺序代表:[手牌区]杀,闪,桃/酒,无懈,其他普通锦囊,延时锦囊,装备,[判定区],[装备区]武器,防具,-1,+1
 ///id低16位为card_inf对应的id,高8位表示区域
@@ -523,7 +601,7 @@ int StateCompareAi(int state[13], int id)
     id &= 0xFF;
     return
     ( (int)card_inf[id].type <= 2 && !area) ? state[0] :
-    (card_inf[id].type == SHAN && !area)? state[1] :
+    (card_inf[id].type == SHAN && !area) ? state[1] :
     ((card_inf[id].type == TAO || card_inf[id].type == JIU) && !area) ? state[2] :
     (card_inf[id].type == WUXIE && !area) ? state[3] :
     ( ((int)card_inf[id].type & 0xF0) == 0x90 && !area) ? state[4] :

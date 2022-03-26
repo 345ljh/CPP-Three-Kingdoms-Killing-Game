@@ -2,29 +2,14 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="Src\ai.cpp" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+	<File name="Src\process.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8683" topLine="96" />
-		</Cursor>
-	</File>
-	<File name="Src\actions.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1076" topLine="17" />
-		</Cursor>
-	</File>
-	<File name="Src\actions.cpp" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="107942" topLine="2326" />
+			<Cursor1 position="194" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Src\skill.h" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="375" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Src\reference.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1344" topLine="32" />
 		</Cursor>
 	</File>
 	<File name="Src\app.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
@@ -37,24 +22,9 @@
 			<Cursor1 position="679" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Src\icon.rc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Src\skill.cpp" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="28" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Src\ai.h" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="221" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Src\process.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="194" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Src\music.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="514" topLine="16" />
+			<Cursor1 position="17727" topLine="464" />
 		</Cursor>
 	</File>
 	<File name="Src\gui.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="-1" zoom_2="0">
@@ -62,19 +32,19 @@
 			<Cursor1 position="5322" topLine="135" />
 		</Cursor>
 	</File>
-	<File name="Src\items.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+	<File name="Src\ai.h" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1078" topLine="0" />
+			<Cursor1 position="355" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="Src\main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="214" topLine="0" />
+			<Cursor1 position="131" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Src\items.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
+	<File name="Src\actions.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="867" topLine="13" />
+			<Cursor1 position="4733" topLine="109" />
 		</Cursor>
 	</File>
 	<File name="Src\app.h" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -82,14 +52,44 @@
 			<Cursor1 position="182" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Src\process.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+	<File name="Src\reference.cpp" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="259" topLine="78" />
+			<Cursor1 position="1344" topLine="32" />
 		</Cursor>
 	</File>
-	<File name="Src\skill.cpp" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="-4" zoom_2="0">
+	<File name="Src\icon.rc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="14892" topLine="482" />
+			<Cursor1 position="28" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Src\items.cpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1078" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Src\ai.cpp" open="1" top="1" tabpos="12" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="26206" topLine="528" />
+		</Cursor>
+	</File>
+	<File name="Src\music.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="514" topLine="16" />
+		</Cursor>
+	</File>
+	<File name="Src\actions.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1076" topLine="17" />
+		</Cursor>
+	</File>
+	<File name="Src\items.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="-2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="867" topLine="73" />
+		</Cursor>
+	</File>
+	<File name="Src\process.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="135" topLine="6" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
