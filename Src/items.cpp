@@ -76,3 +76,6 @@ general_t general_inf[GENERALS] =
 
 game_t game;
 player_t player[4];
+mouse_msg msg;
+int mouse_x, mouse_y;//用于获取鼠标坐标
+gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};

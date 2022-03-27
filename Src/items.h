@@ -126,9 +126,24 @@ typedef struct
     int page; //玩家手牌界面的页码数,处理手牌>8时的显示问题
 }game_t;
 
+typedef struct
+{
+    PIMAGE background;  //背景图层
+    PIMAGE frame;  //各类信息与边界、按钮图层
+    PIMAGE general;  //武将与势力图层
+    PIMAGE playercard;  //各区域卡牌图层
+    PIMAGE selector;  //选牌与选定目标图层
+    PIMAGE tips;  //提示文字图层
+    PIMAGE throwcard;  //弃牌堆绘制图层
+    PIMAGE arrow;  //指向目标图层
+}gui_t;
+
 extern game_t game;
 extern general_t general_inf[GENERALS];
 extern card_t card_inf[160];
 extern player_t player[4];
+extern gui_t gui;
+extern mouse_msg msg;
+extern int mouse_x, mouse_y;
 
 #endif // ITEMS_H_INCLUDED

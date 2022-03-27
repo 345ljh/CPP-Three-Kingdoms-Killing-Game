@@ -5,10 +5,6 @@
 
 #include "gui.h"
 
-mouse_msg msg;
-int mouse_x, mouse_y;//用于获取鼠标坐标
-gui_t gui = {newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage(), newimage()};
-
 const int pos[8] = {1070, 430, 1040, 150, 520, 20, 30, 150};  //从玩家逆时针,武将位置
 
 //开始界面
