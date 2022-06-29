@@ -474,6 +474,7 @@ void Playcard(player_t *executor)
             int recv = PlayAi(executor);
             if((recv & 0xFF) != 0xFF)
             {
+                //printf("target:%x", recv >> 8);
                 Execard(executor, recv >> 8, executor->card[recv & 0xFF], -1);
                 card_inf[executor->card[recv & 0xFF]].owner = -1;
                 executor->card[recv & 0xFF] = -1;

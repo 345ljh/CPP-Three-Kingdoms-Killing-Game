@@ -781,7 +781,7 @@ int PlayAi(player_t* executor)
         if(card_inf[executor->card[i]].type == WUGU)
         {
             //根据摸牌的顺序,从前到后收益依次为1.2,1,0.9,0.8
-            for(int j = 0; j <= 3; j++) nowtarget |= 1 << (player[j].controller != DEAD);  //目标为所有存活角色
+            for(int j = 0; j <= 3; j++) nowtarget |= (player[j].controller != DEAD) << j;  //目标为所有存活角色
             for(int j = 0; j <= 3; j++)
             {
                 double order[4] = {1.2, 1, 0.9, 0.8};
@@ -831,7 +831,7 @@ int PlayAi(player_t* executor)
                 //连对方2人,当且仅当未对己方使用同时对方2人均未连
                 if(!select && enemy[0].controller != DEAD && enemy[1].controller != DEAD && !enemy[0].chained && !enemy[1].chained)
                 {
-                    nowtarget &= (1 << enemy[0].id) | (1 << enemy[1].id);
+                    nowtarget |= (1 << enemy[0].id) | (1 << enemy[1].id);
                     select = 2;
                 }
                 //已解开己方1人
@@ -848,8 +848,7 @@ int PlayAi(player_t* executor)
                         temp[j] -= 0.1 * enemy[j].health;
                     }
 
-                    if(temp[0] <= 0 && temp[1] <= 0);
-                    else
+                    if(temp[0] >= 0 && temp[1] >= 0)
                     {
                         if(temp[0] > temp[1]) nowtarget |= (1 << enemy[0].id);
                         if(temp[1] > temp[0]) nowtarget |= (1 << enemy[1].id);
@@ -939,6 +938,12 @@ int PlayAi(player_t* executor)
             double temp[2] = {0, 0};
             for(int j = 0; j <= 1; j++)
             {
+                int distance = 1;
+                if(j == 0 && player[(executor->id + 1) / 4].controller != DEAD && player[(executor->id + 3) / 4].controller != DEAD) distance = 2;
+                if(executor->equips[2] != -1) distance--;
+                if(enemy[j].equips[3] != -1) distance++;
+                if(distance >= 2) break;
+
                 if(enemy[j].controller == DEAD) continue;
                 for(int k = 0; k <= 2; k++) if((type_e)enemy[j].judges[k][1] == BING) continue;
                 temp[j] = 2 - 0.2 * enemy[j].cardamount;
