@@ -116,6 +116,7 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int a
 }
 
 //对自己弃牌AI
+//TODO
 ///此函数仅用于一张牌的计算,返回值为牌在区域中的id
 ///通过计算卡牌的可能收益(不考虑牌在手中未使用的收益),选择收益最小的一张弃置
 int ThrowAiSelf(player_t *recipient, int area, int suit, int type, int add)
@@ -834,6 +835,12 @@ int PlayAi(player_t* executor)
                     nowtarget |= (1 << enemy[0].id) | (1 << enemy[1].id);
                     select = 2;
                 }
+                //连对方1人,当且仅当对方恰好1人横置
+                else if(!select && enemy[0].controller != DEAD && enemy[1].controller != DEAD && (!enemy[0].chained ^ !enemy[1].chained))
+                {
+                    nowtarget |= 1 << (enemy[0].chained ? enemy[1].id : enemy[1].id);
+                    select = 1;
+                }
                 //已解开己方1人
                 else if(select == 1)
                 {
@@ -955,6 +962,16 @@ int PlayAi(player_t* executor)
         {
             nowtarget = (1 << executor->id);
             nowprofit = 0.46875 * ((enemy[0].controller != DEAD) + (enemy[1].controller != DEAD) - (teammate.controller != DEAD) - 1);
+        }
+        if((int)card_inf[executor->card[i]].type >= 0x10 && (int)card_inf[executor->card[i]].type < 0x90)
+        {
+            int equippos = ((int)card_inf[executor->card[i]].type < 0x60) ? 0 : ((int)card_inf[executor->card[i]].type - 0x50) / 16;
+
+            int weapon = EquipAi(executor, card_inf[executor->equips[equippos]].type);
+            int nowweapon = EquipAi(executor, card_inf[executor->card[i]].type);
+
+            nowprofit = nowweapon - weapon;
+            nowtarget = 1 << (executor->id);
         }
 
         //比较
@@ -1146,4 +1163,117 @@ int WuguAi(player_t* recipient, int* buf, int len)
     int res = 0;
     for(int i = 1; i <= len - 1; i++) if(state[i] < state[res]) res = i;
     return res;
+}
+
+//装备收益判断
+int EquipAi(player_t* executor, type_e type)
+{
+    player_t enemy[2] = {player[(2 + executor->id) % 4], player[(5 - executor->id) % 4]};  //enemy[0]位于executor对位,[1]在邻位
+    int weapon = 0;
+    switch(type)
+    {
+    case ZHUGE:
+        weapon = 0.7 + 0.2 * executor->health;
+        break;
+
+    case QINGGANG:
+        weapon = 1;
+        for(int j = 0;  j<= 1; j++)  if(enemy[j].controller != DEAD && enemy[j].equips[1] != -1) weapon += 0.5;
+        if(weapon == 2) weapon = 1.8;
+        break;
+
+    case CIXIONG:
+        for(int j = 0;  j<= 1; j++)  if(enemy[j].controller != DEAD && (general_inf[enemy[j].general].gender != general_inf[executor->general].gender)) weapon += 1;
+        break;
+
+    case HANBING:
+        weapon = 1;
+        for(int j = 0; j <= 1; j++)
+        {
+            if(enemy[j].controller == DEAD) continue;
+            for(int k = 0; k <= 3; k++) if(enemy[j].equips[k] != -1) weapon += 0.08;
+        }
+        break;
+
+    case GUDING:
+        weapon = 1;
+        for(int j = 0; j <= 1; j++)
+        {
+            if(enemy[j].controller == DEAD) continue;
+            //低体力或无牌时提高权重
+            if(enemy[j].card == 0)
+            {
+                weapon += 0.4;
+                for(int k = 0; k <= executor->cardamount - 1; k++)
+                {
+                    if(card_inf[executor->card[k]].type == SHA || card_inf[executor->card[k]].type == HUOSHA || card_inf[executor->card[k]].type == LEISHA)
+                        weapon += 1.6 * (executor->nowslash < executor->maxslash);
+                }
+            }
+            else if(enemy[j].health <= 2) weapon += 0.3;
+        }
+        break;
+
+    case GUANSHI:
+        weapon = 1 + (((executor->cardamount + ArrayOccupied(executor->equips, 4) / 2) >= 4) ? 0.5 : (executor->health >= 3 ? 0.3 : 0));
+        break;
+
+    case QINGLONG:
+        weapon = 1;
+        //当杀的数量不小于2时每多一张提高1权重
+        for(int j = 0; j <= executor->cardamount - 1; j++) weapon += (card_inf[executor->card[j]].type == SHA || card_inf[executor->card[j]].type == HUOSHA || card_inf[executor->card[j]].type == LEISHA);
+        if(weapon >= 2) weapon--;
+        break;
+
+    case ZHANGBA:
+        weapon = 1.2;
+        break;
+
+    case FANGTIAN:
+        weapon = 1;
+        break;
+
+    case ZHUQUE:
+        weapon = 1 + 2 * ( (card_inf[enemy[0].equips[1]].type == TENGJIA) + (card_inf[enemy[1].equips[1]].type == TENGJIA)
+                + ( (enemy[0].controller != DEAD) && (enemy[1].controller != DEAD) && enemy[0].chained && enemy[1].chained) );
+        break;
+
+    case QILIN:
+        weapon = 1;
+        for(int j = 0; j <= 1; j++) weapon += (enemy[j].equips[2] != -1) + (enemy[j].equips[3] != -1);
+        break;
+
+    case RENWANG:
+    case BAGUA:
+        weapon = 1.6 - (card_inf[enemy[0].equips[0]].type == QINGGANG || card_inf[enemy[1].equips[0]].type == QINGGANG);
+        if(card_inf[executor->equips[1]].type == BAIYIN && executor->health < executor->maxhealth) weapon += 2;
+        break;
+
+    case TENGJIA:
+        weapon = 1.5;
+        for(int j = 0; j <= 1; j++) weapon -= ( 2 * (card_inf[enemy[0].equips[0]].type == ZHUQUE || card_inf[enemy[1].equips[0]].type == ZHUQUE) + 0.6 * (card_inf[enemy[0].equips[0]].type == QINGGANG || card_inf[enemy[1].equips[0]].type == QINGGANG) );
+        if(card_inf[executor->equips[1]].type == BAIYIN && executor->health < executor->maxhealth) weapon += 2;
+        break;
+
+    case BAIYIN:
+        weapon = 1.1;
+        break;
+
+    case CHITU:
+    case DAWAN:
+    case ZIXIN:
+        weapon = 1.2;
+        break;
+
+    case JUEYING:
+    case FEIDIAN:
+    case DILU:
+    case HUALIU:
+        weapon = 1.4;
+        break;
+
+    default:
+        weapon = 0;
+    }
+    return weapon;
 }

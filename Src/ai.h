@@ -11,4 +11,5 @@ int PlayAi(player_t* executor);
 int StateCompareAi(int state[13], int id);
 int AnswerAi(player_t *recipient, type_e type, int add = 0);
 int WuguAi(player_t *recipient, int* buf, int len);
+int EquipAi(player_t* executor, type_e type);
 #endif // AI_H_INCLUDED

@@ -601,6 +601,7 @@ void Qilin(player_t* executor, player_t* recipient)
 ///开发者技能,在process.cpp的GameRun里面添加
 void Tannang(player_t* recipient, int id)
 {
+    printf("%s发动\"探囊\",声明卡牌", general_inf[player[game.humanid].general].name);
     Printcard(id);
     printf("\n");
     for(int i = 0; i <= 159; i++)
