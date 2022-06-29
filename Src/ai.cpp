@@ -169,7 +169,7 @@ int ThrowAiSelf(player_t *recipient, int area, int suit, int type, int add)
                         }
                         //根据对方手牌计算有闪的期望,牌堆中闪共24张(15%)
                         ///此步后temp = p(有闪) + temp * (1 - p(有闪))
-                        double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                        double p = 0.15 * enemy[j].cardamount + 0.5 * (card_inf[enemy[j].equips[1]].type == BAGUA && card_inf[recipient->equips[0]].type != QINGGANG);
                         if(p > 1) p = 1;
                         temp[j] = p + temp[j] * (1 - p);
                         //回合外降低此部分收益
@@ -518,10 +518,10 @@ int GetAi(player_t *executor, player_t* recipient, int* state, int area)
 ///若为出牌,返回值低8位为牌在手牌区的id,8~11位为目标
 int PlayAi(player_t* executor)
 {
-    player_t &teammate = player[3 - executor->id];
-    player_t enemy[2] = {player[(2 + executor->id) % 4], player[(5 - executor->id) % 4]};
+    player_t teammate = player[3 - executor->id];
+    player_t enemy[2] = {player[(2 + executor->id) % 4], player[(5 - executor->id) % 4]};  //enemy[0]位于executor对位,[1]在邻位
 
-    int card = 0xFF;  //所出牌的id,若弃牌则为0xFF
+    int card = 0xFF;  //所出牌的id,若结束出牌阶段则为0xFF
     int target = 0;  //目标
     float maxprofit = 0;  //当前最大收益
     //判断出牌
@@ -530,10 +530,10 @@ int PlayAi(player_t* executor)
     {
         float nowprofit = 0;  //当前收益
         int nowtarget = 0;  //当前目标
-        //三种杀
-        ///此AI暂不考虑对队友出杀以触发技能的操作
-        if( (int)card_inf[executor->card[i]].type == SHA || (int)card_inf[executor->card[i]].type == HUOSHA || (int)card_inf[executor->card[i]].type == LEISHA)
+
+        if(card_inf[executor->card[i]].type == SHA || card_inf[executor->card[i]].type == HUOSHA || card_inf[executor->card[i]].type == LEISHA)
         {
+            ///此版本AI暂不考虑对队友出杀以触发技能的操作
             //次数限制
             if(executor->slashlimit && (type_e)card_inf[executor->equips[0]].type != ZHUGE && executor->nowslash >= executor->maxslash) continue;
 
@@ -564,8 +564,11 @@ int PlayAi(player_t* executor)
                 //装备麒麟弓且目标有马
                 if(card_inf[enemy[j].equips[0]].type == QILIN && (enemy[j].equips[2] != -1 || enemy[j].equips[3] != -1)) temp[j] += 1.2;
 
+                //酒状态
+                if(executor->spirits == 1) temp[j] += 2;
+
                 //计算出闪期望
-                double p = 0.15 * enemy[j].cardamount + 0.5 * card_inf[enemy[j].equips[1]].type == BAGUA;
+                double p = 0.3 * enemy[j].cardamount + 0.5 * (card_inf[enemy[j].equips[1]].type == BAGUA && card_inf[executor->equips[0]].type != QINGGANG);
                 if(p > 1) p = 1;
                 temp[j] = p + temp[j] * (1 - p);
             }
@@ -581,6 +584,375 @@ int PlayAi(player_t* executor)
                 nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
             }
         }
+        if(card_inf[executor->card[i]].type == TAO && executor->health < executor->maxhealth)
+        {
+            nowtarget = 1 << executor->id;
+            nowprofit = 2;
+        }
+        if(card_inf[executor->card[i]].type == JIU && executor->health > 1)  //体力为1时不使用酒
+        {
+            nowtarget = 1 << executor->id;
+            nowprofit = 0;
+            //若手牌有杀且有敌方手牌不大于2则使用酒
+            if(enemy[0].cardamount <= 2 || enemy[1].cardamount <= 2)
+            {
+                for(int j = 0; j <= executor->cardamount - 1; j++) if( (int)card_inf[executor->card[i]].type >= 0 && (int)card_inf[executor->card[i]].type <= 2) nowprofit = 2;
+            }
+        }
+        if(card_inf[executor->card[i]].type == JUEDOU)
+        {
+            int temp[2] = {0, 0};
+            //计算手牌中杀的数量
+            int slashamount = 0;
+            for(int j = 0; j <= executor->cardamount - 1; j++) if( (int)card_inf[executor->card[i]].type >= 0 && (int)card_inf[executor->card[i]].type <= 2) slashamount++;
+            for(int j = 0; j <= 1; j++)
+            {
+                for(int k = 0; k <= enemy[j].cardamount; k++) temp[j] += Binomial(enemy[j].cardamount, 0.4, k) * (k <= slashamount ? 2 : -1);
+            }
+            //选择目标(暂不考虑多个)
+            nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+            nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+        }
+        if(card_inf[executor->card[i]].type == GUOCHAI)
+        {
+            if(teammate.controller != DEAD)
+            {
+                if(teammate.judges[0][0] != -1)  //当对方没有控制判定的武将时,此AI不会拆闪电
+                {
+                    int isnthunder = 0;  //判断是否有非闪电判定牌在区域
+                    for(int j = 0; j <= 2; j++)
+                    {
+                        if(teammate.judges[j][1] != -1 && (type_e)teammate.judges[j][1] != SHANDIAN) isnthunder = 1;
+                    }
+                    nowtarget = 1 << teammate.id;
+                    if(isnthunder) nowprofit = 6;  //若判定区有非闪电牌则优先拆
+                }
+                else nowprofit = 0;
+            }
+
+            if(nowprofit == 0)
+            {
+                double temp[2] = {0, 0};
+                for(int j = 0; j <= 1; j++)
+                {
+                    if(enemy[j].controller != DEAD)
+                    {
+                        //对装备
+                        if(enemy[j].equips[2] != -1) temp[j] = 1;
+                        if(enemy[j].equips[0] != -1) temp[j] = 1.2;
+                        if(enemy[j].equips[1] != -1) temp[j] = 1.4;
+                        if(enemy[j].equips[3] != -1) temp[j] = 1.5;
+                        //对手牌
+                        if(enemy[j].cardamount != 0)
+                        {
+                            int cardprofit = 0.33 + 4.0 / (4 + enemy[j].cardamount);
+                            if(cardprofit > temp[j]) temp[j] = cardprofit;
+                        }
+                    }
+                }
+                nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+                nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+            }
+        }
+        if(card_inf[executor->card[i]].type == SHUNQIAN)
+        {
+            if(teammate.controller != DEAD)
+            {
+                //计算距离
+                int distance = 1;
+                if(executor->equips[2] != -1) distance--;
+                if(teammate.equips[3] != -1) distance++;
+
+                nowprofit = 0;
+                if(distance < 2)
+                {
+                    if(teammate.judges[0][0] != -1)  //当对方没有控制判定的武将时,此AI不会拿闪电
+                    {
+                        int isnthunder = 0;  //判断是否有非闪电判定牌在区域
+                        for(int j = 0; j <= 2; j++)
+                        {
+                            if(teammate.judges[j][1] != -1 && (type_e)teammate.judges[j][1] != SHANDIAN) isnthunder = 1;
+                        }
+                        nowtarget = 1 << teammate.id;
+                        if(isnthunder) nowprofit = 6;  //若判定区有非闪电牌则优先拿
+                    }
+                }
+            }
+
+            if(nowprofit == 0)
+            {
+                double temp[2] = {0, 0};
+                for(int j = 0; j <= 1; j++)
+                {
+                    if(enemy[j].controller != DEAD)
+                    {
+                        //计算距离
+                        int distance = 1;
+                        if(j == 0 && player[(executor->id + 1) / 4].controller != DEAD && player[(executor->id + 3) / 4].controller != DEAD) distance = 2;
+                        if(executor->equips[2] != -1) distance--;
+                        if(enemy[j].equips[3] != -1) distance++;
+                        if(distance >= 2) break;
+                        //此处以过拆对应的收益乘2
+                        //对装备
+                        if(enemy[j].equips[2] != -1) temp[j] = 2;
+                        if(enemy[j].equips[0] != -1) temp[j] = 2.4;
+                        if(enemy[j].equips[1] != -1) temp[j] = 2.8;
+                        if(enemy[j].equips[3] != -1) temp[j] = 3;
+                        //对手牌
+                        if(enemy[j].cardamount != 0)
+                        {
+                            int cardprofit = 2 * (0.33 + 4.0 / (4 + enemy[j].cardamount));
+                            if(cardprofit > temp[j]) temp[j] = cardprofit;
+                        }
+                    }
+                }
+                nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+                nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+            }
+        }
+        if(card_inf[executor->card[i]].type == WANJIAN)
+        {
+            nowtarget = 15;
+            for(int j = 0; j <= 3; j++) if(player[j].controller == DEAD) nowtarget &= (15 - (1 << j));
+            nowtarget &= (15 - (1 << executor->id));
+
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller != DEAD)
+                {
+                    double p = 0.3 * enemy[j].cardamount + 0.5 * (card_inf[enemy[j].equips[1]].type == BAGUA);
+                    if(p > 1) p = 1;
+                    nowprofit += 2 - p;
+                }
+            }
+
+            if(teammate.controller != DEAD)
+            {
+                double p = 0.3 * teammate.cardamount + 0.5 * (card_inf[teammate.equips[1]].type == BAGUA);
+                if(p > 1) p = 1;
+                nowprofit -= 2 - p;
+            }
+        }
+        if(card_inf[executor->card[i]].type == NANMAN)
+        {
+            nowtarget = 15;
+            for(int j = 0; j <= 3; j++) if(player[j].controller == DEAD) nowtarget &= (15 - (1 << j));
+            nowtarget &= (15 - (1 << executor->id));
+
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller != DEAD)
+                {
+                    double p = 0.3 * enemy[j].cardamount;
+                    if(p > 1) p = 1;
+                    nowprofit += 2 - p;
+                }
+            }
+
+            if(teammate.controller != DEAD)
+            {
+                double p = 0.3 * teammate.cardamount;
+                if(p > 1) p = 1;
+                nowprofit -= 2 - p;
+            }
+        }
+        if(card_inf[executor->card[i]].type == TAOYUAN)
+        {
+            nowtarget = 15;
+            for(int j = 0; j <= 3; j++) if(player[j].controller == DEAD) nowtarget &= (15 - (1 << j));
+
+            //低体力时额外提高权重
+            nowprofit += (executor->health == 1 ? 2.5 : (executor->health == executor->maxhealth ? 0 : 2));
+
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller != DEAD)
+                    nowprofit -= (enemy[j].health == 1 ? 2.5 : (enemy[j].health == enemy[j].maxhealth ? 0 : 2));
+            }
+
+            if(teammate.controller != DEAD)
+                nowprofit += (teammate.health == 1 ? 2.5 : (teammate.health == teammate.maxhealth ? 0 : 2));
+        }
+        if(card_inf[executor->card[i]].type == WUZHONG)
+        {
+            nowtarget = 1 << executor->id;
+            nowprofit = 4;
+        }
+        if(card_inf[executor->card[i]].type == WUGU)
+        {
+            //根据摸牌的顺序,从前到后收益依次为1.2,1,0.9,0.8
+            for(int j = 0; j <= 3; j++) nowtarget |= 1 << (player[j].controller != DEAD);  //目标为所有存活角色
+            for(int j = 0; j <= 3; j++)
+            {
+                double order[4] = {1.2, 1, 0.9, 0.8};
+                int noworder = 0;  //当前选牌位次
+                if(player[(executor->id + j) % 4].controller != DEAD)
+                    nowprofit += order[noworder++] * ( (j == 0) || ((executor->id + j) % 4 + j == 5) ? 1 : -1);   //第1项为按顺序选牌的收益,第2项为阵营所决定的符号
+            }
+        }
+        if(card_inf[executor->card[i]].type == HUOGONG)
+        {
+            //暂不考虑多个目标,也不考虑对自己使用
+            double temp[2] = {0, 0};
+
+            //计算手牌中花色数量
+            int suits = 0;
+            for(int j = 0; j <= executor->cardamount - 1; j++) suits |= (1 << card_inf[executor->card[j]].suit);
+            //将0-3位储存的信息转化为数量
+            suits <<= 4;
+            for(int j = 4; j <= 7; j++) suits += (suits & (1 << j));
+            suits &= 0x111;
+
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller == DEAD) continue;
+                temp[j] = 0.25 * suits * (1 + card_inf[enemy[j].equips[1]].type == TENGJIA) - 1;
+            }
+
+            nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+            nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+        }
+        if(card_inf[executor->card[i]].type == TIESUO)
+        {
+            int select = 0;  //已选择目标数
+            if(executor->chained)
+            {
+                nowtarget |= (1 << executor->id);
+                select++;
+            }
+            if(teammate.controller != DEAD && teammate.chained)
+            {
+                nowtarget |= (1 << teammate.id);
+                select++;
+            }
+
+            if(select <= 1)
+            {
+                //连对方2人,当且仅当未对己方使用同时对方2人均未连
+                if(!select && enemy[0].controller != DEAD && enemy[1].controller != DEAD && !enemy[0].chained && !enemy[1].chained)
+                {
+                    nowtarget &= (1 << enemy[0].id) | (1 << enemy[1].id);
+                    select = 2;
+                }
+                //已解开己方1人
+                else if(select == 1)
+                {
+                    double temp[2] = {-1, -1};
+                    for(int j = 0; j <= 1; j++)
+                    {
+                        //根据防具与体力判断优先级
+                        if(enemy[j].controller == DEAD || enemy[j].chained) break;
+                        if(card_inf[enemy[j].equips[1]].type == TENGJIA) temp[j] = 3;
+                        else if(enemy[j].equips[1] != -1) temp[j] = 2;
+                        else temp[j] = 1;
+                        temp[j] -= 0.1 * enemy[j].health;
+                    }
+
+                    if(temp[0] <= 0 && temp[1] <= 0);
+                    else
+                    {
+                        if(temp[0] > temp[1]) nowtarget |= (1 << enemy[0].id);
+                        if(temp[1] > temp[0]) nowtarget |= (1 << enemy[1].id);
+                        else nowtarget |= (1 << enemy[rand() % 2].id);
+                        select = 2;
+                    }
+                }
+                //对方存活2人时只连1人
+                else if(!select && enemy[0].controller != DEAD && enemy[1].controller != DEAD && (enemy[0].chained ^ enemy[1].chained))
+                {
+                    if(!enemy[0].chained) nowtarget &= (1 << enemy[0].id);
+                    else if(!enemy[1].chained) nowtarget &= (1 << enemy[1].id);
+                    select = 1;
+                }
+            }
+
+            if(select) nowprofit = select;
+            else nowprofit = 1;   //重铸
+        }
+        if(card_inf[executor->card[i]].type == JIEDAO)
+        {
+            double temp[2] = {0, 0};
+            //对方一名角色对另一名使用杀
+            if(enemy[0].controller != DEAD && enemy[1].controller != DEAD)
+            {
+                for(int j = 0; j <= 1; j++)
+                {
+                    if(enemy[j].equips[0] == -1) continue;
+
+                    int distance = 1;
+                    //+1与-1马的计算
+                    distance += enemy[!j].equips[3] != -1;
+                    distance -= enemy[j].equips[2] != -1;
+                    //比较攻击范围
+                    int range = enemy[j].equips[0] != -1 ? (int)card_inf[enemy[j].equips[0]].type >> 4 : 1;
+                    if(distance > range)  continue;
+
+                    //计算手牌有杀概率
+                    double p = enemy[j].cardamount * 0.3;
+                    if(p > 1) p = 1;
+
+                    temp[j] = 1.5 * (1 - p) + 1.2 * p * (enemy[!j].equips[1] != -1 ? 0.5 : 1);
+                }
+                nowtarget = temp[0] > temp[1] ? ((1 << enemy[0].id) + (16 << enemy[1].id)) : ((1 << enemy[1].id) + (16 << enemy[0].id));
+                nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+                if(nowprofit) break;
+            }
+            //对方一名角色对自己使用杀
+            else
+            {
+                for(int j = 0; j <= 1; j++)
+                {
+                    if(enemy[j].controller == DEAD || enemy[j].equips[0] == -1) continue;
+
+                    int distance = 1;
+                    //+1与-1马的计算
+                    distance += executor->equips[3] != -1;
+                    distance -= enemy[j].equips[2] != -1;
+                    //比较攻击范围
+                    int range = enemy[j].equips[0] != -1 ? (int)card_inf[enemy[j].equips[0]].type >> 4 : 1;
+                    if(distance > range)  continue;
+
+                    //计算手牌有杀概率
+                    double p = enemy[j].cardamount * 0.3;
+                    if(p > 1) p = 1;
+
+                    temp[j] = 0.5 * (1 - p);
+                }
+                nowtarget = temp[0] > temp[1] ? ((1 << enemy[0].id) + (16 << executor->id)) : ((1 << enemy[1].id) + (16 << executor->id));
+                nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+            }
+        }
+        if(card_inf[executor->card[i]].type == LE)
+        {
+            double temp[2] = {0, 0};
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller == DEAD) continue;
+                for(int k = 0; k <= 2; k++) if((type_e)enemy[j].judges[k][1] == LE) continue;
+                temp[j] = (enemy[j].cardamount - enemy[j].health + 2 > 0 ? enemy[j].cardamount - enemy[j].health + 2 : 0) + 1.5;  //无法出牌收益按1.5计算
+            }
+            nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+            nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+        }
+        if(card_inf[executor->card[i]].type == BING)
+        {
+            double temp[2] = {0, 0};
+            for(int j = 0; j <= 1; j++)
+            {
+                if(enemy[j].controller == DEAD) continue;
+                for(int k = 0; k <= 2; k++) if((type_e)enemy[j].judges[k][1] == BING) continue;
+                temp[j] = 2 - 0.2 * enemy[j].cardamount;
+            }
+            nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
+            nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
+        }
+        if(card_inf[executor->card[i]].type == SHANDIAN)
+        {
+            nowtarget = (1 << executor->id);
+            nowprofit = 0.46875 * ((enemy[0].controller != DEAD) + (enemy[1].controller != DEAD) - (teammate.controller != DEAD) - 1);
+        }
+
+        //比较
         if(nowprofit > maxprofit)
         {
             maxprofit = nowprofit;

@@ -8,7 +8,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <math.h>
 
+int Fact(int n);
+double Binomial(int n, double p, int m);
 int TypeIdentify(type_e type);
 char* Myitoa(int num);
 char* MyitoaII(int num);

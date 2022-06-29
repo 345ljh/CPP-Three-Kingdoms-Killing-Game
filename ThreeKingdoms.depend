@@ -11,7 +11,7 @@
 	"graphics.h"
 	"music.h"
 
-1646370817 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
+1648424997 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\items.cpp
 	"items.h"
 
 1642846446 c:\users\ljh\desktop\unfinished\threekingdoms\src\draw.h
@@ -37,7 +37,7 @@
 1647272885 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\actions.cpp
 	"actions.h"
 
-1646371091 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
+1648424997 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.cpp
 	"gui.h"
 
 1648424997 c:\users\ljh\desktop\unfinished\threekingdoms\src\gui.h
@@ -88,29 +88,30 @@
 1646371155 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\process.cpp
 	"process.h"
 
-1645153997 c:\users\ljh\desktop\unfinished\threekingdoms\src\app.h
+1648624334 c:\users\ljh\desktop\unfinished\threekingdoms\src\app.h
 	"items.h"
 	"gui.h"
 	<graphics.h>
 	<string.h>
 	<stdlib.h>
 	<malloc.h>
+	<math.h>
 
-1646378691 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\app.cpp
+1648624355 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\app.cpp
 	"app.h"
 
 1648309157 c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.h
 	"items.h"
 	"app.h"
 
-1648309370 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.cpp
+1648597264 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\ai.cpp
 	"ai.h"
 
 1645253495 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\icon.rc
 
 1647272722 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\reference.cpp
 
-1647272523 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\skill.cpp
+1648472360 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\skill.cpp
 	"skill.h"
 
 1647272506 c:\users\ljh\desktop\unfinished\threekingdoms\src\skill.h
@@ -123,4 +124,94 @@
 
 1646379835 source:c:\users\ljh\desktop\unfinished\threekingdoms\src\music.cpp
 	"music.h"
+
+1656467214 source:e:\threekingdoms\src\actions.cpp
+	"actions.h"
+
+1646202532 e:\threekingdoms\src\actions.h
+	"items.h"
+	"gui.h"
+	"app.h"
+	"ai.h"
+	"skill.h"
+	<string.h>
+	<stdlib.h>
+	<malloc.h>
+	<graphics.h>
+	<math.h>
+	<setjmp.h>
+
+1648424998 e:\threekingdoms\src\items.h
+	<stdio.h>
+	"graphics.h"
+	"music.h"
+
+1646379852 e:\threekingdoms\src\music.h
+	"graphics.h"
+	<stdio.h>
+
+1648424998 e:\threekingdoms\src\gui.h
+	"graphics.h"
+	"items.h"
+	"app.h"
+	<string.h>
+	<stdlib.h>
+	<malloc.h>
+	<windows.h>
+	<time.h>
+
+1648624336 e:\threekingdoms\src\app.h
+	"items.h"
+	"gui.h"
+	<graphics.h>
+	<string.h>
+	<stdlib.h>
+	<malloc.h>
+	<math.h>
+
+1648309158 e:\threekingdoms\src\ai.h
+	"items.h"
+	"app.h"
+
+1647272508 e:\threekingdoms\src\skill.h
+	"actions.h"
+	"items.h"
+
+1648624356 source:e:\threekingdoms\src\app.cpp
+	"app.h"
+
+1648424998 source:e:\threekingdoms\src\gui.cpp
+	"gui.h"
+
+1645253496 source:e:\threekingdoms\src\icon.rc
+
+1648424998 source:e:\threekingdoms\src\items.cpp
+	"items.h"
+
+1645974866 source:e:\threekingdoms\src\main.cpp
+	"graphics.h"
+	"items.h"
+	"gui.h"
+	"actions.h"
+	"process.h"
+
+1645166706 e:\threekingdoms\src\process.h
+	"items.h"
+	"actions.h"
+	"gui.h"
+	<string.h>
+
+1646379836 source:e:\threekingdoms\src\music.cpp
+	"music.h"
+
+1646371156 source:e:\threekingdoms\src\process.cpp
+	"process.h"
+
+1647272724 source:e:\threekingdoms\src\reference.cpp
+
+1648472362 source:e:\threekingdoms\src\skill.cpp
+	"skill.h"
+
+1656466920 source:e:\threekingdoms\src\ai.cpp
+	"ai.h"
 

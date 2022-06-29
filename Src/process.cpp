@@ -274,7 +274,7 @@ void GameRun(void)
                                 skip |= 2;
                                 printf("%s的乐不思蜀生效\n", general_inf[player[game.active].general].name);
                             }
-                            else printf("%s的乐不思蜀失效", general_inf[player[game.active].general].name);
+                            else printf("%s的乐不思蜀失效\n", general_inf[player[game.active].general].name);
                             break;
                         }
                         case BING:

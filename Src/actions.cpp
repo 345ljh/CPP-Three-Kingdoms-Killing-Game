@@ -469,7 +469,19 @@ void Playcard(player_t *executor)
     }
     else
     {
-        ;//TODO: AI
+        while(1)
+        {
+            int recv = PlayAi(executor);
+            if((recv & 0xFF) != 0xFF)
+            {
+                Execard(executor, recv >> 8, executor->card[recv & 0xFF], -1);
+                card_inf[executor->card[recv & 0xFF]].owner = -1;
+                executor->card[recv & 0xFF] = -1;
+                executor->cardamount--;
+                IndexAlign(executor->card, executor->cardamount, 160);
+            }
+            else break;
+        }
     }
     return;
 }

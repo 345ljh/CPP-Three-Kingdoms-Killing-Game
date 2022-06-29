@@ -14,6 +14,21 @@ int TypeIdentify(type_e type)
     else return 1;
 }
 
+//求阶乘
+///为防止数据溢出或程序崩溃,当n>12时仍返回12!的值
+int Fact(int n)
+{
+    if(n > 12) return Fact(12);
+    else if(n == 0) return 1;
+    else return n * Fact(n - 1);
+}
+
+//求二项分布X~B(n, p)中P(X=m)的值
+double Binomial(int n, double p, int m)
+{
+    return Fact(n) / Fact(m) / Fact(n - m) * pow(p, m) * pow(1 - p, n - m);
+}
+
 //将数值转换为字符串,字符串即返回值
 ///同一语句内不能多次调用,如 i = strcat(Myitoa(12), Myitoa(34) );会导致结果错误,故使用2个相同功能的函数
 char* Myitoa(int num)
