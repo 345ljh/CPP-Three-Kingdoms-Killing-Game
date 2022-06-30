@@ -64,7 +64,7 @@ char* Link(char* str1, char* str2)
 }
 
 //画空心长方形
-void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img = NULL)
+void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img)
 {
     setcolor(color, img);
     line(left, top, right, top, img);
@@ -74,7 +74,7 @@ void Rect(int left, int top, int right, int bottom, color_t color, PIMAGE img = 
 }
 
 //画空心三角形
-void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE img = NULL)
+void Tri(int x1, int y1, int x2, int y2, int x3, int y3, color_t color, PIMAGE img)
 {
     setcolor(color, img);
     line(x1, y1, x2, y2, img);
@@ -92,6 +92,39 @@ void LineRect(int left, int top, int right, int bottom, color_t color, PIMAGE im
     bar(left - wide, bottom, right + wide, bottom + wide, img);
     bar(left - wide, top, left, bottom, img);
     bar(right, top, right + wide, bottom, img);
+}
+
+//画逐渐出现,一段时间后消失的直线,用于选定目标显示
+///画线完成后程序延时,此后通过调用GuiDraw覆盖直线
+void LineAppear(int startx, int starty, int endx, int endy, int appear_time, int disappear_time, color_t color, PIMAGE img)
+{
+    setcolor(color, img);
+    for(double now = DELAY_TIME; now <= appear_time; now += DELAY_TIME)
+    {
+        cleardevice(img);
+        line(startx, starty, startx + (endx - startx) * now / appear_time, starty + (endy - starty) * now / appear_time, img);
+        putimage_transparent(NULL, img, 0, 0, BLACK);
+        delay_ms(DELAY_TIME);
+    }
+    line(startx, starty, endx, endy, img);
+    delay_fps(disappear_time);
+}
+
+///重载实现一次性画多条直线
+void LineAppear(int startx, int starty, int* endx, int* endy, int line_amount, int appear_time, int disappear_time, color_t color, PIMAGE img)
+{
+    setcolor(color, img);
+    for(double now = DELAY_TIME; now <= appear_time; now += DELAY_TIME)
+    {
+        cleardevice(img);
+        for(int i = 0; i <= line_amount - 1; i++)
+            line(startx, starty, startx + (endx[i] - startx) * now / appear_time, starty + (endy[i] - starty) * now / appear_time, img);
+        putimage_transparent(NULL, img, 0, 0, BLACK);
+        delay_ms(DELAY_TIME);
+    }
+    for(int i = 0; i <= line_amount - 1; i++)
+        line(startx, starty, endx[i], endy[i], img);
+    delay_ms(disappear_time);
 }
 
 //图像粘贴函数
@@ -141,8 +174,8 @@ void Pastecard(int x, int y, int id, PIMAGE img)
     else if(id == -2) PasteImage((char*)".\\Textures\\Cards\\back.png", x, y, img, TRANSPARENT, BLACK);
 }
 
-//将牌输出到屏幕上,实现弃牌堆效果
-void Putcard(int id)
+//将牌输出到屏幕上,实现弃牌堆效果,图层默认gui.throwcard
+void Putcard(int id, PIMAGE img)
 {
     PIMAGE temp = newimage();
     getimage(temp,(char*)".\\Textures\\Cards\\back.png");
@@ -150,7 +183,7 @@ void Putcard(int id)
 
     Pastecard(0, 0, id, temp);
     Rect(0, 0, 80, 120, EGERGB(1, 1, 1), temp);
-    putimage_rotate(gui.throwcard, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 6.2832);
+    putimage_rotate(img, temp, rand() % 660 + 270, rand() % 220 + 210, 0.5, 0.5, rand() / 32767.0 * 6.2832);
     delimage(temp);
 }
 
@@ -218,6 +251,36 @@ void Printcard(int id)
 
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
     printf("】");
+}
+
+//LineAppear的封装,输入[0, 3]的使用者与4位二进制目标,图层gui.arrow
+void ShowTarget(int executor_id, int target)
+{
+    int amount = 0;
+    for(int i = 0; i <= 3; i++) if( (target & (1 << i)) && (i != executor_id) )  amount++;
+
+    int* endx = NULL;
+    int* endy = NULL;
+    endx = (int*)calloc(amount, sizeof(int));
+    endy = (int*)calloc(amount, sizeof(int));
+
+    int index = 0;
+    for(int i = 0; i <= 3; i++)
+    {
+        if(( (target & (1 << i)) && (i != executor_id) ))
+        {
+            endx[index] = pos[( (i + 4 - game.humanid) % 4) * 2] + 65;
+            endy[index] = pos[( (i + 4 - game.humanid) % 4) * 2 + 1] + 85;
+            index++;
+        }
+
+    }
+
+    LineAppear(pos[2 * (executor_id + 4 - game.humanid)] + 65, endy[index] = pos[2 * (executor_id + 4 - game.humanid) + 1] + 85,
+               endx, endy, amount, 400, 2000, RED, gui.arrow);
+
+    free(endx);
+    free(endy);
 }
 
 //计算数组中非-1元素个数

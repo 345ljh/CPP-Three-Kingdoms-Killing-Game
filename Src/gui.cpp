@@ -303,4 +303,5 @@ void DrawGui(void)
     putimage_transparent(NULL, gui.general, 0, 0, BLACK);
     putimage_transparent(NULL, gui.frame, 0, 0, BLACK);
     putimage_transparent(NULL, gui.playercard, 0, 0, BLACK);
+
 }

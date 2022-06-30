@@ -559,6 +559,8 @@ void Execard(player_t *executor, int target, int id, int type)
         Printcard(id);
         printf("\n");
         Putcard(id);
+        DrawGui();
+        ShowTarget(executor->id, target);
 
         //青釭剑
         int qinggang = (type_e)card_inf[executor->equips[0]].type == QINGGANG;
@@ -648,6 +650,7 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf("\n");
             Putcard(id);
+            ShowTarget(executor->id, target);
 
             for(int i = 0; i <= 3; i++)
             {
@@ -692,6 +695,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 Printcard(id);
                 printf("\n");
                 Putcard(id);
+                ShowTarget(executor->id, target);
 
                 for(int i = 0; i <= 3; i++)
                 {
@@ -723,6 +727,8 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf(",杀的目标是%s\n", general_inf[player[tar2].general].name);
             Putcard(id);
+            ShowTarget(executor->id, target & 0xF);
+            ShowTarget(executor->id, target & 0xF0);
 
             if(!AskWuxie(executor->id, tar1))
             {
@@ -748,6 +754,7 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf("\n");
             Putcard(id);
+            ShowTarget(executor->id, target);
 
             if((type_e)type == WANJIAN)
             {
@@ -922,6 +929,7 @@ void Execard(player_t *executor, int target, int id, int type)
         printf("%s对%s使用", general_inf[executor->general].name, general_inf[player[(int)(log(target % 16) / log(2))].general].name);
         Printcard(id);
         printf("\n");
+        ShowTarget(executor->id, target);
 
         int judgearea[3];
         for(int i = 0; i <= 2; i++) judgearea[i] = player[tar].judges[i][0];
