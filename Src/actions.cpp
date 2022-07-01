@@ -683,6 +683,7 @@ void Execard(player_t *executor, int target, int id, int type)
         {
             if(target)
             {
+                //printf("%x", target);
                 printf("%s对", general_inf[executor->general].name);
                 int printed = 0;
                 for(int i = 1; i <= 3; i++)
@@ -697,6 +698,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 Putcard(id);
                 DrawGui();
                 ShowTarget(executor->id, target);
+                DrawGui();
 
                 for(int i = 0; i <= 3; i++)
                 {
@@ -915,14 +917,12 @@ void Execard(player_t *executor, int target, int id, int type)
         //无中生有
         if((type_e)type == WUZHONG)
         {
-            if(!AskWuxie(executor->id, executor->id % 4))
-            {
-                printf("%s使用", general_inf[executor->general].name);
-                Printcard(id);
-                printf("\n");
-
-                Drawcard(executor, 2);
-            }
+            printf("%s使用", general_inf[executor->general].name);
+            Printcard(id);
+            printf("\n");
+            Putcard(id);
+            DrawGui();
+            if(!AskWuxie(executor->id, executor->id % 4))  Drawcard(executor, 2);
         }
     }
     //乐不思蜀,兵粮寸断

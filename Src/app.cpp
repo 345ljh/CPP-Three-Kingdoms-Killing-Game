@@ -275,8 +275,8 @@ void ShowTarget(int executor_id, int target)
         }
 
     }
-
-    LineAppear(pos[2 * (executor_id + 4 - game.humanid)] + 65, endy[index] = pos[2 * (executor_id + 4 - game.humanid) + 1] + 85,
+//for(int i = 0; i <= amount - 1; i++) printf("line%d:  x=%d  y=%d\n", i, endx[i], endy[i]);
+    LineAppear(pos[2 * (executor_id + 4 - game.humanid)] + 65, pos[2 * (executor_id + 4 - game.humanid) + 1] + 85,
                endx, endy, amount, 400, 2000, RED, gui.arrow);
 
     free(endx);
