@@ -5,7 +5,7 @@
 #include "graphics.h"
 #include "music.h"
 
-#define GENERALS 5 //当前已加入武将数量
+#define GENERALS 4 //当前已加入武将数量
 
 typedef enum
 {

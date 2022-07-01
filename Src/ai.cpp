@@ -7,71 +7,59 @@
 
 #include "ai.h"
 
-//弃牌AI
+//弃其他角色牌AI
 ///返回值用于白银狮子效果
-int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int add)
+///阵营camp=0表示己方,=1表示对方
+int ThrowAi(player_t* recipient, int camp, int area, int add)
 {
-    int maxstate = -1;
-    int len = 1;
-    int *tothrow = NULL;
-    tothrow = (int*)malloc(sizeof(int));
-    if(area & 1) for(int i = 0; i <= recipient->cardamount - 1; i++)
-            if (suit & (1 << (int)card_inf[recipient->card[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->card[i]].type))))
+    int sel = -1;
+    int baiyin = 0;
+    if(camp == 0)
+    {
+        if(area & 4)  //判定区优先级:乐>兵>闪电
+        {
+            int temp = 0;  //低4位记录类型(上述对应3,2,1),高4位对应位置
+            for(int i = 0; i <= 2; i++)
             {
-                /*优先级变高,重置tothrow,此时只有1个元素*/
-                if(StateCompareAi(state, recipient->card[i]) > maxstate)
-                {
-                    maxstate = StateCompareAi(state, recipient->card[i]);
-                    int *ptemp = tothrow;
-                    tothrow = (int*)realloc(ptemp, sizeof(int));
-                    tothrow[0] = recipient->card[i];
-                    len = 1;
-                }
-                /*优先级相等,增加1个元素*/
-                else if(StateCompareAi(state, recipient->card[i]) == maxstate)
-                {
-                    int *ptemp = tothrow;
-                    tothrow = (int*)realloc(ptemp, ++len * sizeof(int));
-                    tothrow[len - 1] = recipient->card[i];
-                }
+                if((type_e)recipient->judges[i][1] == SHANDIAN && (temp & 0xF) < 1) temp = 1 + (i << 4);
+                if((type_e)recipient->judges[i][1] == BING && (temp & 0xF) < 2) temp = 2 + (i << 4);
+                if((type_e)recipient->judges[i][1] == LE && (temp & 0xF) < 3) temp = 3 + (i << 4);
             }
-    if(area & 2) for(int i = (add == 0x30) ? 1 : (add == 0x50 ? 2 : 0); i <= 3; i++)
-            if ((recipient->equips[i] != -1) && suit & (1 << (int)card_inf[recipient->equips[i]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->equips[i]].type))))
+            if(temp) sel = 0x200 | (temp >> 4);
+        }
+        if(sel == -1 && (area & 1) && recipient->cardamount);
+        if(sel == -1 && (area & 2))
+        {
+            if(recipient->equips[1] != -1) sel = 0x101;
+            if(recipient->equips[3] != -1) sel = 0x103;
+            if(recipient->equips[0] != -1) sel = 0x100;
+            if(recipient->equips[2] != -1) sel = 0x102;
+        }
+    }
+    else
+    {
+        //判断顺序与camp=0时相反
+        if(area & 2)
+        {
+            if(recipient->equips[2] != -1) sel = 0x102;
+            if(recipient->equips[0] != -1) sel = 0x100;
+            if(recipient->equips[1] != -1) sel = 0x101;
+            if(recipient->equips[3] != -1) sel = 0x103;
+        }
+        if(sel == -1 && (area & 1) && recipient->cardamount) sel = rand() % recipient->cardamount;
+        if(sel == -1 && (area & 4))
+        {
+            int temp = 0;
+            for(int i = 0; i <= 2; i++)
             {
-                if(StateCompareAi(state, recipient->equips[i] | 0x100) > maxstate)
-                {
-                    maxstate = StateCompareAi(state, recipient->equips[i] | 0x100);
-                    int *ptemp = tothrow;
-                    tothrow = (int*)realloc(ptemp, sizeof(int));
-                    tothrow[0] = recipient->equips[i] | 0x100;
-                    len = 1;
-                }
-                else if(StateCompareAi(state, recipient->equips[i] | 0x100) == maxstate)
-                {
-                    realloc(tothrow, ++len * sizeof(int));
-                    tothrow[len - 1] = recipient->equips[i] | 0x100;
-                }
+                if((type_e)recipient->judges[i][1] == SHANDIAN && (temp & 0xF) < 1) temp = 1 + (i << 4);
+                if((type_e)recipient->judges[i][1] == BING && (temp & 0xF) < 2) temp = 2 + (i << 4);
+                if((type_e)recipient->judges[i][1] == LE && (temp & 0xF) < 3) temp = 3 + (i << 4);
             }
-    if(area & 4) for(int i = 0; i <= 2; i++)
-            if (suit & (1 << (int)card_inf[recipient->judges[i][0]].suit) && (type & (1 << TypeIdentify(card_inf[recipient->judges[i][0]].type))))
-            {
-                if(StateCompareAi(state, recipient->judges[i][0] | 0x200) > maxstate)
-                {
-                    maxstate = StateCompareAi(state, recipient->judges[i][0] | 0x200);
-                    int *ptemp = tothrow;
-                    tothrow = (int*)realloc(ptemp, sizeof(int));
-                    tothrow[0] = recipient->judges[i][0] | 0x200;
-                    len = 1;
-                }
-                else if(StateCompareAi(state, recipient->judges[i][0] | 0x200) == maxstate)
-                {
-                    realloc(tothrow, ++len * sizeof(int));
-                    tothrow[len - 1] = recipient->judges[i][0] | 0x200;
-                }
-            }
-
-    int sel = rand() % len;
-    int baiyin = 0;  //白银狮子效果
+            if(temp) sel = 0x200 | (temp >> 4);
+        }
+    }
+    if(sel == -1) return 0;
 
     switch(sel >> 16)
     {
@@ -111,7 +99,6 @@ int ThrowAi(player_t* recipient, int* state, int area, int suit, int type, int a
         break;
     }
     }
-    free(tothrow);
     return baiyin;
 }
 
@@ -584,6 +571,8 @@ int PlayAi(player_t* executor)
                 nowtarget = temp[0] > temp[1] ? (1 << enemy[0].id) : (1 << enemy[1].id);
                 nowprofit = temp[0] > temp[1] ? temp[0] : temp[1];
             }
+
+            nowprofit *= 0.5;  //减小权重,否则会出现先杀后拆等操作
         }
         if(card_inf[executor->card[i]].type == TAO && executor->health < executor->maxhealth)
         {
@@ -646,7 +635,7 @@ int PlayAi(player_t* executor)
                         //对手牌
                         if(enemy[j].cardamount != 0)
                         {
-                            int cardprofit = 0.33 + 4.0 / (4 + enemy[j].cardamount);
+                            int cardprofit = 0.66 + 3.0 / (4 + enemy[j].cardamount);
                             if(cardprofit > temp[j]) temp[j] = cardprofit;
                         }
                     }
@@ -989,7 +978,7 @@ int PlayAi(player_t* executor)
 //弃牌权重比对,返回值较大者优先弃置
 ///state中元素按顺序代表:[手牌区]杀,闪,桃/酒,无懈,其他普通锦囊,延时锦囊,装备,[判定区],[装备区]武器,防具,-1,+1
 ///id低16位为card_inf对应的id,高8位表示区域
-int StateCompareAi(int state[13], int id)
+int StateCompareAi(int state[12], int id)
 {
     int area = id >> 16;
     id &= 0xFF;

@@ -695,6 +695,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 Printcard(id);
                 printf("\n");
                 Putcard(id);
+                DrawGui();
                 ShowTarget(executor->id, target);
 
                 for(int i = 0; i <= 3; i++)
@@ -727,6 +728,7 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf(",杀的目标是%s\n", general_inf[player[tar2].general].name);
             Putcard(id);
+            DrawGui();
             ShowTarget(executor->id, target & 0xF);
             ShowTarget(executor->id, target & 0xF0);
 
@@ -754,6 +756,7 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf("\n");
             Putcard(id);
+            DrawGui();
             ShowTarget(executor->id, target);
 
             if((type_e)type == WANJIAN)
@@ -929,6 +932,7 @@ void Execard(player_t *executor, int target, int id, int type)
         printf("%s对%s使用", general_inf[executor->general].name, general_inf[player[(int)(log(target % 16) / log(2))].general].name);
         Printcard(id);
         printf("\n");
+        DrawGui();
         ShowTarget(executor->id, target);
 
         int judgearea[3];
@@ -1476,24 +1480,18 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
         //对其他角色弃牌
         else
         {
-            //根据阵营确定优先级
-            int statetemp[2][12] = {{1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 0, 2, 3, 4, 2}};
-            int state[12];
-            if(recipient->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
-            else memcpy(state, statetemp[1], sizeof(state));
-
-            printf("%s弃置%d张牌", general_inf[recipient->general].name, amount);
+            printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
 
             int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                baiyin = ThrowAi(recipient, state, area, 15, 7, add);
+                baiyin = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, add);
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
-            printf("\n");
+            printf("\n");  //Printcard放在AI函数内部
             if(baiyin) Recover(recipient, 1);
             return amount;
         }
