@@ -13,7 +13,6 @@
 int ThrowAi(player_t* recipient, int camp, int area, int add)
 {
     int sel = -1;
-    int baiyin = 0;
     if(camp == 0)
     {
         if(area & 4)  //判定区优先级:乐>兵>闪电
@@ -59,47 +58,7 @@ int ThrowAi(player_t* recipient, int camp, int area, int add)
             if(temp) sel = 0x200 | (temp >> 4);
         }
     }
-    if(sel == -1) return 0;
-
-    switch(sel >> 16)
-    {
-    case 0:
-    {
-        card_inf[recipient->card[sel]].owner = -1;
-        Putcard(recipient->card[sel]);
-        Printcard(recipient->card[sel]);
-        recipient->card[sel] = -1;
-        recipient->cardamount--;
-        IndexAlign(recipient->card, recipient->cardamount, 160);
-        break;
-    }
-    case 1:
-    {
-        card_inf[recipient->equips[sel & 0xFF]].owner = -1;
-        Putcard(recipient->equips[sel & 0xFF]);
-        Printcard(recipient->equips[sel & 0xFF]);
-        if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
-        recipient->equips[sel & 0xFF] = -1;
-        break;
-    }
-    case 2:
-    {
-        card_inf[recipient->judges[sel & 0xFF][0]].owner = -1;
-        Putcard(recipient->judges[sel & 0xFF][0]);
-        Printcard(recipient->judges[sel & 0xFF][0]);
-        recipient->judges[sel & 0xFF][0] = -1;
-        recipient->judges[sel & 0xFF][1] = -1;
-        for(int j = 0; j <= 1; j++)
-        {
-            int temp[3];
-            for(int k = 0; k <= 2; k++) temp[k] = recipient->judges[k][j];
-            IndexAlign(temp, ArrayOccupied(temp, 3), 3);
-            for(int k = 0; k <= 2; k++) recipient->judges[k][j] = temp[k];
-        }
-        break;
-    }
-    }
-    return baiyin;
+    return sel;
 }
 
 //对自己弃牌AI
@@ -681,7 +640,8 @@ int PlayAi(player_t* executor)
                         if(j == 0 && player[(executor->id + 1) / 4].controller != DEAD && player[(executor->id + 3) / 4].controller != DEAD) distance = 2;
                         if(executor->equips[2] != -1) distance--;
                         if(enemy[j].equips[3] != -1) distance++;
-                        if(distance >= 2) break;
+                        if(distance >= 2) continue;
+
                         //此处以过拆对应的收益乘2
                         //对装备
                         if(enemy[j].equips[2] != -1) temp[j] = 2;
@@ -691,7 +651,7 @@ int PlayAi(player_t* executor)
                         //对手牌
                         if(enemy[j].cardamount != 0)
                         {
-                            int cardprofit = 2 * (0.33 + 4.0 / (4 + enemy[j].cardamount));
+                            int cardprofit = 2 * (0.66 + 3.0 / (4 + enemy[j].cardamount));
                             if(cardprofit > temp[j]) temp[j] = cardprofit;
                         }
                     }
@@ -938,7 +898,7 @@ int PlayAi(player_t* executor)
                 if(j == 0 && player[(executor->id + 1) / 4].controller != DEAD && player[(executor->id + 3) / 4].controller != DEAD) distance = 2;
                 if(executor->equips[2] != -1) distance--;
                 if(enemy[j].equips[3] != -1) distance++;
-                if(distance >= 2) break;
+                if(distance >= 2) continue;
 
                 if(enemy[j].controller == DEAD) continue;
                 for(int k = 0; k <= 2; k++) if((type_e)enemy[j].judges[k][1] == BING) continue;

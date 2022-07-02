@@ -1482,16 +1482,57 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
         {
             printf("%s弃置%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
 
+            int sel = 0;
             int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                baiyin = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, add);
+                sel = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, add);
+
+
+                switch(sel >> 16)
+                {
+                case 0:
+                {
+                    card_inf[recipient->card[sel]].owner = -1;
+                    Putcard(recipient->card[sel]);
+                    Printcard(recipient->card[sel]);
+                    recipient->card[sel] = -1;
+                    recipient->cardamount--;
+                    IndexAlign(recipient->card, recipient->cardamount, 160);
+                    break;
+                }
+                case 1:
+                {
+                    card_inf[recipient->equips[sel & 0xFF]].owner = -1;
+                    Putcard(recipient->equips[sel & 0xFF]);
+                    Printcard(recipient->equips[sel & 0xFF]);
+                    if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
+                    recipient->equips[sel & 0xFF] = -1;
+                    break;
+                }
+                case 2:
+                {
+                    card_inf[recipient->judges[sel & 0xFF][0]].owner = -1;
+                    Putcard(recipient->judges[sel & 0xFF][0]);
+                    Printcard(recipient->judges[sel & 0xFF][0]);
+                    recipient->judges[sel & 0xFF][0] = -1;
+                    recipient->judges[sel & 0xFF][1] = -1;
+                    for(int j = 0; j <= 1; j++)
+                    {
+                        int temp[3];
+                        for(int k = 0; k <= 2; k++) temp[k] = recipient->judges[k][j];
+                        IndexAlign(temp, ArrayOccupied(temp, 3), 3);
+                        for(int k = 0; k <= 2; k++) recipient->judges[k][j] = temp[k];
+                    }
+                    break;
+                }
+                }
 
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                     return times;
             }
-            printf("\n");  //Printcard放在AI函数内部
+            printf("\n");
             if(baiyin) Recover(recipient, 1);
             return amount;
         }
@@ -1805,18 +1846,47 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
         else
         {
             delay_fps(3);
-            //根据阵营确定优先级
-            int statetemp[2][12] = {{1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1, 1, 1, 0, 2, 3, 4, 2}};
-            int state[12];
-            if(recipient->id + executor->id == 3) memcpy(state, statetemp[0], sizeof(state));
-            else memcpy(state, statetemp[1], sizeof(state));
 
             printf("%s获得%s的", general_inf[executor->general].name, general_inf[recipient->general].name);
 
+            int sel = 0;
             int baiyin = 0;
             for(int times = 1; times <= amount; times++)
             {
-                baiyin = GetAi(executor, recipient, state, area);
+                sel = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, 0);  //与弃牌共用AI
+
+                switch(sel >> 16)
+                {
+                case 0:
+                {
+                    card_inf[recipient->card[sel]].owner = -1;
+                    recipient->card[sel] = -1;
+                    recipient->cardamount--;
+                    IndexAlign(recipient->card, recipient->cardamount, 160);
+                    break;
+                }
+                case 1:
+                {
+                    card_inf[recipient->equips[sel & 0xFF]].owner = -1;
+                    if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
+                    recipient->equips[sel & 0xFF] = -1;
+                    break;
+                }
+                case 2:
+                {
+                    card_inf[recipient->judges[sel & 0xFF][0]].owner = -1;
+                    recipient->judges[sel & 0xFF][0] = -1;
+                    recipient->judges[sel & 0xFF][1] = -1;
+                    for(int j = 0; j <= 1; j++)
+                    {
+                        int temp[3];
+                        for(int k = 0; k <= 2; k++) temp[k] = recipient->judges[k][j];
+                        IndexAlign(temp, ArrayOccupied(temp, 3), 3);
+                        for(int k = 0; k <= 2; k++) recipient->judges[k][j] = temp[k];
+                    }
+                    break;
+                }
+                }
 
                 //提前结束情形
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
