@@ -561,7 +561,7 @@ void Execard(player_t *executor, int target, int id, int type)
         Putcard(id);
         DrawGui();
         ShowTarget(executor->id, target);
-
+        DrawGui();
         //青釭剑
         int qinggang = (type_e)card_inf[executor->equips[0]].type == QINGGANG;
         if(qinggang)
@@ -583,7 +583,7 @@ void Execard(player_t *executor, int target, int id, int type)
                 if( !qinggang && (type_e)card_inf[player[(executor->id + i) % 4].equips[1]].type == RENWANG && (int)card_inf[id].suit >> 1 == 0)
                 {
                     printf("%s发动了\"仁王盾\"\n", general_inf[player[(executor->id + i) % 4].general].name);
-                    PlayMusic((char*)".\\Music\\Equip\\9.mp3");
+                    PlayMusic((char*)".\\Music\\Equip\\96.mp3");
                     continue;
                 }
                 //藤甲效果
@@ -650,7 +650,9 @@ void Execard(player_t *executor, int target, int id, int type)
             Printcard(id);
             printf("\n");
             Putcard(id);
+            DrawGui();
             ShowTarget(executor->id, target);
+            DrawGui();
 
             for(int i = 0; i <= 3; i++)
             {
@@ -733,6 +735,7 @@ void Execard(player_t *executor, int target, int id, int type)
             DrawGui();
             ShowTarget(executor->id, target & 0xF);
             ShowTarget(executor->id, target & 0xF0);
+            DrawGui();
 
             if(!AskWuxie(executor->id, tar1))
             {
@@ -760,6 +763,7 @@ void Execard(player_t *executor, int target, int id, int type)
             Putcard(id);
             DrawGui();
             ShowTarget(executor->id, target);
+            DrawGui();
 
             if((type_e)type == WANJIAN)
             {
@@ -934,6 +938,7 @@ void Execard(player_t *executor, int target, int id, int type)
         printf("\n");
         DrawGui();
         ShowTarget(executor->id, target);
+        DrawGui();
 
         int judgearea[3];
         for(int i = 0; i <= 2; i++) judgearea[i] = player[tar].judges[i][0];
@@ -1446,20 +1451,20 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                     }
                 case 1:
                     {
-                        Putcard(recipient->equips[tothrow | 0xFF]);
-                        Printcard(recipient->equips[tothrow | 0xFF]);
-                        if(card_inf[recipient->equips[tothrow | 0xFF]].type == BAIYIN) baiyin = 1;
-                        card_inf[recipient->equips[tothrow | 0xFF]].owner = -1;
-                        recipient->equips[tothrow | 0xFF] = -1;
+                        Putcard(recipient->equips[tothrow & 0xFF]);
+                        Printcard(recipient->equips[tothrow & 0xFF]);
+                        if(card_inf[recipient->equips[tothrow & 0xFF]].type == BAIYIN) baiyin = 1;
+                        card_inf[recipient->equips[tothrow & 0xFF]].owner = -1;
+                        recipient->equips[tothrow & 0xFF] = -1;
                         break;
                     }
                 case 2:
                     {
-                        Putcard(recipient->judges[tothrow | 0xFF][0]);
-                        Printcard(recipient->judges[tothrow | 0xFF][0]);
-                        card_inf[recipient->judges[tothrow | 0xFF][0]].owner = -1;
-                        recipient->judges[tothrow | 0xFF][0] = -1;
-                        recipient->judges[tothrow | 0xFF][1] = -1;
+                        Putcard(recipient->judges[tothrow & 0xFF][0]);
+                        Printcard(recipient->judges[tothrow & 0xFF][0]);
+                        card_inf[recipient->judges[tothrow & 0xFF][0]].owner = -1;
+                        recipient->judges[tothrow & 0xFF][0] = -1;
+                        recipient->judges[tothrow & 0xFF][1] = -1;
 
                         for(int j = 0; j <= 1; j++)
                         {
@@ -1842,7 +1847,6 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
             }
             return 0;
         }
-
         else
         {
             delay_fps(3);
@@ -1859,6 +1863,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                 {
                 case 0:
                 {
+                    if(recipient->controller == HUMAN) Printcard(recipient->card[sel]);
                     card_inf[recipient->card[sel]].owner = -1;
                     recipient->card[sel] = -1;
                     recipient->cardamount--;
@@ -1867,6 +1872,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                 }
                 case 1:
                 {
+                    if(recipient->controller == HUMAN) Printcard(recipient->equips[sel & 0xFF]);
                     card_inf[recipient->equips[sel & 0xFF]].owner = -1;
                     if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
                     recipient->equips[sel & 0xFF] = -1;
@@ -1874,6 +1880,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                 }
                 case 2:
                 {
+                    if(recipient->controller == HUMAN) Printcard(recipient->judges[sel & 0xFF][0]);
                     card_inf[recipient->judges[sel & 0xFF][0]].owner = -1;
                     recipient->judges[sel & 0xFF][0] = -1;
                     recipient->judges[sel & 0xFF][1] = -1;
@@ -1892,7 +1899,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
                 if(!( (area & 1 ? recipient->cardamount : 0) + (area & 2 ? ArrayOccupied(recipient->equips, 4) : 0) +
                         (area & 4 ? (recipient->judges[0][0] != -1) + (recipient->judges[1][0] != -1) + (recipient->judges[2][0] != -1) : 0) ))
                 {
-                    if(executor->controller != HUMAN && recipient->controller != HUMAN) printf("%d张牌", amount);
+                    if(recipient->controller != HUMAN) printf("%d张牌", amount);
                     printf("\n");
                     return times;
                 }
@@ -2216,6 +2223,8 @@ void Death(player_t *recipient)
     recipient->cardamount = 0;
     recipient->limit = 0;
     recipient->awaken = 0;
+    recipient->chained = 0;
+    recipient->turned = 0;
 
     if(player[3 - recipient->id].controller != DEAD) Drawcard(&player[3 - recipient->id], 1);
 }

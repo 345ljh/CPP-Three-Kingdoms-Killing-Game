@@ -349,118 +349,6 @@ int ThrowAiSelf(player_t *recipient, int area, int suit, int type, int add)
     return id;
 }
 
-//获得牌AI
-int GetAi(player_t *executor, player_t* recipient, int* state, int area)
-{
-    int maxstate = -1;
-    int len = 1;
-    int *tothrow = NULL;
-    tothrow = (int*)malloc(sizeof(int));
-
-    if(area & 1) for(int i = 0; i <= recipient->cardamount - 1; i++)
-    {
-        /*优先级变高,重置tothrow,此时只有1个元素*/
-        if(StateCompareAi(state, recipient->card[i]) > maxstate)
-        {
-            maxstate = StateCompareAi(state, recipient->card[i]);
-            int *ptemp = tothrow;
-            tothrow = (int*)realloc(ptemp, sizeof(int));
-            tothrow[0] = recipient->card[i];
-            len = 1;
-        }
-        /*优先级相等,增加1个元素*/
-        else if(StateCompareAi(state, recipient->card[i]) == maxstate)
-        {
-            int *ptemp = tothrow;
-            tothrow = (int*)realloc(ptemp, ++len * sizeof(int));
-            tothrow[len - 1] = recipient->card[i];
-        }
-    }
-    if(area & 2) for(int i = 0; i <= 3; i++)
-    {
-        if(StateCompareAi(state, recipient->equips[i] | 0x100) > maxstate)
-        {
-            maxstate = StateCompareAi(state, recipient->equips[i] | 0x100);
-            int *ptemp = tothrow;
-            tothrow = (int*)realloc(ptemp, sizeof(int));
-            tothrow[0] = recipient->equips[i] | 0x100;
-            len = 1;
-        }
-        else if(StateCompareAi(state, recipient->equips[i] | 0x100) == maxstate)
-        {
-            realloc(tothrow, ++len * sizeof(int));
-            tothrow[len - 1] = recipient->equips[i] | 0x100;
-        }
-    }
-    if(area & 4) for(int i = 0; i <= 2; i++)
-    {
-        if(StateCompareAi(state, recipient->judges[i][0] | 0x200) > maxstate)
-        {
-            maxstate = StateCompareAi(state, recipient->judges[i][0] | 0x200);
-            int *ptemp = tothrow;
-            tothrow = (int*)realloc(ptemp, sizeof(int));
-            tothrow[0] = recipient->judges[i][0] | 0x200;
-            len = 1;
-        }
-        else if(StateCompareAi(state, recipient->judges[i][0] | 0x200) == maxstate)
-        {
-            realloc(tothrow, ++len * sizeof(int));
-            tothrow[len - 1] = recipient->judges[i][0] | 0x200;
-        }
-    }
-
-    int sel = rand() % len;
-    int baiyin = 0;
-
-    switch(sel >> 16)
-    {
-    case 0:
-    {
-        executor->cardamount++;
-        executor->card[executor->cardamount - 1] = recipient->card[sel];
-        card_inf[recipient->card[sel]].owner = executor->id;
-
-        if(executor->controller == HUMAN || recipient->controller == HUMAN) Printcard(recipient->card[sel]);
-
-        recipient->card[sel] = -1;
-        recipient->cardamount--;
-        IndexAlign(recipient->card, recipient->cardamount, 160);
-        break;
-    }
-    case 1:
-    {
-        executor->cardamount++;
-        executor->card[executor->cardamount - 1] = recipient->equips[sel & 0xFF];
-        card_inf[recipient->equips[sel & 0xFF]].owner = executor->id;
-        if(executor->controller == HUMAN || recipient->controller == HUMAN) Printcard(recipient->equips[sel & 0xFF]);
-        if( (type_e)recipient->equips[sel & 0xFF] == BAIYIN)  baiyin = 1;
-        recipient->equips[sel & 0xFF] = -1;
-        break;
-    }
-    case 2:
-    {
-        executor->cardamount++;
-        executor->card[executor->cardamount - 1] = recipient->judges[sel & 0xFF][0];
-        card_inf[recipient->judges[sel & 0xFF][0]].owner = executor->id;
-
-        if(executor->controller == HUMAN || recipient->controller == HUMAN) Printcard(recipient->judges[sel & 0xFF][0]);
-
-        recipient->judges[sel & 0xFF][0] = -1;
-        recipient->judges[sel & 0xFF][1] = -1;
-        for(int j = 0; j <= 1; j++)
-        {
-            int temp[3];
-            for(int k = 0; k <= 2; k++) temp[k] = recipient->judges[k][j];
-            IndexAlign(temp, ArrayOccupied(temp, 3), 3);
-            for(int k = 0; k <= 2; k++) recipient->judges[k][j] = temp[k];
-        }
-        break;
-    }
-    }
-    free(tothrow);
-    return baiyin;
-}
-
 //出牌阶段AI
 ///若为出牌,返回值低8位为牌在手牌区的id,8~11位为目标
 int PlayAi(player_t* executor)
@@ -487,7 +375,7 @@ int PlayAi(player_t* executor)
             double temp[2];  //分别计算对两目标收益
             for(int j = 0; j <= 1; j++)
             {
-                temp[j] = -0.2 * ((enemy[0].controller != DEAD) + (enemy[1].controller != DEAD));  //保留收益,若无法使用,continue后结果<0,判定为不使用
+                temp[j] = -0.1 * ((enemy[0].controller != DEAD) + (enemy[1].controller != DEAD));  //保留收益,若无法使用,continue后结果<0,判定为不使用
 
                 //可用性判定
                 if(enemy[j].controller == DEAD) continue;
