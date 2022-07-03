@@ -232,7 +232,9 @@ void GameStart(void)
 void GameRun(void)
 {
     ///Remember to DrawGui after EVERY change!!!
-    Tannang(&player[0], 7);
+    Tannang(&player[0], 82);
+    Tannang(&player[1], 0);
+    Tannang(&player[1], 7);
     while(1)
     {
         if(game.active == 0)

@@ -1494,7 +1494,7 @@ int Throwcard(player_t *executor, player_t *recipient, int amount, int area, int
                 sel = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, add);
 
 
-                switch(sel >> 16)
+                switch(sel >> 8)
                 {
                 case 0:
                 {
@@ -1859,7 +1859,7 @@ int Getcard(player_t *executor, player_t *recipient, int amount, int area, int t
             {
                 sel = ThrowAi(recipient, (executor->id + recipient->id == 5 ? 0 : 1), 7, 0);  //与弃牌共用AI
 
-                switch(sel >> 16)
+                switch(sel >> 8)
                 {
                 case 0:
                 {
