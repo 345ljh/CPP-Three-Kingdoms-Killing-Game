@@ -27,7 +27,7 @@ void ProgramStart(void)
         }
         if(msg.is_down() && mouse_x >= 0 && mouse_x <= 50 && mouse_y >= 500 && mouse_y <= 550)
         {
-            MessageBox( NULL, TEXT("敬请期待!"), TEXT("提示"), 0);
+            ShellExecute(NULL, "open", "https://www.bilibili.com/video/BV1DT41137xs", NULL, NULL, SW_MINIMIZE);
         }
         if(msg.is_down() && mouse_x >= 500 && mouse_x <= 700 && mouse_y >= 350 && mouse_y <= 400)
         {
@@ -232,9 +232,9 @@ void GameStart(void)
 void GameRun(void)
 {
     ///Remember to DrawGui after EVERY change!!!
-    Tannang(&player[0], 82);
-    Tannang(&player[1], 0);
-    Tannang(&player[1], 7);
+    //Tannang(&player[0], 82);
+    //Tannang(&player[1], 0);
+    //Tannang(&player[1], 7);
     while(1)
     {
         if(game.active == 0)
@@ -272,7 +272,7 @@ void GameRun(void)
                         {
                         case LE:
                         {
-                            if(!AskWuxie(game.active, game.active) && card_inf[Judging(&player[game.active])].suit != HEART)
+                            if(!AskWuxie(game.active, game.active | 0xA000) && card_inf[Judging(&player[game.active])].suit != HEART)
                             {
                                 skip |= 2;
                                 printf("%s的乐不思蜀生效\n", general_inf[player[game.active].general].name);
@@ -282,7 +282,7 @@ void GameRun(void)
                         }
                         case BING:
                         {
-                            if(!AskWuxie(game.active, game.active) && card_inf[Judging(&player[game.active])].suit != CLUB)
+                            if(!AskWuxie(game.active, game.active | 0xA100) && card_inf[Judging(&player[game.active])].suit != CLUB)
                             {
                                 skip |= 1;
                                 printf("%s的兵粮寸断生效\n", general_inf[player[game.active].general].name);
@@ -292,7 +292,7 @@ void GameRun(void)
                         }
                         case SHANDIAN:
                         {
-                            if(!AskWuxie(game.active, game.active))
+                            if(!AskWuxie(game.active, game.active | 0xA200))
                             {
                                 int res = Judging(&player[game.active]);
                                 if(card_inf[res].suit == SPADE && card_inf[res].num >= 2 && card_inf[res].num <= 9)
